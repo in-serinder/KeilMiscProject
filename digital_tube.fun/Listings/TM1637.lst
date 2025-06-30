@@ -1,0 +1,158 @@
+C51 COMPILER V9.59.0.0   TM1637                                                            07/01/2025 00:30:08 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE TM1637
+OBJECT MODULE PLACED IN .\Objects\TM1637.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE TM1637.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\TM
+                    -1637.lst) TABS(2) OBJECT(.\Objects\TM1637.obj)
+
+line level    source
+
+   1          #include "TM1637.h"
+   2          #include <Timer.h>
+   3          
+   4          sbit CLK = P2 ^ 0;
+   5          sbit DIO = P2 ^ 1;
+   6          
+   7          // 数据方式
+   8          // 通过命令方式传输消息
+   9          // 上升沿切换方式决定指令发送 0x80显示关闭
+  10          
+  11          unsigned char code SMG_duanma[18] = {
+  12              0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, // 0-7
+  13              0x7f, 0x6f, 0x77, 0x7c, 0x39, 0x5e, 0x79, 0x71, // 8-9,A-F
+  14              0x40, 0x00                                      // -,熄灭
+  15          };
+  16          
+  17          // 起始信号准备发送指令
+  18          void TM1637_Start()
+  19          {
+  20   1          CLK = 1;
+  21   1          DIO = 1; // 确保DIO为高电平
+  22   1          Delay_us(2);
+  23   1          DIO = 0; // DIO从高到低，产生起始信号
+  24   1          Delay_us(2);
+  25   1      }
+  26          
+  27          // 停止信号完成一次发送
+  28          void TM1637_Stop()
+  29          {
+  30   1          CLK = 0;
+  31   1          Delay_us(2);
+  32   1          DIO = 0;
+  33   1          Delay_us(2);
+  34   1          CLK = 1; // CLK先拉高
+  35   1          Delay_us(2);
+  36   1          DIO = 1; // DIO再拉高，产生停止信号
+  37   1          Delay_us(2);
+  38   1      }
+  39          
+  40          // 向TM1637发送一个字节
+  41          void TM1637_WriteByte(unsigned char byte)
+  42          {
+  43   1          unsigned char i;
+  44   1          for (i = 0; i < 8; i++)
+  45   1          {
+  46   2              CLK = 0;
+  47   2              Delay_us(2);
+  48   2              if (byte & 0x01)
+  49   2              {
+  50   3                  DIO = 1;
+  51   3              }
+  52   2              else
+  53   2              {
+  54   3                  DIO = 0;
+C51 COMPILER V9.59.0.0   TM1637                                                            07/01/2025 00:30:08 PAGE 2   
+
+  55   3              }
+  56   2              Delay_us(2);
+  57   2              byte >>= 1;
+  58   2              CLK = 1;
+  59   2              Delay_us(2);
+  60   2          }
+  61   1          // 等待数据移位完成
+  62   1          CLK = 0;
+  63   1          DIO = 1;
+  64   1          Delay_us(2);
+  65   1          CLK = 1;
+  66   1          Delay_us(2);
+  67   1          CLK = 0;
+  68   1      }
+  69          
+  70          // 初始化TM1637
+  71          void TM1637_Init(void)
+  72          {
+  73   1          CLK = 1;
+  74   1          DIO = 1;
+  75   1      
+  76   1          TM1637_Start();
+  77   1          TM1637_WriteByte(0x8f); // 亮度最大
+  78   1          TM1637_Stop();
+  79   1      
+  80   1          TM1637_Start();
+  81   1          TM1637_WriteByte(0x40); // 数据命令设置：地址自动加1 (自动地址增加模式)
+  82   1          TM1637_Stop();
+  83   1      
+  84   1          // 清屏
+  85   1          TM1637_Start();
+  86   1          TM1637_WriteByte(0xc0); // 地址命令设置：起始地址0x00
+  87   1          TM1637_WriteByte(0x00); // 第1位数据
+  88   1          TM1637_WriteByte(0x00); // 第2位数据
+  89   1          TM1637_WriteByte(0x00); // 第3位数据
+  90   1          TM1637_WriteByte(0x00); // 第4位数据
+  91   1          TM1637_Stop();
+  92   1      }
+  93          
+  94          // 显示函数 - 兼容固定地址模式
+  95          void TM1637_Display(unsigned char pos, unsigned char num, bit colon)
+  96          {
+  97   1          unsigned char seg_data;
+  98   1      
+  99   1          // 获取段码
+ 100   1          seg_data = SMG_duanma[num];
+ 101   1      
+ 102   1          // 如果需要显示冒号，将最高位置1
+ 103   1          if (colon)
+ 104   1              seg_data |= 0x80; // 0x80 = 1000 0000
+ 105   1      
+ 106   1          // 使用固定地址模式
+ 107   1          TM1637_Start();
+ 108   1          TM1637_WriteByte(0x44); // 固定地址模式
+ 109   1          TM1637_Stop();
+ 110   1      
+ 111   1          TM1637_Start();
+ 112   1          TM1637_WriteByte(0xc0 | (pos - 1)); // 设置地址
+ 113   1          TM1637_WriteByte(seg_data);         // 发送数据
+ 114   1          TM1637_Stop();
+ 115   1      }
+ 116          
+C51 COMPILER V9.59.0.0   TM1637                                                            07/01/2025 00:30:08 PAGE 3   
+
+ 117          void TM1637_Display4Num(unsigned int num, bit colon)
+ 118          {
+ 119   1          unsigned char ge, shi, bai, qian;
+ 120   1      
+ 121   1          ge = num % 10;
+ 122   1          shi = num / 10 % 10;
+ 123   1          bai = num / 100 % 10;
+ 124   1          qian = num / 1000;
+ 125   1      
+ 126   1          TM1637_Display(1, qian, 0);
+ 127   1          TM1637_Display(2, bai, colon);
+ 128   1          TM1637_Display(3, shi, 0);
+ 129   1          TM1637_Display(4, ge, 0);
+ 130   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    346    ----
+   CONSTANT SIZE    =     18    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       7
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       2
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
