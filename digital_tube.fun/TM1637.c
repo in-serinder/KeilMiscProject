@@ -116,15 +116,15 @@ void TM1637_Display(unsigned char pos, unsigned char num, bit colon)
 
 void TM1637_Display4Num(unsigned int num, bit colon)
 {
-    unsigned char ge, shi, bai, qian;
+    unsigned char pos1, pos2, pos3, pos4;
 
-    ge = num % 10;
-    shi = num / 10 % 10;
-    bai = num / 100 % 10;
-    qian = num / 1000;
+    pos4 = num % 10;
+    pos3 = num / 10 % 10;
+    pos2 = num / 100 % 10;
+    pos1 = num / 1000;
 
-    TM1637_Display(1, qian, 0);
-    TM1637_Display(2, bai, colon);
-    TM1637_Display(3, shi, 0);
-    TM1637_Display(4, ge, 0);
+    TM1637_Display(1, pos1, 0);
+    TM1637_Display(2, pos2, colon);
+    TM1637_Display(3, pos3, 0);
+    TM1637_Display(4, pos4, 0);
 }

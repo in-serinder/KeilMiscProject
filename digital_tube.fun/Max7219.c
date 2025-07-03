@@ -1,6 +1,7 @@
 // #include <REG52.H>
 #include <Max7219.h>
 #include <Timer.h>
+#include <MATH.H>
 
 sbit MAX7219_CLK = P2 ^ 0;
 sbit MAX7219_DIN = P2 ^ 1;
@@ -48,4 +49,38 @@ void Max7219_Init()
 void Max7219_Display(unsigned char digit, unsigned char value, unsigned char dot_v)
 {
     Max7219_Write(digit, value | (dot_v ? 0x80 : 0x00));
+}
+
+void Max7219_Clear()
+{
+    unsigned char i;
+    for (i = 0; i < 8; i++)
+    {
+        Max7219_Write(i + 1, 0x00);
+    }
+}
+
+void Max7219_NumDisplay(double num)
+{
+    unsigned char i = 0, intCount = 0, floatCount = 0;
+    float Float_Temp = num;
+    int INT_pos, Float_pos;
+    while (num /= 10) // 整数
+    {
+        INT_pos *= (int)num % 10;
+        intCount++;
+    }
+
+    Float_pos -= INT_pos; // 小数
+    floatCount -= intCount;
+
+    for (i = 1; i <= intCount; i++)
+    {
+        Max7219_Display(i, INT_pos / pow(10, i - 1), i == intCount ? 0 : 1); // 显示整数部分
+    }
+
+    for (; i < 8; i++)
+    {
+        Max7219_Display(i, Float_pos / pow(10, (8 - i - 1)), 0); // 显示小数部分
+    }
 }
