@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 04:08:41 PAGE 1   
+C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 13:19:58 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE UTIL
@@ -62,7 +62,7 @@ line level    source
   51   1          {
   52   2              dat.Date[i] = *str++;
   53   2          }
-C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 04:08:41 PAGE 2   
+C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 13:19:58 PAGE 2   
 
   54   1          dat.Date[i] = '\0';
   55   1          *str++; // 去掉间隔标识>
@@ -126,7 +126,7 @@ line level    source
  108   1          //         continue;
  109   1          //     hum = hum * 10 + (humidity[i] - '0');
  110   1          // }
-C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 04:08:41 PAGE 3   
+C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 13:19:58 PAGE 3   
 
  111   1          // dat.Temperature = temp / 100.0; // 假设精度为两位小数
  112   1          // dat.Humidity = hum / 100.0;
@@ -190,7 +190,7 @@ line level    source
  170   3      
  171   3                  irBitCount++;
  172   3      
-C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 04:08:41 PAGE 4   
+C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 13:19:58 PAGE 4   
 
  173   3                  // 判断是否接收完32位
  174   3                  if (irBitCount == 32)
@@ -254,7 +254,7 @@ line level    source
  232   2              {
  233   3                  *dst = *src;
  234   3                  dst++;
-C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 04:08:41 PAGE 5   
+C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 13:19:58 PAGE 5   
 
  235   3              }
  236   2              src++;

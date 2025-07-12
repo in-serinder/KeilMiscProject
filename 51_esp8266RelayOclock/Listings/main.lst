@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              07/12/2025 04:28:17 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              07/13/2025 00:36:25 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -42,7 +42,7 @@ line level    source
   32          {
   33   1          char xdata *msg, *timestr;
   34   1          struct UtilOBJ xdata dat;
-  35   1          // unsigned char time;
+  35   1          unsigned int time;
   36   1          unsigned char i;
   37   1          unsigned char *IRdata;
   38   1          unsigned char xdata relaySetPos = 1, Timercount = 0;
@@ -62,7 +62,7 @@ line level    source
   52   1      
   53   1          Relay1 = 0;
   54   1          Relay2 = 0;
-C51 COMPILER V9.59.0.0   MAIN                                                              07/12/2025 04:28:17 PAGE 2   
+C51 COMPILER V9.59.0.0   MAIN                                                              07/13/2025 00:36:25 PAGE 2   
 
   55   1          Relay3 = 0;
   56   1          RelayLED1 = 0;
@@ -78,194 +78,201 @@ line level    source
   66   1          //////////////////////////////////////////
   67   1          while (1)
   68   1          {
-  69   2      
-  70   2              timecount++;
-  71   2              // UART_SendString("Hello, World!\r\n");
-  72   2              if (getRec())
-  73   2              {
-  74   3                  msg = getData();
-  75   3                  dat = getUtil(msg);
-  76   3      
-  77   3                  // sprintf(timestr, "%d", ((dat.Time[0] - '0') * 10 + (dat.Time[1] - '0')) * 100 + ((dat.Time[
+  69   2              // timecount++;
+  70   2              // if (timecount % 100 == 0)
+  71   2              // {
+  72   2              // }
+  73   2      
+  74   2              // UART_SendString("Hello, World!\r\n");
+  75   2              if (getRec())
+  76   2              {
+  77   3      
+  78   3                  // 串口获取内部是标准的1s计时器
+  79   3                  timecount++;
+  80   3                  Timercount++;
+  81   3                  msg = getData();
+  82   3                  dat = getUtil(msg);
+  83   3      
+  84   3                  // sprintf(timestr, "%d", ((dat.Time[0] - '0') * 10 + (dat.Time[1] - '0')) * 100 + ((dat.Time[
              -2] - '0') * 10 + (dat.Time[3] - '0')));
-  78   3                  sprintf(timestr, "%d%d%d%d", dat.Time[0], dat.Time[1], dat.Time[2], dat.Time[3]);
-  79   3      
-  80   3                  // time = ((dat.Time[0] - '0') * 10 + (dat.Time[1] - '0')) * 100 + ((dat.Time[2] - '0') * 10 +
-             - (dat.Time[3] - '0'));
-  81   3      
-  82   3                  //////////////////////////////////////
-  83   3                  UART_SendString(msg);
-  84   3                  UART_SendString(timestr);
-  85   3                  UART_SendChar('\n');
-  86   3                  // UART_SendString(dat.Relay1);
-  87   3                  UART_SendChar(dat.Relay1 ? '1' : '0');
-  88   3                  UART_SendChar('\n');
-  89   3                  // UART_SendString(dat.Relay2);
-  90   3                  UART_SendChar(dat.Relay2 ? '1' : '0');
-  91   3                  UART_SendChar('\n');
-  92   3                  // UART_SendString(dat.Relay3);
-  93   3                  UART_SendChar(dat.Relay3 ? '1' : '0');
-  94   3                  UART_SendChar('\n');
-  95   3      
-  96   3                  // Max7921StringDisplay(dat.Date);
-  97   3                  // Max7219StringDisplay(dat.Date);
-  98   3                  /*时间与温湿度*/
-  99   3                  // Max7219TemperatureAndHumitidyDisplay(dat.Temperature, dat.Humidity);
- 100   3                  if (dateOrTempFlag)
- 101   3                  {
- 102   4                      Max7219DateDisplay(dat.Date);
- 103   4                  }
- 104   3                  else
- 105   3                  {
- 106   4                      Max7219TemperatureAndHumitidyDisplay(dat.Temperature, dat.Humidity);
- 107   4                  }
- 108   3      
- 109   3                  if (timecount % 10 == 0)
- 110   3                  {
- 111   4                      dateOrTempFlag = !dateOrTempFlag;
- 112   4                  }
- 113   3      
- 114   3                  // TM1637_Display4Num(time, flip);
-C51 COMPILER V9.59.0.0   MAIN                                                              07/12/2025 04:28:17 PAGE 3   
+  85   3                  sprintf(timestr, "%d%d%d%d", dat.Time[0], dat.Time[1], dat.Time[2], dat.Time[3]);
+  86   3      
+  87   3                  time = ((dat.Time[0] - '0') * 10 + (dat.Time[1] - '0')) * 100 + ((dat.Time[2] - '0') * 10 + (d
+             -at.Time[3] - '0'));
+  88   3      
+  89   3                  //////////////////////////////////////
+  90   3                  UART_SendString(msg);
+  91   3                  UART_SendString(timestr);
+  92   3                  UART_SendChar('\n');
+  93   3                  // UART_SendString(dat.Relay1);
+  94   3                  UART_SendChar(dat.Relay1 ? '1' : '0');
+  95   3                  UART_SendChar('\n');
+  96   3                  // UART_SendString(dat.Relay2);
+  97   3                  UART_SendChar(dat.Relay2 ? '1' : '0');
+  98   3                  UART_SendChar('\n');
+  99   3                  // UART_SendString(dat.Relay3);
+ 100   3                  UART_SendChar(dat.Relay3 ? '1' : '0');
+ 101   3                  UART_SendChar('\n');
+ 102   3      
+ 103   3                  // Max7921StringDisplay(dat.Date);
+ 104   3                  // Max7219StringDisplay(dat.Date);
+ 105   3                  /*时间与温湿度*/
+ 106   3                  // Max7219TemperatureAndHumitidyDisplay(dat.Temperature, dat.Humidity);
+ 107   3                  if (dateOrTempFlag)
+ 108   3                  {
+ 109   4                      Max7219DateDisplay(dat.Date);
+ 110   4                  }
+ 111   3                  else
+ 112   3                  {
+ 113   4                      Max7219TemperatureAndHumitidyDisplay(dat.Temperature, dat.Humidity);
+ 114   4                  }
+C51 COMPILER V9.59.0.0   MAIN                                                              07/13/2025 00:36:25 PAGE 3   
 
- 115   3                  TM1637_StringDisplay(dat.Time, flip);
- 116   3                  flip = !flip; // 翻转显示时间冒号
- 117   3                  ClearBuffer();
- 118   3      
- 119   3                  // Max7219_Clear();
- 120   3                  /*继电器*/
- 121   3                  Relay1 = dat.Relay1;
- 122   3                  Relay2 = dat.Relay2;
- 123   3                  Relay3 = dat.Relay3;
- 124   3                  /*继电器灯光继承*/
- 125   3                  RelayLED1 = Relay1;
- 126   3                  RelayLED2 = Relay2;
- 127   3                  RelayLED3 = Relay3;
- 128   3              }
- 129   2      
- 130   2              if (getIRFlag())
- 131   2              {
- 132   3                  IRdata = getIRData();
- 133   3      
- 134   3                  // 发送标题
- 135   3                  UART_SendString("IR Code: ");
- 136   3      
- 137   3                  // 逐个字节转换为16进制字符串发送
- 138   3                  for (i = 0; i < 4; i++)
- 139   3                  {
- 140   4                      // 发送高4位
- 141   4                      UART_SendChar((IRdata[i] >> 4) < 10 ? (IRdata[i] >> 4) + '0' : (IRdata[i] >> 4) + 'A' - 10
+ 115   3      
+ 116   3                  if (timecount % 10 == 0)
+ 117   3                  {
+ 118   4                      dateOrTempFlag = !dateOrTempFlag;
+ 119   4                  }
+ 120   3      
+ 121   3                  TM1637_Display4Num(time, flip);
+ 122   3                  // TM1637_StringDisplay(dat.Time, flip);
+ 123   3                  flip = !flip; // 翻转显示时间冒号
+ 124   3                  ClearBuffer();
+ 125   3      
+ 126   3                  // Max7219_Clear();
+ 127   3                  /*继电器*/
+ 128   3                  Relay1 = dat.Relay1;
+ 129   3                  Relay2 = dat.Relay2;
+ 130   3                  Relay3 = dat.Relay3;
+ 131   3                  /*继电器灯光继承*/
+ 132   3                  RelayLED1 = Relay1;
+ 133   3                  RelayLED2 = Relay2;
+ 134   3                  RelayLED3 = Relay3;
+ 135   3              }
+ 136   2      
+ 137   2              if (getIRFlag())
+ 138   2              {
+ 139   3                  IRdata = getIRData();
+ 140   3      
+ 141   3                  // 发送标题
+ 142   3                  UART_SendString("IR Code: ");
+ 143   3      
+ 144   3                  // 逐个字节转换为16进制字符串发送
+ 145   3                  for (i = 0; i < 4; i++)
+ 146   3                  {
+ 147   4                      // 发送高4位
+ 148   4                      UART_SendChar((IRdata[i] >> 4) < 10 ? (IRdata[i] >> 4) + '0' : (IRdata[i] >> 4) + 'A' - 10
              -);
- 142   4                      // 发送低4位
- 143   4                      UART_SendChar((IRdata[i] & 0x0F) < 10 ? (IRdata[i] & 0x0F) + '0' : (IRdata[i] & 0x0F) + 'A
+ 149   4                      // 发送低4位
+ 150   4                      UART_SendChar((IRdata[i] & 0x0F) < 10 ? (IRdata[i] & 0x0F) + '0' : (IRdata[i] & 0x0F) + 'A
              -' - 10);
- 144   4                      UART_SendChar(' ');
- 145   4                  }
- 146   3      
- 147   3                  UART_SendString("\r\n"); // 换行
- 148   3              }
- 149   2      
- 150   2              /*处理按钮调节*/
- 151   2              if (SettingButton)
- 152   2              {
- 153   3                  settingflag = 1;
- 154   3                  Timercount = 0;                   // 重置计时器
- 155   3                  dateOrTempFlag = !dateOrTempFlag; // 直接翻转
- 156   3                  dat.WarnFlag = 0;
- 157   3              }
- 158   2              // 警告状态
- 159   2              if (dat.WarnFlag)
- 160   2              {
- 161   3                  WarnLed = 1;
- 162   3                  BuzzerS1 = 1;
- 163   3              }
- 164   2              else
- 165   2              {
- 166   3                  WarnLed = 0;
- 167   3                  BuzzerS1 = 0;
- 168   3              }
- 169   2      
- 170   2              if (settingflag)
- 171   2              {
- 172   3                  Delay_ms(1000); // 处于设置模式时延时
- 173   3                  WarnLed = 1;
- 174   3                  Timercount++;
-C51 COMPILER V9.59.0.0   MAIN                                                              07/12/2025 04:28:17 PAGE 4   
+ 151   4                      UART_SendChar(' ');
+ 152   4                  }
+ 153   3      
+ 154   3                  UART_SendString("\r\n"); // 换行
+ 155   3              }
+ 156   2      
+ 157   2              /*处理按钮调节*/
+ 158   2              if (SettingButton)
+ 159   2              {
+ 160   3                  settingflag = 1;
+ 161   3                  Timercount = 0;                   // 重置计时器
+ 162   3                  dateOrTempFlag = !dateOrTempFlag; // 直接翻转
+ 163   3                  dat.WarnFlag = 0;
+ 164   3              }
+ 165   2              // 警告状态
+ 166   2              if (dat.WarnFlag)
+ 167   2              {
+ 168   3                  WarnLed = 1;
+ 169   3                  BuzzerS1 = 1;
+ 170   3              }
+ 171   2              else
+ 172   2              {
+ 173   3                  WarnLed = 0;
+ 174   3                  BuzzerS1 = 0;
+C51 COMPILER V9.59.0.0   MAIN                                                              07/13/2025 00:36:25 PAGE 4   
 
- 175   3      
- 176   3                  relaySetPos++;
- 177   3                  if (relaySetPos >= 3)
- 178   3                  {
- 179   4                      relaySetPos = 1;
- 180   4                  }
+ 175   3              }
+ 176   2      
+ 177   2              if (settingflag)
+ 178   2              {
+ 179   3                  // Delay_ms(1000); // 处于设置模式时延时
+ 180   3                  WarnLed = 1;
  181   3      
- 182   3                  switch (relaySetPos)
- 183   3                  {
- 184   4                  case 1:
- 185   4                      RelayLED1 = 1;
- 186   4                      RelayLED2 = 0, RelayLED3 = 0;
- 187   4                      break;
- 188   4                  case 2:
- 189   4                      RelayLED1 = 0;
- 190   4                      RelayLED2 = 1, RelayLED3 = 0;
- 191   4                      break;
- 192   4                  case 3:
- 193   4                      RelayLED1 = 0;
- 194   4                      RelayLED2 = 0, RelayLED3 = 1;
- 195   4                      break;
- 196   4      
- 197   4                  default:
- 198   4                      break;
- 199   4                  }
- 200   3      
- 201   3                  if (RelayButton == 1)
- 202   3                  {
- 203   4                      RelayBuzzer();
- 204   4                      switch (relaySetPos)
- 205   4                      {
- 206   5                      case 1:
- 207   5                          Relay1 = (Relay1 == 1 ? 0 : 1);
- 208   5                          break;
- 209   5                      case 2:
- 210   5                          Relay2 = (Relay2 == 1 ? 0 : 1);
- 211   5                          break;
- 212   5                      case 3:
- 213   5                          Relay3 = (Relay3 == 1 ? 0 : 1);
+ 182   3                  relaySetPos++;
+ 183   3                  if (relaySetPos >= 3)
+ 184   3                  {
+ 185   4                      relaySetPos = 1;
+ 186   4                  }
+ 187   3      
+ 188   3                  switch (relaySetPos)
+ 189   3                  {
+ 190   4                  case 1:
+ 191   4                      RelayLED1 = 1;
+ 192   4                      RelayLED2 = 0, RelayLED3 = 0;
+ 193   4                      break;
+ 194   4                  case 2:
+ 195   4                      RelayLED1 = 0;
+ 196   4                      RelayLED2 = 1, RelayLED3 = 0;
+ 197   4                      break;
+ 198   4                  case 3:
+ 199   4                      RelayLED1 = 0;
+ 200   4                      RelayLED2 = 0, RelayLED3 = 1;
+ 201   4                      break;
+ 202   4      
+ 203   4                  default:
+ 204   4                      break;
+ 205   4                  }
+ 206   3      
+ 207   3                  if (RelayButton == 1)
+ 208   3                  {
+ 209   4                      RelayBuzzer();
+ 210   4                      switch (relaySetPos)
+ 211   4                      {
+ 212   5                      case 1:
+ 213   5                          Relay1 = (Relay1 == 1 ? 0 : 1);
  214   5                          break;
- 215   5      
- 216   5                      default:
+ 215   5                      case 2:
+ 216   5                          Relay2 = (Relay2 == 1 ? 0 : 1);
  217   5                          break;
- 218   5                      }
- 219   4                  }
- 220   3      
- 221   3                  // 十秒取消
- 222   3                  if (Timercount >= 10)
- 223   3                  {
- 224   4                      settingflag = 0;
- 225   4                      WarnLed = 0;
- 226   4                  }
- 227   3              }
- 228   2      
- 229   2              /*继电器灯光继承*/
- 230   2              RelayLED1 = Relay1;
- 231   2              RelayLED2 = Relay2;
- 232   2              RelayLED3 = Relay3;
- 233   2      
- 234   2              Delay_ms(10);
- 235   2              // Delay_ms(1000);
- 236   2          }
-C51 COMPILER V9.59.0.0   MAIN                                                              07/12/2025 04:28:17 PAGE 5   
+ 218   5                      case 3:
+ 219   5                          Relay3 = (Relay3 == 1 ? 0 : 1);
+ 220   5                          break;
+ 221   5      
+ 222   5                      default:
+ 223   5                          break;
+ 224   5                      }
+ 225   4                  }
+ 226   3      
+ 227   3                  // 十秒取消
+ 228   3                  if (Timercount >= 10)
+ 229   3                  {
+ 230   4                      settingflag = 0;
+ 231   4                      WarnLed = 0;
+ 232   4                  }
+ 233   3              }
+ 234   2      
+ 235   2              /*继电器灯光继承*/
+ 236   2              RelayLED1 = Relay1;
+C51 COMPILER V9.59.0.0   MAIN                                                              07/13/2025 00:36:25 PAGE 5   
 
- 237   1          //////////////////////////////////////////
- 238   1      }
+ 237   2              RelayLED2 = Relay2;
+ 238   2              RelayLED3 = Relay3;
+ 239   2      
+ 240   2              // Delay_ms(10);
+ 241   2              // Delay_ms(150);
+ 242   2              Delay1000ms1();
+ 243   2          }
+ 244   1          //////////////////////////////////////////
+ 245   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    719    ----
+   CODE SIZE        =    808    ----
    CONSTANT SIZE    =     34    ----
    XDATA SIZE       =   ----      35
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =   ----       9
+   DATA SIZE        =   ----      11
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----       4
 END OF MODULE INFORMATION.

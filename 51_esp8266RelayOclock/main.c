@@ -32,7 +32,7 @@ void main()
 {
     char xdata *msg, *timestr;
     struct UtilOBJ xdata dat;
-    // unsigned char time;
+    unsigned int time;
     unsigned char i;
     unsigned char *IRdata;
     unsigned char xdata relaySetPos = 1, Timercount = 0;
@@ -66,18 +66,25 @@ void main()
     //////////////////////////////////////////
     while (1)
     {
+        // timecount++;
+        // if (timecount % 100 == 0)
+        // {
+        // }
 
-        timecount++;
         // UART_SendString("Hello, World!\r\n");
         if (getRec())
         {
+
+            // 串口获取内部是标准的1s计时器
+            timecount++;
+            Timercount++;
             msg = getData();
             dat = getUtil(msg);
 
             // sprintf(timestr, "%d", ((dat.Time[0] - '0') * 10 + (dat.Time[1] - '0')) * 100 + ((dat.Time[2] - '0') * 10 + (dat.Time[3] - '0')));
             sprintf(timestr, "%d%d%d%d", dat.Time[0], dat.Time[1], dat.Time[2], dat.Time[3]);
 
-            // time = ((dat.Time[0] - '0') * 10 + (dat.Time[1] - '0')) * 100 + ((dat.Time[2] - '0') * 10 + (dat.Time[3] - '0'));
+            time = ((dat.Time[0] - '0') * 10 + (dat.Time[1] - '0')) * 100 + ((dat.Time[2] - '0') * 10 + (dat.Time[3] - '0'));
 
             //////////////////////////////////////
             UART_SendString(msg);
@@ -111,8 +118,8 @@ void main()
                 dateOrTempFlag = !dateOrTempFlag;
             }
 
-            // TM1637_Display4Num(time, flip);
-            TM1637_StringDisplay(dat.Time, flip);
+            TM1637_Display4Num(time, flip);
+            // TM1637_StringDisplay(dat.Time, flip);
             flip = !flip; // 翻转显示时间冒号
             ClearBuffer();
 
@@ -171,7 +178,6 @@ void main()
         {
             // Delay_ms(1000); // 处于设置模式时延时
             WarnLed = 1;
-            Timercount++;
 
             relaySetPos++;
             if (relaySetPos >= 3)
@@ -232,7 +238,8 @@ void main()
         RelayLED3 = Relay3;
 
         // Delay_ms(10);
-        Delay_ms(1000);
+        // Delay_ms(150);
+        Delay1000ms1();
     }
     //////////////////////////////////////////
 }

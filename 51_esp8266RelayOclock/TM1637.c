@@ -124,7 +124,16 @@ void TM1637_Display4Num(unsigned int num, bit colon)
     pos2 = num / 100 % 10;
     pos1 = num / 1000;
 
-    TM1637_Display(1, pos1, 0);
+    // 当第一位为0时显示为空
+    if (pos1 == 0)
+    {
+        TM1637_Display(1, 17, 0); // 17对应SMG_duanma中的熄灭状态
+    }
+    else
+    {
+        TM1637_Display(1, pos1, 0);
+    }
+
     TM1637_Display(2, pos2, colon);
     TM1637_Display(3, pos3, 0);
     TM1637_Display(4, pos4, 0);
@@ -136,7 +145,7 @@ void TM1637_StringDisplay(char *str, bit colon)
     // {
     //     TM1637_Display(i + 1, (str[i] == '0' && i == 0) ? 0x00 : str[i], i == 1 && colon);
     // }
-    TM1637_Display(1, charToint(str[0] == '0' ? '!' : str[0]), 0); // 使用上方索引
+    TM1637_Display(1, charToint(str[0] == '0' ? 17 : str[0]), 0); // 使用上方索引
     TM1637_Display(2, charToint(str[1]), colon);
     TM1637_Display(3, charToint(str[2]), 0);
     TM1637_Display(4, charToint(str[3]), 0);
