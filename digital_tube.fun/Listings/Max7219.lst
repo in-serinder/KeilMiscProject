@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAX7219                                                           06/30/2025 23:50:22 PAGE 1   
+C51 COMPILER V9.59.0.0   MAX7219                                                           07/11/2025 00:04:57 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAX7219
@@ -11,11 +11,11 @@ line level    source
    1          // #include <REG52.H>
    2          #include <Max7219.h>
    3          #include <Timer.h>
-   4          
-   5          // 修正：使用sbit定义位操作
-   6          sbit MAX7219_CLK = P2 ^ 0;  // 时钟
-   7          sbit MAX7219_DIN = P2 ^ 1;  // 数据输入
-   8          sbit MAX7219_LOAD = P2 ^ 2; // 加载信号（片选）
+   4          #include <MATH.H>
+   5          
+   6          sbit MAX7219_CLK = P0 ^ 1;
+   7          sbit MAX7219_DIN = P0 ^ 2;
+   8          sbit MAX7219_LOAD = P0 ^ 3; // 加载信号（片选）
    9          
   10          // 通过7219内部寄存器控制LED
   11          // Load处于低电平有效状态
@@ -38,17 +38,17 @@ line level    source
   28          
   29          void Max7219_Write(unsigned char address, unsigned char dat)
   30          {
-  31   1          MAX7219_LOAD = 0; // 先将LOAD置低电平
+  31   1          MAX7219_LOAD = 0;
   32   1          Max7219_SendByte(address);
   33   1          Max7219_SendByte(dat);
   34   1          MAX7219_LOAD = 1; // 完成传输
   35   1          Delay_us(1);
   36   1      }
   37          
-  38          // 修正：删除多余参数，使用全局变量
-  39          void Max7219_Init()
-  40          {
-  41   1      
+  38          void Max7219_Init()
+  39          {
+  40   1      
+  41   1          Delay_ms(10);
   42   1          // 使用正确的函数名和参数
   43   1          Max7219_Write(0x0C, 0x01); // 退出休眠模式
   44   1          Max7219_Write(0x0F, 0x00); // 关闭测试模式
@@ -57,23 +57,125 @@ line level    source
   47   1          Max7219_Write(0x0A, 0x08); // 设置亮度（0~15，8为中等亮度）
   48   1      }
   49          
-  50          // 修正：添加括号确保正确的运算顺序
-  51          void Max7219_Display(unsigned char digit, unsigned char value, unsigned char dot_v)
-  52          {
-  53   1          Max7219_Write(digit, value | (dot_v ? 0x80 : 0x00));
-  54   1      }
-C51 COMPILER V9.59.0.0   MAX7219                                                           06/30/2025 23:50:22 PAGE 2   
+  50          void Max7219_Display(unsigned char digit, unsigned char value, unsigned char dot_v)
+  51          {
+  52   1          Max7219_Write(digit, value | (dot_v ? 0x80 : 0x00));
+  53   1      }
+  54          
+C51 COMPILER V9.59.0.0   MAX7219                                                           07/11/2025 00:04:57 PAGE 2   
 
+  55          void Max7219_Clear()
+  56          {
+  57   1          unsigned char i;
+  58   1          for (i = 0; i < 8; i++)
+  59   1          {
+  60   2              Max7219_Write(i + 1, 0x00);
+  61   2          }
+  62   1      }
+  63          
+  64          void Max7219_NumDisplay(double num)
+  65          {
+  66   1          unsigned char i;
+  67   1          unsigned int integer_part;         // 整数部分
+  68   1          unsigned int decimal_part;         // 小数部分（取3位）
+  69   1          unsigned char int_digits[8] = {0}; // 存储整数每一位
+  70   1          unsigned char dec_digits[3] = {0}; // 存储小数每一位
+  71   1          unsigned char int_len = 0;         // 整数位数
+  72   1      
+  73   1          // 处理负数（可选，若需要）
+  74   1          if (num < 0)
+  75   1          {
+  76   2              Max7219_Display(1, 0x0A, 0); // 显示负号（0x0A对应'-'，需关闭BCD译码）
+  77   2              num = -num;                  // 转为正数处理
+  78   2              int_len = 1;                 // 占用1位显示负号
+  79   2          }
+  80   1      
+  81   1          // 分离整数和小数部分
+  82   1          integer_part = (unsigned int)num;
+  83   1          decimal_part = (unsigned int)((num - integer_part) * 1000); // 保留3位小数
+  84   1      
+  85   1          // 提取整数部分每一位（从低位到高位）
+  86   1          if (integer_part == 0)
+  87   1          {
+  88   2              int_digits[int_len++] = 0; // 整数为0时直接记录
+  89   2          }
+  90   1          else
+  91   1          {
+  92   2              while (integer_part > 0)
+  93   2              {
+  94   3                  int_digits[int_len++] = integer_part % 10; // 取最低位
+  95   3                  integer_part /= 10;                        // 移除最低位
+  96   3              }
+  97   2          }
+  98   1      
+  99   1          // 提取小数部分每一位（从高位到低位）
+ 100   1          dec_digits[0] = (decimal_part / 100) % 10; // 第1位小数
+ 101   1          dec_digits[1] = (decimal_part / 10) % 10;  // 第2位小数
+ 102   1          dec_digits[2] = decimal_part % 10;         // 第3位小数
+ 103   1      
+ 104   1          // 显示整数部分（从高位到低位，位置从int_len开始）
+ 105   1          for (i = 0; i < int_len; i++)
+ 106   1          {
+ 107   2              // 位置：负号占1位时，整数从2开始；否则从1开始
+ 108   2              unsigned char pos = (int_len > 1 && int_digits[int_len - 1] == 0x0A) ? (i + 2) : (i + 1);
+ 109   2              // 整数部分最后一位（最高位）后显示小数点
+ 110   2              unsigned char dot = (i == int_len - 1) ? 1 : 0;
+ 111   2              Max7219_Display(pos, int_digits[int_len - 1 - i], dot);
+ 112   2          }
+ 113   1      
+ 114   1          // 显示小数部分（接在整数后面）
+ 115   1          for (i = 0; i < 3; i++)
+ 116   1          {
+C51 COMPILER V9.59.0.0   MAX7219                                                           07/11/2025 00:04:57 PAGE 3   
+
+ 117   2              unsigned char pos = int_len + 1 + i; // 小数部分起始位置
+ 118   2              if (pos > 8)
+ 119   2                  break; // 不超过8位
+ 120   2              Max7219_Display(pos, dec_digits[i], 0);
+ 121   2          }
+ 122   1      }
+ 123          void Max7219StringDisplay(char *str)
+ 124          {
+ 125   1          unsigned char i = 0;
+ 126   1          unsigned char pos = 1; // Max7219有效位置：1~8
+ 127   1          bit dot = 0;
+ 128   1      
+ 129   1          while (str[i] != '\0' && pos <= 8)
+ 130   1          {
+ 131   2              // 检测小数点（当前字符的下一位是'.'）
+ 132   2              if (str[i + 1] == '.')
+ 133   2              {
+ 134   3                  dot = 1;
+ 135   3                  i++; // 跳过小数点
+ 136   3              }
+ 137   2      
+ 138   2              // 只处理数字字符（'0'~'9'）
+ 139   2              if (str[i] >= '0' && str[i] <= '9')
+ 140   2              {
+ 141   3                  Max7219_Display(pos, (str[i] - '0'), dot); // 字符转数字
+ 142   3                  pos++;                                     // 下一个位置
+ 143   3              }
+ 144   2      
+ 145   2              dot = 0; // 重置小数点标志
+ 146   2              i++;
+ 147   2          }
+ 148   1      
+ 149   1          // 清空剩余位置
+ 150   1          while (pos <= 8)
+ 151   1          {
+ 152   2              Max7219_Display(pos++, 0x0F, 0); // 0x0F：熄灭该位
+ 153   2          }
+ 154   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    119    ----
-   CONSTANT SIZE    =   ----    ----
+   CODE SIZE        =    719    ----
+   CONSTANT SIZE    =     11    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =   ----       3
+   DATA SIZE        =   ----      30
    IDATA SIZE       =   ----    ----
-   BIT SIZE         =   ----    ----
+   BIT SIZE         =   ----       1
 END OF MODULE INFORMATION.
 
 

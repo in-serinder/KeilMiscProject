@@ -4,7 +4,7 @@
             "name": "Target 1",
             "includePath": [
                 "D:\\Keil_v5\\C51\\INC",
-                "d:\\SysFile\\Desktop\\Misc.Git\\KeilMiscProject\\digital_tube.fun"
+                "d:\\SysFile\\Desktop\\Misc.Keil\\51_esp8266RelayOclock"
             ],
             "defines": [
                 "__C51__",

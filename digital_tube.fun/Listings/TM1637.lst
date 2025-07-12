@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   TM1637                                                            07/01/2025 00:30:08 PAGE 1   
+C51 COMPILER V9.59.0.0   TM1637                                                            07/10/2025 23:17:38 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE TM1637
@@ -62,7 +62,7 @@ line level    source
   52   2              else
   53   2              {
   54   3                  DIO = 0;
-C51 COMPILER V9.59.0.0   TM1637                                                            07/01/2025 00:30:08 PAGE 2   
+C51 COMPILER V9.59.0.0   TM1637                                                            07/10/2025 23:17:38 PAGE 2   
 
   55   3              }
   56   2              Delay_us(2);
@@ -126,21 +126,21 @@ line level    source
  114   1          TM1637_Stop();
  115   1      }
  116          
-C51 COMPILER V9.59.0.0   TM1637                                                            07/01/2025 00:30:08 PAGE 3   
+C51 COMPILER V9.59.0.0   TM1637                                                            07/10/2025 23:17:38 PAGE 3   
 
  117          void TM1637_Display4Num(unsigned int num, bit colon)
  118          {
- 119   1          unsigned char ge, shi, bai, qian;
+ 119   1          unsigned char pos1, pos2, pos3, pos4;
  120   1      
- 121   1          ge = num % 10;
- 122   1          shi = num / 10 % 10;
- 123   1          bai = num / 100 % 10;
- 124   1          qian = num / 1000;
+ 121   1          pos4 = num % 10;
+ 122   1          pos3 = num / 10 % 10;
+ 123   1          pos2 = num / 100 % 10;
+ 124   1          pos1 = num / 1000;
  125   1      
- 126   1          TM1637_Display(1, qian, 0);
- 127   1          TM1637_Display(2, bai, colon);
- 128   1          TM1637_Display(3, shi, 0);
- 129   1          TM1637_Display(4, ge, 0);
+ 126   1          TM1637_Display(1, pos1, 0);
+ 127   1          TM1637_Display(2, pos2, colon);
+ 128   1          TM1637_Display(3, pos3, 0);
+ 129   1          TM1637_Display(4, pos4, 0);
  130   1      }
 
 
