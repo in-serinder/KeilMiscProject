@@ -1,0 +1,89 @@
+C51 COMPILER V9.59.0.0   MAIN                                                              08/14/2025 09:25:08 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <LCD1602.h>
+   2          #include <Timer.h>
+   3          #include <REGX52.H>
+   4          #include <DS1302.h>
+              
+              sbit LCD_BALPOWER = P2 ^ 1;
+              
+              sbit LCD_WAKEBUT = P3 ^ 2;
+              sbit COUNT_START = P3 ^ 3;
+              
+              bit LCD_BALPOWER_FLAG = 1;
+              bit timeCount_flag = 0;
+              
+              unsigned char BAL_KEEP = 60; // 秒
+              
+              int secondCount = 0;
+              
+              int main()
+              {
+                  LCD_Init();
+              
+                  while (0)
+                  {
+                      BAL_KEEP--;
+              
+                      LCD_ShowString(16, 1, getTimerString());
+                      // LCD_ShowString();
+                      // 背光电源
+                      if (BAL_KEEP == 0)
+                      {
+                          LCD_BALPOWER = 0; // 关闭背光
+                          LCD_BALPOWER_FLAG = 0;
+                      }
+                      else
+                      {
+                          LCD_BALPOWER = 1; // 打开背光
+                          LCD_BALPOWER_FLAG = 1;
+                      }
+                      // 计时器
+              
+                      if (timeCount_flag)
+                      {
+                          secondCount++;
+                      }
+              
+                      /*Delay*/
+                      Delay_ms(1000);
+                  }
+              }
+              
+              // 功能按键使用外部中断
+              
+              void LCDWakeBut_ISR(void) interrupt 0
+              {
+C51 COMPILER V9.59.0.0   MAIN                                                              08/14/2025 09:25:08 PAGE 2   
+
+                  LCD_WAKEBUT = 1; // 清除中断标志
+                  BAL_KEEP = 60;
+              }
+              
+              void countSTART(void) interrupt 1
+              {
+                  timeCount_flag = !timeCount_flag;
+              }
+*** WARNING C316 IN LINE 62 OF main.c: unterminated conditionals
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
