@@ -1,7 +1,7 @@
 #ifndef __TIMER_H__
 #define __TIMER_H__
 
-#include <REG52.H>
+#include <stc89c52.h>
 
 void Delay_us(unsigned int t);
 void Delay_ms(unsigned int i);

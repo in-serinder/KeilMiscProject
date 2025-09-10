@@ -47,7 +47,6 @@ void main()
     UART_Init();
     // 初始化串口
 
-
     InitExternalInterrupt0();
 
     Relay1 = 0;
@@ -74,7 +73,6 @@ void main()
         // UART_SendString("Hello, World!\r\n");
         if (getRec())
         {
-
         }
 
         if (getIRFlag())

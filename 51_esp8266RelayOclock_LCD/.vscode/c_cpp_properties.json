@@ -3,6 +3,7 @@
         {
             "name": "Target 1",
             "includePath": [
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_esp8266RelayOclock_LCD\\Driver",
                 "D:\\Keil_v5\\C51\\INC",
                 "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_esp8266RelayOclock_LCD"
             ],

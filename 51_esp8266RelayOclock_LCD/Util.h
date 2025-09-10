@@ -1,4 +1,4 @@
-#include <reg52.h>
+#include <stc89c52.h>
 #include <Ser.h>
 #include <Timer.h>
 

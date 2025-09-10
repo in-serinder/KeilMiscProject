@@ -177,7 +177,7 @@
           </Flash1>
           <bUseTDR>0</bUseTDR>
           <Flash2></Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -233,7 +233,7 @@
               <RCB>
                 <Type>0</Type>
                 <StartAddress>0x0</StartAddress>
-                <Size>0x10000</Size>
+                <Size>0xffff</Size>
               </RCB>
               <RXB>
                 <Type>0</Type>
@@ -324,7 +324,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath></IncludePath>
+              <IncludePath>.\Driver</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -374,7 +374,7 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>Source Group 1</GroupName>
+          <GroupName>Master</GroupName>
           <Files>
             <File>
               <FileName>main.c</FileName>
@@ -411,25 +411,25 @@
               <FileType>5</FileType>
               <FilePath>.\Util.h</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Driver</GroupName>
+          <Files>
             <File>
-              <FileName>Max7219.c</FileName>
+              <FileName>LCD1602.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Max7219.c</FilePath>
+              <FilePath>.\Driver\LCD1602.c</FilePath>
             </File>
             <File>
-              <FileName>Max7219.h</FileName>
+              <FileName>LCD1602.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Max7219.h</FilePath>
+              <FilePath>.\Driver\LCD1602.h</FilePath>
             </File>
             <File>
-              <FileName>TM1637.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\TM1637.c</FilePath>
-            </File>
-            <File>
-              <FileName>TM1637.h</FileName>
+              <FileName>stc89c52.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\TM1637.h</FilePath>
+              <FilePath>.\Driver\stc89c52.h</FilePath>
             </File>
           </Files>
         </Group>
