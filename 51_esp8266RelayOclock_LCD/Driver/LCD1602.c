@@ -1,9 +1,9 @@
 #include <stc89c52.h>
 
 // 引脚配置：
-sbit LCD_RS = P2 ^ 6;
-sbit LCD_RW = P2 ^ 5;
-sbit LCD_EN = P2 ^ 7;
+sbit LCD_RS = P4 ^ 1;
+sbit LCD_RW = P4 ^ 5;
+sbit LCD_EN = P4 ^ 4;
 #define LCD_DataPort P0
 
 // 函数定义：

@@ -1,7 +1,7 @@
 ".\Objects\main.obj",
+".\Objects\LCD1602.obj",
 ".\Objects\Ser.obj",
 ".\Objects\Timer.obj",
-".\Objects\Util.obj",
-".\Objects\LCD1602.obj" 
+".\Objects\Util.obj" 
 TO ".\Objects\51_esp8266RelayOclock" 
 PRINT(".\Listings\51_esp8266RelayOclock.m51") RAMSIZE(256) 

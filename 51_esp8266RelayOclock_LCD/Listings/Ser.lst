@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   SER                                                               09/10/2025 18:24:04 PAGE 1   
+C51 COMPILER V9.59.0.0   SER                                                               09/10/2025 18:37:36 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE SER
 OBJECT MODULE PLACED IN .\Objects\Ser.obj
-COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Ser.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Driver) DEBUG OBJECTEXTEND PRINT
-                    -(.\Listings\Ser.lst) TABS(2) OBJECT(.\Objects\Ser.obj)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Util\Ser.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Driver;.\Util) DEBUG OBJECT
+                    -EXTEND PRINT(.\Listings\Ser.lst) TABS(2) OBJECT(.\Objects\Ser.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   51          
   52          void UART_ISR() interrupt 4
   53          {
-C51 COMPILER V9.59.0.0   SER                                                               09/10/2025 18:24:04 PAGE 2   
+C51 COMPILER V9.59.0.0   SER                                                               09/10/2025 18:37:36 PAGE 2   
 
   54   1          static bit expectStart = 1; // 等待起始符状态
   55   1          unsigned char dat;
@@ -126,7 +126,7 @@ line level    source
  113          
  114          void ClearBuffer()
  115          {
-C51 COMPILER V9.59.0.0   SER                                                               09/10/2025 18:24:04 PAGE 3   
+C51 COMPILER V9.59.0.0   SER                                                               09/10/2025 18:37:36 PAGE 3   
 
  116   1          recvLen = 0;
  117   1          validMessage = 0;

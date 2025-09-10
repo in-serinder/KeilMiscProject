@@ -15,7 +15,8 @@ typedef struct UtilOBJ
     unsigned char Relay2 : 1; // ?1?
     unsigned char Relay3 : 1; // ?1?
     unsigned char WarnFlag : 1;
-    unsigned char reserved : 4;
+    unsigned char DateUpdateFlag : 1;
+    unsigned char reserved : 3;
 } Util;
 
 struct UtilOBJ getUtil(char *str);

@@ -324,7 +324,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\Driver</IncludePath>
+              <IncludePath>.\Driver;.\Util</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -381,36 +381,6 @@
               <FileType>1</FileType>
               <FilePath>.\main.c</FilePath>
             </File>
-            <File>
-              <FileName>Ser.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Ser.c</FilePath>
-            </File>
-            <File>
-              <FileName>Ser.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Ser.h</FilePath>
-            </File>
-            <File>
-              <FileName>Timer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Timer.c</FilePath>
-            </File>
-            <File>
-              <FileName>Timer.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Timer.h</FilePath>
-            </File>
-            <File>
-              <FileName>Util.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Util.c</FilePath>
-            </File>
-            <File>
-              <FileName>Util.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Util.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -430,6 +400,41 @@
               <FileName>stc89c52.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Driver\stc89c52.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Util</GroupName>
+          <Files>
+            <File>
+              <FileName>Ser.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Util\Ser.c</FilePath>
+            </File>
+            <File>
+              <FileName>Ser.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Util\Ser.h</FilePath>
+            </File>
+            <File>
+              <FileName>Timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Util\Timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>Timer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Util\Timer.h</FilePath>
+            </File>
+            <File>
+              <FileName>Util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Util\Util.c</FilePath>
+            </File>
+            <File>
+              <FileName>Util.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Util\Util.h</FilePath>
             </File>
           </Files>
         </Group>

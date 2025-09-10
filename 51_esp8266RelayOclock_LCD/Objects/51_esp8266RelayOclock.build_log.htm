@@ -23,21 +23,21 @@ Project File Date:  09/10/2025
 
 <h2>Output:</h2>
 Build target 'Target 1'
+compiling main.c...
+main.c(34): warning C280: 'msg': unreferenced local variable
+main.c(34): warning C280: 'timestr': unreferenced local variable
+main.c(36): warning C280: 'time': unreferenced local variable
+compiling LCD1602.c...
+compiling Ser.c...
+compiling Timer.c...
+compiling Util.c...
+Util\Util.c(45): warning C275: expression with possibly no effect
+Util\Util.c(55): warning C275: expression with possibly no effect
+Util\Util.c(63): warning C275: expression with possibly no effect
+Util\Util.c(72): warning C275: expression with possibly no effect
+Util\Util.c(82): warning C275: expression with possibly no effect
+Util\Util.c(90): warning C275: expression with possibly no effect
 linking...
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?GETDATA?SER
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?CLEARBUFFER?SER
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_DELAY_US?TIMER
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_DELAY_S?TIMER
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_GETUTIL?UTIL
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_REMOVECHARS?UTIL
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_CHARTOINT?UTIL
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?LCD_INIT?LCD1602
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
@@ -52,10 +52,24 @@ linking...
     SEGMENT: ?PR?_LCD_SHOWHEXNUM?LCD1602
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?_LCD_SHOWBINNUM?LCD1602
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?GETDATA?SER
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?CLEARBUFFER?SER
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAY_US?TIMER
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAY_S?TIMER
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_GETUTIL?UTIL
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_REMOVECHARS?UTIL
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_CHARTOINT?UTIL
 Program Size: data=108.2 xdata=79 code=2445
 creating hex file from ".\Objects\51_esp8266RelayOclock"...
-".\Objects\51_esp8266RelayOclock" - 0 Error(s), 14 Warning(s).
-Build Time Elapsed:  00:00:01
+".\Objects\51_esp8266RelayOclock" - 0 Error(s), 23 Warning(s).
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>
