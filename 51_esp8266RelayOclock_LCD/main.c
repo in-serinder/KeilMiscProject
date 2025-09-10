@@ -2,14 +2,15 @@
 #include <Timer.h>
 #include <stdio.h>
 #include <Util.h>
-#include <Max7219.h>
-#include <TM1637.h>
+#include <LCD1602.h>
 
 /* ----串口消息格式----
  *时间戳: 2023-10-24-16:00:00^
  *继电器状态 000^
  *温湿度 00.00^00.00^
- *完全格式 2023-10-24-16:00:00^000^00.00^00.00^
+ *警告位 0^
+ *日期更新位 0
+ *完全格式 yyyy-mm-dd-tt:mm:ss^000^00.00^00.00^0^0
  */
 
 sbit Relay1 = P0 ^ 3;
@@ -45,8 +46,7 @@ void main()
     ///////////////////////////////////////////
     UART_Init();
     // 初始化串口
-    TM1637_Init();
-    Max7219_Init();
+
 
     InitExternalInterrupt0();
 
@@ -75,63 +75,6 @@ void main()
         if (getRec())
         {
 
-            // 串口获取内部是标准的1s计时器
-            timecount++;
-            Timercount++;
-            msg = getData();
-            dat = getUtil(msg);
-
-            // sprintf(timestr, "%d", ((dat.Time[0] - '0') * 10 + (dat.Time[1] - '0')) * 100 + ((dat.Time[2] - '0') * 10 + (dat.Time[3] - '0')));
-            sprintf(timestr, "%d%d%d%d", dat.Time[0], dat.Time[1], dat.Time[2], dat.Time[3]);
-
-            time = ((dat.Time[0] - '0') * 10 + (dat.Time[1] - '0')) * 100 + ((dat.Time[2] - '0') * 10 + (dat.Time[3] - '0'));
-
-            //////////////////////////////////////
-            UART_SendString(msg);
-            UART_SendString(timestr);
-            UART_SendChar('\n');
-            // UART_SendString(dat.Relay1);
-            UART_SendChar(dat.Relay1 ? '1' : '0');
-            UART_SendChar('\n');
-            // UART_SendString(dat.Relay2);
-            UART_SendChar(dat.Relay2 ? '1' : '0');
-            UART_SendChar('\n');
-            // UART_SendString(dat.Relay3);
-            UART_SendChar(dat.Relay3 ? '1' : '0');
-            UART_SendChar('\n');
-
-            // Max7921StringDisplay(dat.Date);
-            // Max7219StringDisplay(dat.Date);
-            /*时间与温湿度*/
-            // Max7219TemperatureAndHumitidyDisplay(dat.Temperature, dat.Humidity);
-            if (dateOrTempFlag)
-            {
-                Max7219DateDisplay(dat.Date);
-            }
-            else
-            {
-                Max7219TemperatureAndHumitidyDisplay(dat.Temperature, dat.Humidity);
-            }
-
-            if (timecount % 10 == 0)
-            {
-                dateOrTempFlag = !dateOrTempFlag;
-            }
-
-            TM1637_Display4Num(time, flip);
-            // TM1637_StringDisplay(dat.Time, flip);
-            flip = !flip; // 翻转显示时间冒号
-            ClearBuffer();
-
-            // Max7219_Clear();
-            /*继电器*/
-            Relay1 = dat.Relay1;
-            Relay2 = dat.Relay2;
-            Relay3 = dat.Relay3;
-            /*继电器灯光继承*/
-            RelayLED1 = Relay1;
-            RelayLED2 = Relay2;
-            RelayLED3 = Relay3;
         }
 
         if (getIRFlag())
