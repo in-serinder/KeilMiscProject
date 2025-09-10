@@ -1,0 +1,289 @@
+C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 13:19:58 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE UTIL
+OBJECT MODULE PLACED IN .\Objects\Util.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Util.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Util
+                    -.lst) TABS(2) OBJECT(.\Objects\Util.obj)
+
+line level    source
+
+   1          #include <string.h>
+   2          #include <Util.h>
+   3          
+   4          /* ----串口消息格式----
+   5           *时间戳: 20231024^160000^
+   6           *继电器状态 000^
+   7           *温湿度 00.00^00.00^
+   8           *完全格式 >20231024^160000^000^00.00^00.00^
+   9           */
+  10          
+  11          // struct Util dat = {
+  12          //     .Time = "160000",
+  13          //     .Date = "20231024",
+  14          //     .Temperature = 25.5,
+  15          //     .Humidity = 60.0,
+  16          //     .Relay1 = 0,
+  17          //     .Relay2 = 0,
+  18          //     .Relay3 = 0};
+  19          
+  20          sbit BuzzerS2 = P0 ^ 6;
+  21          
+  22          struct UtilOBJ idata dat = {
+  23              "160000",   // Time
+  24              "20231024", // Date
+  25              25.5,       // Temperature
+  26              60.0,       // Humidity
+  27              0,          // Relay1
+  28              0,          // Relay2
+  29              0,          // Relay3
+  30              0           // warn
+  31          };
+  32          
+  33          unsigned char xdata infraredReceivedData[4];
+  34          unsigned char irtime;
+  35          bit startflag = 0;
+  36          bit irpro_ok, irok;
+  37          unsigned char irBitCount = 0;
+  38          
+  39          void separateData(char *str)
+  40          {
+  41   1          unsigned char i;
+  42   1          // unsigned int temp = 0, hum = 0;
+  43   1          // unsigned char temperature[6];
+  44   1          // unsigned char humidity[6];
+  45   1          *str++; // 去掉首标识>
+*** WARNING C275 IN LINE 45 OF Util.c: expression with possibly no effect
+  46   1          // while (*str++ != '\0')
+  47   1          // {
+  48   1          // }
+  49   1      
+  50   1          for (i = 0; i < 8 && *str != '\0'; i++)
+  51   1          {
+  52   2              dat.Date[i] = *str++;
+  53   2          }
+C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 13:19:58 PAGE 2   
+
+  54   1          dat.Date[i] = '\0';
+  55   1          *str++; // 去掉间隔标识>
+*** WARNING C275 IN LINE 55 OF Util.c: expression with possibly no effect
+  56   1      
+  57   1          for (i = 0; i < 6 && *str != '\0'; i++)
+  58   1          {
+  59   2              dat.Time[i] = *str++;
+  60   2          }
+  61   1      
+  62   1          dat.Time[i] = '\0';
+  63   1          *str++;
+*** WARNING C275 IN LINE 63 OF Util.c: expression with possibly no effect
+  64   1      
+  65   1          dat.Relay1 = *str++;
+  66   1          dat.Relay2 = *str++;
+  67   1          dat.Relay3 = *str++;
+  68   1          // dat.Relay1 = (*str++ == 1);
+  69   1          // dat.Relay2 = (*str++ == 1);
+  70   1          // dat.Relay3 = (*str++ == 1);
+  71   1      
+  72   1          *str++; // 去掉间隔标识>
+*** WARNING C275 IN LINE 72 OF Util.c: expression with possibly no effect
+  73   1      
+  74   1          for (i = 0; i < 5 && *str != '\0'; i++)
+  75   1          {
+  76   2              // temperature[i] = *str++;
+  77   2              dat.Temperature[i] = *str++;
+  78   2          }
+  79   1          dat.Temperature[i] = '\0';
+  80   1          // temperature[i] = '\0';
+  81   1          // dat.Temperature = atof(temperature);
+  82   1          *str++; // 去掉间隔标识>
+*** WARNING C275 IN LINE 82 OF Util.c: expression with possibly no effect
+  83   1      
+  84   1          for (i = 0; i < 5 && *str != '\0'; i++)
+  85   1          {
+  86   2              // humidity[i] = *str++;
+  87   2              dat.Humidity[i] = *str++;
+  88   2          }
+  89   1          dat.Humidity[i] = '\0';
+  90   1          *str++; // 去掉间隔标识>
+*** WARNING C275 IN LINE 90 OF Util.c: expression with possibly no effect
+  91   1      
+  92   1          // 警告标识
+  93   1          dat.WarnFlag = *str++;
+  94   1      
+  95   1          // humidity[i] = '\0';
+  96   1      
+  97   1          // dat.Humidity = atof(humidity);
+  98   1      
+  99   1          // for (i = 0; temperature[i] != '\0'; i++)
+ 100   1          // {
+ 101   1          //     if (temperature[i] == '.')
+ 102   1          //         continue;
+ 103   1          //     temp = temp * 10 + (temperature[i] - '0');
+ 104   1          // }
+ 105   1          // for (i = 0; humidity[i] != '\0'; i++)
+ 106   1          // {
+ 107   1          //     if (humidity[i] == '.')
+ 108   1          //         continue;
+ 109   1          //     hum = hum * 10 + (humidity[i] - '0');
+ 110   1          // }
+C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 13:19:58 PAGE 3   
+
+ 111   1          // dat.Temperature = temp / 100.0; // 假设精度为两位小数
+ 112   1          // dat.Humidity = hum / 100.0;
+ 113   1      }
+ 114          
+ 115          struct UtilOBJ getUtil(char *str)
+ 116          {
+ 117   1          separateData(str);
+ 118   1          return dat;
+ 119   1      }
+ 120          
+ 121          // void insertCharInString(char *str, unsigned char pos, char ch)
+ 122          // {
+ 123          //     // static char buffer[15];
+ 124          //     unsigned char len = strlen(str);
+ 125          //     unsigned char i;
+ 126          
+ 127          //     if (pos < 0 || pos > len)
+ 128          //         return;
+ 129          
+ 130          //     // 插入位后字符后移
+ 131          //     for (i = len; i >= pos; i--)
+ 132          //     {
+ 133          //         str[i + 1] = str[i];
+ 134          //     }
+ 135          
+ 136          //     str[pos] = ch; // 插入字符
+ 137          
+ 138          //     // return str;
+ 139          // }
+ 140          
+ 141          void InitExternalInterrupt0()
+ 142          {
+ 143   1          IT0 = 1; // 设置INT0为下降沿触发（IT0=1）
+ 144   1          EX0 = 1; // 使能外部中断0
+ 145   1          EA = 1;  // 开总中断
+ 146   1      }
+ 147          
+ 148          void infraredReceive() interrupt 0
+ 149          {
+ 150   1          TR0 = 0; // 关闭定时器，防止计时误差
+ 151   1      
+ 152   1          if (startflag)
+ 153   1          {
+ 154   2              // 接收引导码后的32位数据
+ 155   2              if (irtime > 32)
+ 156   2              {                                       // 引导码之后的第一个下降沿
+ 157   3                  irBitCount = 0;                     // 重置位计数器
+ 158   3                  memset(infraredReceivedData, 0, 4); // 清空接收缓冲区
+ 159   3              }
+ 160   2              else if (irBitCount < 32)
+ 161   2              { // 接收32位数据
+ 162   3                  unsigned char byteIndex = irBitCount / 8;
+ 163   3                  unsigned char bitIndex = irBitCount % 8;
+ 164   3      
+ 165   3                  // 根据irtime判断是0还是1
+ 166   3                  if (irtime >= 8)
+ 167   3                  { // 高电平时间>8*500us=4ms，表示接收到'1'
+ 168   4                      infraredReceivedData[byteIndex] |= (1 << bitIndex);
+ 169   4                  }
+ 170   3      
+ 171   3                  irBitCount++;
+ 172   3      
+C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 13:19:58 PAGE 4   
+
+ 173   3                  // 判断是否接收完32位
+ 174   3                  if (irBitCount == 32)
+ 175   3                  {
+ 176   4                      // 验证地址码和命令码（取反校验）
+ 177   4                      if ((infraredReceivedData[0] == ~infraredReceivedData[1]) &&
+ 178   4                          (infraredReceivedData[2] == ~infraredReceivedData[3]))
+ 179   4                      {
+ 180   5                          irpro_ok = 1; // 数据有效，设置完成标志
+ 181   5                      }
+ 182   4                  }
+ 183   3              }
+ 184   2          }
+ 185   1          else
+ 186   1          {
+ 187   2              // 接收引导码
+ 188   2              startflag = 1;
+ 189   2          }
+ 190   1      
+ 191   1          irtime = 0; // 重置定时器值
+ 192   1          TR0 = 1;    // 重新启动定时器
+ 193   1      }
+ 194          
+ 195          void timer() interrupt 1
+ 196          {
+ 197   1          irtime++;
+ 198   1      }
+ 199          
+ 200          bit getIRFlag()
+ 201          {
+ 202   1          return irpro_ok;
+ 203   1      }
+ 204          
+ 205          unsigned char *getIRData()
+ 206          {
+ 207   1          return infraredReceivedData;
+ 208   1      }
+ 209          
+ 210          void removeChars(char *str, const char *targets)
+ 211          {
+ 212   1          char *src = str;
+ 213   1          char *dst = str;
+ 214   1      
+ 215   1          while (*src)
+ 216   1          {
+ 217   2              const char *t = targets;
+ 218   2              int isTarget = 0;
+ 219   2      
+ 220   2              // 检查是否为目标字符
+ 221   2              while (*t)
+ 222   2              {
+ 223   3                  if (*src == *t)
+ 224   3                  {
+ 225   4                      isTarget = 1;
+ 226   4                      break;
+ 227   4                  }
+ 228   3                  t++;
+ 229   3              }
+ 230   2      
+ 231   2              if (!isTarget)
+ 232   2              {
+ 233   3                  *dst = *src;
+ 234   3                  dst++;
+C51 COMPILER V9.59.0.0   UTIL                                                              07/12/2025 13:19:58 PAGE 5   
+
+ 235   3              }
+ 236   2              src++;
+ 237   2          }
+ 238   1          *dst = '\0';
+ 239   1      }
+ 240          
+ 241          void RelayBuzzer()
+ 242          {
+ 243   1          BuzzerS2 = 1;
+ 244   1          Delay_ms(1000);
+ 245   1          BuzzerS2 = 0;
+ 246   1      }
+ 247          
+ 248          unsigned int charToint(unsigned char ch)
+ 249          {
+ 250   1          return ch - '0';
+ 251   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    788    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      4    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2      22
+   IDATA SIZE       =     31    ----
+   BIT SIZE         =      3    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  6 WARNING(S),  0 ERROR(S)

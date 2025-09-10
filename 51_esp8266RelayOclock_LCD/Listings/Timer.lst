@@ -1,0 +1,110 @@
+C51 COMPILER V9.59.0.0   TIMER                                                             07/12/2025 13:19:58 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE TIMER
+OBJECT MODULE PLACED IN .\Objects\Timer.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Timer.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Tim
+                    -er.lst) TABS(2) OBJECT(.\Objects\Timer.obj)
+
+line level    source
+
+   1          #include <Timer.h>
+   2          #include <INTRINS.H>
+   3          
+   4          void Delay_us(unsigned int t)
+   5          {
+   6   1          while (t--)
+   7   1              ;
+   8   1      }
+   9          
+  10          void Delay1000us(void) //@11.0592MHz
+  11          {
+  12   1          unsigned char data i, j;
+  13   1      
+  14   1          _nop_();
+  15   1          i = 2;
+  16   1          j = 199;
+  17   1          do
+  18   1          {
+  19   2              while (--j)
+  20   2                  ;
+  21   2          } while (--i);
+  22   1      }
+  23          
+  24          void Delay1000ms(void) //@11.0592MHz
+  25          {
+  26   1          unsigned char data i, j, k;
+  27   1      
+  28   1          _nop_();
+  29   1          i = 8;
+  30   1          j = 1;
+  31   1          k = 243;
+  32   1          do
+  33   1          {
+  34   2              do
+  35   2              {
+  36   3                  while (--k)
+  37   3                      ;
+  38   3              } while (--j);
+  39   2          } while (--i);
+  40   1      }
+  41          
+  42          void Timer0_Init(void)
+  43          {
+  44   1          TMOD |= 0x01; // 设置定时器0为模式1
+  45   1          TH0 = 0xFC;   // 定时初值，1ms@11.0592MHz
+  46   1          TL0 = 0x66;
+  47   1          ET0 = 1; // 使能定时器中断
+  48   1          TR0 = 0; // 先不启动定时器
+  49   1      }
+  50          
+  51          void Delay1000ms1(void)
+  52          {
+  53   1          unsigned int i;
+  54   1          Timer0_Init();
+C51 COMPILER V9.59.0.0   TIMER                                                             07/12/2025 13:19:58 PAGE 2   
+
+  55   1      
+  56   1          for (i = 0; i < 1000; i++) // 循环1000次，每次1ms
+  57   1          {
+  58   2              TR0 = 1; // 启动定时器
+  59   2              while (!TF0)
+  60   2                  ;       // 等待溢出标志
+  61   2              TF0 = 0;    // 清除溢出标志
+  62   2              TH0 = 0xFC; // 重新加载初值
+  63   2              TL0 = 0x66;
+  64   2          }
+  65   1          TR0 = 0; // 关闭定时器
+  66   1      }
+  67          
+  68          void Delay_ms(unsigned int i) //@12.000MHz
+  69          {
+  70   1          while (i)
+  71   1          {
+  72   2              Delay1000us();
+  73   2              i--;
+  74   2          }
+  75   1      }
+  76          
+  77          void Delay_s(unsigned int i) //@12.000MHz
+  78          {
+  79   1          while (i)
+  80   1          {
+  81   2              Delay1000ms();
+  82   2              i--;
+  83   2          }
+  84   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    120    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
