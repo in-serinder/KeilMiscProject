@@ -27,7 +27,12 @@ sbit WarnLed = P1 ^ 0;
 
 sbit Buzzer = P1 ^ 1;
 
+sbit LCD_BLK = P1 ^ 2;
+/*全局变量*/
+
 unsigned char loopSpan = 0;
+unsigned char time[7];
+Util UData;
 
 void main()
 {
@@ -36,15 +41,13 @@ void main()
     // 初始化
     LCD_Init();
     UART_Init();
+    DS1302_Init();
 
     InitExternalInterrupt0();
 
     Relay1 = 0;
     Relay2 = 0;
     Relay3 = 0;
-    RelayLED1 = 0;
-    RelayLED2 = 0;
-    RelayLED3 = 0;
     WarnLed = 0;
     BuzzerS1 = 0;
 

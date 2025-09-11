@@ -401,6 +401,16 @@
               <FileType>5</FileType>
               <FilePath>.\Driver\stc89c52.h</FilePath>
             </File>
+            <File>
+              <FileName>DS1302.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Driver\DS1302.c</FilePath>
+            </File>
+            <File>
+              <FileName>DS1302.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Driver\DS1302.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -19,57 +19,18 @@ CPU DLL:         S8051.DLL V3.122.0.0
 Dialog DLL:      DP51.DLL V2.66.0.0 
 <h2>Project:</h2>
 F:\SYSFILE\DeskTop\Misc.Git\KeilMiscProject\51_esp8266RelayOclock_LCD\51_esp8266RelayOclock.uvproj
-Project File Date:  09/10/2025
+Project File Date:  09/11/2025
 
 <h2>Output:</h2>
 Build target 'Target 1'
 compiling main.c...
-main.c(34): warning C280: 'msg': unreferenced local variable
-main.c(34): warning C280: 'timestr': unreferenced local variable
-main.c(36): warning C280: 'time': unreferenced local variable
-compiling LCD1602.c...
-compiling Ser.c...
-compiling Timer.c...
-compiling Util.c...
-Util\Util.c(45): warning C275: expression with possibly no effect
-Util\Util.c(55): warning C275: expression with possibly no effect
-Util\Util.c(63): warning C275: expression with possibly no effect
-Util\Util.c(72): warning C275: expression with possibly no effect
-Util\Util.c(82): warning C275: expression with possibly no effect
-Util\Util.c(90): warning C275: expression with possibly no effect
-linking...
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?LCD_INIT?LCD1602
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_LCD_SHOWCHAR?LCD1602
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_LCD_SHOWSTRING?LCD1602
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_LCD_SHOWNUM?LCD1602
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_LCD_SHOWSIGNEDNUM?LCD1602
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_LCD_SHOWHEXNUM?LCD1602
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_LCD_SHOWBINNUM?LCD1602
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?GETDATA?SER
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?CLEARBUFFER?SER
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_DELAY_US?TIMER
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_DELAY_S?TIMER
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_GETUTIL?UTIL
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_REMOVECHARS?UTIL
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_CHARTOINT?UTIL
-Program Size: data=108.2 xdata=79 code=2445
-creating hex file from ".\Objects\51_esp8266RelayOclock"...
-".\Objects\51_esp8266RelayOclock" - 0 Error(s), 23 Warning(s).
-Build Time Elapsed:  00:00:02
+main.c(45): error C202: 'RelayLED1': undefined identifier
+main.c(46): error C202: 'RelayLED2': undefined identifier
+main.c(47): error C202: 'RelayLED3': undefined identifier
+main.c(49): error C202: 'BuzzerS1': undefined identifier
+compiling DS1302.c...
+Target not created.
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              09/10/2025 18:37:36 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              09/11/2025 08:35:33 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -23,199 +23,61 @@ line level    source
   13           *完全格式 yyyy-mm-dd-tt:mm:ss^000^00.00^00.00^0^0
   14           */
   15          
-  16          sbit Relay1 = P0 ^ 3;
-  17          sbit Relay2 = P0 ^ 2;
-  18          sbit Relay3 = P0 ^ 4;
+  16          /*
+  17          使用外部中断的IIC
+  18          
   19          
-  20          sbit RelayLED1 = P1 ^ 1;
-  21          sbit RelayLED2 = P1 ^ 2;
-  22          sbit RelayLED3 = P1 ^ 4;
-  23          sbit WarnLed = P1 ^ 7;
-  24          
-  25          sbit infrared = P1 ^ 3;
-  26          
-  27          sbit RelayButton = P0 ^ 0;
-  28          sbit SettingButton = P0 ^ 1;
+  20          */
+  21          
+  22          sbit Relay1 = P2 ^ 0;
+  23          sbit Relay2 = P2 ^ 1;
+  24          sbit Relay3 = P2 ^ 2;
+  25          
+  26          sbit WarnLed = P1 ^ 0;
+  27          
+  28          sbit Buzzer = P1 ^ 1;
   29          
-  30          sbit BuzzerS1 = P0 ^ 0;
+  30          unsigned char loopSpan = 0;
   31          
   32          void main()
   33          {
-  34   1          char xdata *msg, *timestr;
-  35   1          struct UtilOBJ xdata dat;
-  36   1          unsigned int time;
-  37   1          unsigned char i;
-  38   1          unsigned char *IRdata;
-  39   1          unsigned char xdata relaySetPos = 1, Timercount = 0;
-  40   1          int xdata timecount = 0;
-  41   1          bit dateOrTempFlag = 0;
-  42   1          bit bitlogrelay = 0;
-  43   1          bit settingflag = 0;
-  44   1          bit flip = 0;
-  45   1      
-  46   1          ///////////////////////////////////////////
-  47   1          UART_Init();
-  48   1          // 初始化串口
-  49   1      
-  50   1          InitExternalInterrupt0();
-  51   1      
-  52   1          Relay1 = 0;
-  53   1          Relay2 = 0;
-  54   1          Relay3 = 0;
-C51 COMPILER V9.59.0.0   MAIN                                                              09/10/2025 18:37:36 PAGE 2   
+  34   1      
+  35   1          ///////////////////////////////////////////
+  36   1          // 初始化
+  37   1          LCD_Init();
+  38   1          UART_Init();
+  39   1      
+  40   1          InitExternalInterrupt0();
+  41   1      
+  42   1          Relay1 = 0;
+  43   1          Relay2 = 0;
+  44   1          Relay3 = 0;
+  45   1          RelayLED1 = 0;
+*** ERROR C202 IN LINE 45 OF main.c: 'RelayLED1': undefined identifier
+  46   1          RelayLED2 = 0;
+*** ERROR C202 IN LINE 46 OF main.c: 'RelayLED2': undefined identifier
+  47   1          RelayLED3 = 0;
+*** ERROR C202 IN LINE 47 OF main.c: 'RelayLED3': undefined identifier
+  48   1          WarnLed = 0;
+  49   1          BuzzerS1 = 0;
+*** ERROR C202 IN LINE 49 OF main.c: 'BuzzerS1': undefined identifier
+  50   1      
+C51 COMPILER V9.59.0.0   MAIN                                                              09/11/2025 08:35:33 PAGE 2   
 
-  55   1          RelayLED1 = 0;
-  56   1          RelayLED2 = 0;
-  57   1          RelayLED3 = 0;
-  58   1          WarnLed = 0;
-  59   1          BuzzerS1 = 0;
-  60   1      
-  61   1          //////////////////////////////////////////
-  62   1      
-  63   1          UART_SendString("51 Ready!\r\n");
-  64   1      
-  65   1          //////////////////////////////////////////
-  66   1          while (1)
-  67   1          {
-  68   2              // timecount++;
-  69   2              // if (timecount % 100 == 0)
-  70   2              // {
-  71   2              // }
-  72   2      
-  73   2              // UART_SendString("Hello, World!\r\n");
-  74   2              if (getRec())
-  75   2              {
-  76   3              }
-  77   2      
-  78   2              if (getIRFlag())
-  79   2              {
-  80   3                  IRdata = getIRData();
-  81   3      
-  82   3                  // 发送标题
-  83   3                  UART_SendString("IR Code: ");
-  84   3      
-  85   3                  // 逐个字节转换为16进制字符串发送
-  86   3                  for (i = 0; i < 4; i++)
-  87   3                  {
-  88   4                      // 发送高4位
-  89   4                      UART_SendChar((IRdata[i] >> 4) < 10 ? (IRdata[i] >> 4) + '0' : (IRdata[i] >> 4) + 'A' - 10
-             -);
-  90   4                      // 发送低4位
-  91   4                      UART_SendChar((IRdata[i] & 0x0F) < 10 ? (IRdata[i] & 0x0F) + '0' : (IRdata[i] & 0x0F) + 'A
-             -' - 10);
-  92   4                      UART_SendChar(' ');
-  93   4                  }
-  94   3      
-  95   3                  UART_SendString("\r\n"); // 换行
-  96   3              }
-  97   2      
-  98   2              /*处理按钮调节*/
-  99   2              if (SettingButton)
- 100   2              {
- 101   3                  settingflag = 1;
- 102   3                  Timercount = 0;                   // 重置计时器
- 103   3                  dateOrTempFlag = !dateOrTempFlag; // 直接翻转
- 104   3                  dat.WarnFlag = 0;
- 105   3              }
- 106   2              // 警告状态
- 107   2              if (dat.WarnFlag)
- 108   2              {
- 109   3                  WarnLed = 1;
- 110   3                  BuzzerS1 = 1;
- 111   3              }
- 112   2              else
- 113   2              {
- 114   3                  WarnLed = 0;
-C51 COMPILER V9.59.0.0   MAIN                                                              09/10/2025 18:37:36 PAGE 3   
+  51   1          //////////////////////////////////////////
+  52   1          while (1)
+  53   1          {
+  54   2              // 10ms阶段刷新,1s重制
+  55   2              Delay_ms(10);
+  56   2              if (loopSpan++ >= 1000)
+  57   2              {
+  58   3                  loopSpan = 0;
+  59   3              }
+  60   2      
+  61   2              /*-------------功能块-------------*/
+  62   2      
+  63   2              /*-------------功能块-------------*/
+  64   2          }
+  65   1      }
 
- 115   3                  BuzzerS1 = 0;
- 116   3              }
- 117   2      
- 118   2              if (settingflag)
- 119   2              {
- 120   3                  // Delay_ms(1000); // 处于设置模式时延时
- 121   3                  WarnLed = 1;
- 122   3      
- 123   3                  relaySetPos++;
- 124   3                  if (relaySetPos >= 3)
- 125   3                  {
- 126   4                      relaySetPos = 1;
- 127   4                  }
- 128   3      
- 129   3                  switch (relaySetPos)
- 130   3                  {
- 131   4                  case 1:
- 132   4                      RelayLED1 = 1;
- 133   4                      RelayLED2 = 0, RelayLED3 = 0;
- 134   4                      break;
- 135   4                  case 2:
- 136   4                      RelayLED1 = 0;
- 137   4                      RelayLED2 = 1, RelayLED3 = 0;
- 138   4                      break;
- 139   4                  case 3:
- 140   4                      RelayLED1 = 0;
- 141   4                      RelayLED2 = 0, RelayLED3 = 1;
- 142   4                      break;
- 143   4      
- 144   4                  default:
- 145   4                      break;
- 146   4                  }
- 147   3      
- 148   3                  if (RelayButton == 1)
- 149   3                  {
- 150   4                      RelayBuzzer();
- 151   4                      switch (relaySetPos)
- 152   4                      {
- 153   5                      case 1:
- 154   5                          Relay1 = (Relay1 == 1 ? 0 : 1);
- 155   5                          break;
- 156   5                      case 2:
- 157   5                          Relay2 = (Relay2 == 1 ? 0 : 1);
- 158   5                          break;
- 159   5                      case 3:
- 160   5                          Relay3 = (Relay3 == 1 ? 0 : 1);
- 161   5                          break;
- 162   5      
- 163   5                      default:
- 164   5                          break;
- 165   5                      }
- 166   4                  }
- 167   3      
- 168   3                  // 十秒取消
- 169   3                  if (Timercount >= 10)
- 170   3                  {
- 171   4                      settingflag = 0;
- 172   4                      WarnLed = 0;
- 173   4                  }
- 174   3              }
- 175   2      
- 176   2              /*继电器灯光继承*/
-C51 COMPILER V9.59.0.0   MAIN                                                              09/10/2025 18:37:36 PAGE 4   
-
- 177   2              RelayLED1 = Relay1;
- 178   2              RelayLED2 = Relay2;
- 179   2              RelayLED3 = Relay3;
- 180   2      
- 181   2              // Delay_ms(10);
- 182   2              // Delay_ms(150);
- 183   2              Delay1000ms1();
- 184   2          }
- 185   1          //////////////////////////////////////////
- 186   1      }
-*** WARNING C280 IN LINE 34 OF main.c: 'msg': unreferenced local variable
-*** WARNING C280 IN LINE 34 OF main.c: 'timestr': unreferenced local variable
-*** WARNING C280 IN LINE 36 OF main.c: 'time': unreferenced local variable
-
-
-MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    415    ----
-   CONSTANT SIZE    =     25    ----
-   XDATA SIZE       =   ----      35
-   PDATA SIZE       =   ----    ----
-   DATA SIZE        =   ----      11
-   IDATA SIZE       =   ----    ----
-   BIT SIZE         =   ----       4
-END OF MODULE INFORMATION.
-
-
-C51 COMPILATION COMPLETE.  3 WARNING(S),  0 ERROR(S)
+C51 COMPILATION COMPLETE.  0 WARNING(S),  4 ERROR(S)
