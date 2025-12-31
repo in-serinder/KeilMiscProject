@@ -17,14 +17,14 @@ void LED_init(void)
 
 void openCurtain(void)
 {
-    Curtain_OPEN_LED(1);
-    Curtain_CLOSE_LED(0);
+    Curtain_OPEN_LED(0);
+    Curtain_CLOSE_LED(1);
 }
 
 void closeCurtain(void)
 {
-    Curtain_OPEN_LED(0);
-    Curtain_CLOSE_LED(1);
+    Curtain_OPEN_LED(1);
+    Curtain_CLOSE_LED(0);
 }
 
 void stopWarning(void)

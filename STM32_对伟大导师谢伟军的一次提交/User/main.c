@@ -23,23 +23,23 @@ int main(void)
         Serial_sendStr(ADC_GetVoltage_byStr());
         Serial_sendStr("\r\n");
 					
-			if(GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_6)){
-				warn_flag =0;
+			if(GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_6)==0){
+				warn_flag = 0;
 			}
 			
         if (voltage > 2.0f)
         {
             openCurtain();
             startWarning();
-					warn_flag =!0;
+					warn_flag =1;
         }
         else if (voltage < 1.0f)
         {
             closeCurtain();
-					warn_flag =!0;
+					warn_flag =1;
         }
 
-        if (warn_flag != 0)
+        if (warn_flag ==1)
         {
             startWarning();
 					Serial_sendStr("Warning\r\n");
@@ -57,4 +57,8 @@ void init_key(void)
     GPIO_InitTypeDef GPIO_InitStruct;
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
     GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6;
+		GPIO_InitStruct.GPIO_Mode=GPIO_Mode_IPU; //??
+		GPIO_InitStruct.GPIO_Pin=GPIO_Pin_All;
+		GPIO_InitStruct.GPIO_Speed=GPIO_Speed_50MHz;
+		GPIO_Init(GPIOB,&GPIO_InitStruct);
 }
