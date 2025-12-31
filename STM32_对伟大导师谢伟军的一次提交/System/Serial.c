@@ -2,8 +2,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-
-void Serial_init()
+void Serial_init(void)
 {
     // 使能USART1和GPIOA的时钟
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);

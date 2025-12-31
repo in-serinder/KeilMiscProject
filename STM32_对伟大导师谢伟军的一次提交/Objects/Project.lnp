@@ -28,8 +28,8 @@
 ".\objects\stm32f10x_usart.o"
 ".\objects\stm32f10x_wwdg.o"
 ".\objects\delay.o"
-".\objects\serial.o"
 ".\objects\adc.o"
+".\objects\serial.o"
 ".\objects\led.o"
 --strict --scatter ".\Objects\Project.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols

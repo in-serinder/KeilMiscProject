@@ -1,4 +1,5 @@
 #include "stm32f10x.h"
+#include <stdio.h>
 
 void ADC_init()
 {
@@ -11,7 +12,7 @@ void ADC_init()
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;     // PA1
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN; // Analog input
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  //  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     // 通道1
@@ -44,10 +45,10 @@ float ADC_GetVoltage()
     while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET)
         ;
     uint16_t adcValue = ADC_GetConversionValue(ADC1);
-    return (float)(adcValue * (3.3 / 4095));
+    return (float)(adcValue * (3.3f / 4095.0f));
 }
 
-char *ADC_GetVoltage_byStr()
+char* ADC_GetVoltage_byStr()
 {
     static char voltage_str[32] = {0};
 
@@ -57,10 +58,10 @@ char *ADC_GetVoltage_byStr()
     uint16_t adcValue = ADC_GetConversionValue(ADC1);
     float voltage = (float)(adcValue * (3.3 / 4095));
 
-    uint8_t _1x = (uint8_t)((int)voltage % 10);
-    uint8_t _x01 = (uint8_t)((int)voltage * 10) % 10;
-    uint8_t _x001 = (uint8_t)((int)voltage * 100) % 10;
+    uint8_t _1x = (uint8_t)voltage;
+    uint8_t _x01 = (uint8_t)(voltage * 10) % 10;
+    uint8_t _x001 = (uint8_t)(voltage * 100) % 10;
 
-    sprintf(voltage_str, "Voltage: %d.%d%d%d V", _1x, _x01, _x001);
+    sprintf(voltage_str, "Voltage: %d.%d%d V", _1x, _x01, _x001);
     return voltage_str;
 }

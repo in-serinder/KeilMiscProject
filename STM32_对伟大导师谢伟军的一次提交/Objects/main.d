@@ -28,4 +28,7 @@
 .\objects\main.o: .\Library\stm32f10x_usart.h
 .\objects\main.o: .\Library\stm32f10x_wwdg.h
 .\objects\main.o: .\Library\misc.h
-.\objects\main.o: ..\STM32_\Serial.h
+.\objects\main.o: .\System\Serial.h
+.\objects\main.o: .\System\adc.h
+.\objects\main.o: .\hardware\led.h
+.\objects\main.o: .\System\Delay.h

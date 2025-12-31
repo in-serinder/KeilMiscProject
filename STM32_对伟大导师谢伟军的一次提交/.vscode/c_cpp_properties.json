@@ -3,12 +3,13 @@
         {
             "name": "Target_1",
             "includePath": [
-                "/home/serinder/GitWorkBranch/KeilMiscProject/STM32_对伟大导师谢伟军的一次提交/.\\Booter",
-                "/home/serinder/GitWorkBranch/KeilMiscProject/STM32_对伟大导师谢伟军的一次提交/.\\Library",
-                "/home/serinder/GitWorkBranch/KeilMiscProject/STM32_对伟大导师谢伟军的一次提交/.\\User",
-                "/home/serinder/GitWorkBranch/KeilMiscProject/STM32_对伟大导师谢伟军的一次提交/.\\System",
-                "/home/serinder/GitWorkBranch/KeilMiscProject/STM32_对伟大导师谢伟军的一次提交/..\\STM32_",
-                "/home/serinder/GitWorkBranch/KeilMiscProject/STM32_对伟大导师谢伟军的一次提交"
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\STM32_对伟大导师谢伟军的一次提交\\Booter",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\STM32_对伟大导师谢伟军的一次提交\\Library",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\STM32_对伟大导师谢伟军的一次提交\\User",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\STM32_对伟大导师谢伟军的一次提交\\System",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\STM32_",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\STM32_对伟大导师谢伟军的一次提交\\hardware",
+                "D:\\Keil_v5\\ARM\\ARMCC\\include"
             ],
             "defines": [
                 "USE_STDPERIPH_DRIVER",
