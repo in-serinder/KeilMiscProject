@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "reg51.h": "c",
+        "reg52.h": "c",
+        "REG52.H": "cpp",
+        "max7219.h": "c",
+        "timer.h": "c",
+        "intrins.h": "c"
+    }
+}
