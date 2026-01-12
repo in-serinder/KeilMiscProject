@@ -1,0 +1,6 @@
+".\Objects\main.obj",
+".\Objects\ADC.obj",
+".\Objects\Delay.obj",
+".\Objects\ChargerCTL.obj" 
+TO ".\Objects\bat" 
+PRINT(".\Listings\bat.m51") RAMSIZE(256) 

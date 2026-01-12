@@ -1,7 +1,0 @@
-".\Objects\main.obj",
-".\Objects\Max7219.obj",
-".\Objects\Utils.obj",
-".\Objects\TM1637.obj",
-".\Objects\Timer.obj" 
-TO ".\Objects\led" 
-PRINT(".\Listings\led.m51") RAMSIZE(256) 

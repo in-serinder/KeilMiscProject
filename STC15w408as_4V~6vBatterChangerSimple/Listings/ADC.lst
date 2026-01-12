@@ -1,0 +1,87 @@
+C51 COMPILER V9.59.0.0   ADC                                                               01/08/2026 23:05:14 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE ADC
+OBJECT MODULE PLACED IN .\Objects\ADC.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE System\ADC.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\System;..\STC15w408as_4V~
+                    -6vBatterChangerSimple) DEBUG OBJECTEXTEND PRINT(.\Listings\ADC.lst) TABS(2) OBJECT(.\Objects\ADC.obj)
+
+line level    source
+
+   1          #include "stc15w.h"
+   2          #include "ADC.h"
+   3          #include "Delay.h"
+   4          
+   5          uint16_t getADC(uint8_t ch);
+   6          /*
+   7          6v电池检测P1.1
+   8          4v电池检测P1.0
+   9          */
+  10          void initADC()
+  11          {
+  12   1      
+  13   1          ADC_CONTR &= ~ADCFLAG;
+  14   1          P1ASF = 0xff; // 设置P1ad
+  15   1          ADC_RES = 0;
+  16   1          P1ASF = 0x03; // 开启P1.0~P1.1
+  17   1          ADC_CONTR = ADC_POWER | ADC_SPEEDLL | ADC_START;
+  18   1          Delay1ms();
+  19   1      }
+  20          
+  21          float getBatter_6V(void)
+  22          {
+  23   1          uint16_t adcValue = getADC(1);
+  24   1          float voltage = 0.0f;
+  25   1          float prop = 7.2f; // 36/5v映射
+  26   1      
+  27   1          voltage = adcValue * (5 / 1023) * prop;
+  28   1          return voltage;
+  29   1      }
+  30          
+  31          float getBatter_4V(void)
+  32          {
+  33   1          uint16_t adcValue = 0;
+  34   1          float voltage = 0.0f;
+  35   1          float prop = 4.8f;
+  36   1      
+  37   1          adcValue = getADC(0);
+  38   1          voltage = adcValue * (5.0f / 1023.0f) * prop;
+  39   1      
+  40   1          return voltage;
+  41   1      }
+  42          
+  43          uint16_t getADC(uint8_t ch)
+  44          {
+  45   1          uint16_t adcvalue = 0;
+  46   1      
+  47   1          // 通道选择+启动转换（逻辑不变，格式标准化）
+  48   1          ADC_CONTR &= ~0x07;
+  49   1          ADC_CONTR |= (ch & 0x07);
+  50   1          ADC_CONTR |= ADC_START;
+  51   1      
+  52   1          while (!(ADC_CONTR & ADCFLAG))
+  53   1              ; // 合并为一行，避免空行干扰
+  54   1          ADC_CONTR &= ~ADCFLAG;
+C51 COMPILER V9.59.0.0   ADC                                                               01/08/2026 23:05:14 PAGE 2   
+
+  55   1      
+  56   1          // 合并10位ADC结果（格式标准化）
+  57   1          adcvalue = (uint16_t)ADC_RES << 2; // 显式类型转换，避免编译器歧义
+  58   1          adcvalue |= (uint16_t)(ADC_RESL & 0x03);
+  59   1      
+  60   1          return adcvalue;
+  61   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    143    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      10
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,390 @@
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                    01/12/2026  15:31:42  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22.2.0, INVOKED BY:
+D:\KEIL_V5\C51\BIN\BL51.EXE .\Objects\main.obj, .\Objects\ADC.obj, .\Objects\Delay.obj, .\Objects\ChargerCTL.obj TO .\Ob
+>> jects\bat PRINT (.\Listings\bat.m51) RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL WITH FLOATING POINT ARITHMETIC
+
+
+INPUT MODULES INCLUDED:
+  .\Objects\main.obj (MAIN)
+  .\Objects\ADC.obj (ADC)
+  .\Objects\Delay.obj (DELAY)
+  .\Objects\ChargerCTL.obj (CHARGERCTL)
+  D:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPMUL)
+  D:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FCAST)
+  D:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPGETOPN)
+  D:\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
+  D:\KEIL_V5\C51\LIB\C51S.LIB (?C?LNEG)
+  D:\KEIL_V5\C51\LIB\C51S.LIB (?C_INIT)
+
+
+LINK MAP OF MODULE:  .\Objects\bat (MAIN)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0006H     UNIT         ?DT?GETBATTER_6V?ADC
+            DATA    000EH     0004H     UNIT         ?DT?GETBATTER_4V?ADC
+                    0012H     000EH                  *** GAP ***
+            BIT     0020H.0   0000H.1   UNIT         ?BI?MAIN
+                    0020H.1   0000H.7                *** GAP ***
+            IDATA   0021H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     019CH     UNIT         ?C?LIB_CODE
+            CODE    019FH     008CH     UNIT         ?C_C51STARTUP
+            CODE    022BH     0034H     UNIT         ?PR?GETBATTER_4V?ADC
+            CODE    025FH     002BH     UNIT         ?PR?_GETADC?ADC
+            CODE    028AH     001EH     UNIT         ?PR?GETBATTER_6V?ADC
+            CODE    02A8H     0012H     UNIT         ?PR?MAIN?MAIN
+            CODE    02BAH     0012H     UNIT         ?PR?INITADC?ADC
+            CODE    02CCH     000FH     UNIT         ?PR?DELAY1000MS?DELAY
+            CODE    02DBH     000DH     UNIT         ?PR?INITP0?CHARGERCTL
+            CODE    02E8H     000CH     UNIT         ?PR?DELAY1MS?DELAY
+            CODE    02F4H     0004H     UNIT         ?PR?DELAY1US?DELAY
+            CODE    02F8H     0003H     UNIT         ?C_INITSEG
+            CODE    02FBH     0003H     UNIT         ?PR?STARTCHARGE6VBAT?CHARGERCTL
+            CODE    02FEH     0003H     UNIT         ?PR?STOPCHARGE6VBAT?CHARGERCTL
+            CODE    0301H     0003H     UNIT         ?PR?STARTCHARGE4VBAT?CHARGERCTL
+            CODE    0304H     0003H     UNIT         ?PR?STOPCHARGE4VBAT?CHARGERCTL
+
+
+
+OVERLAY MAP OF MODULE:   .\Objects\bat (MAIN)
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/12/2026  15:31:42  PAGE 2
+
+
+
+
+SEGMENT
+  +--> CALLED SEGMENT
+---------------------
+?C_C51STARTUP
+  +--> ?PR?MAIN?MAIN
+  +--> ?C_INITSEG
+
+?PR?MAIN?MAIN
+  +--> ?PR?INITADC?ADC
+  +--> ?PR?STARTCHARGE6VBAT?CHARGERCTL
+  +--> ?PR?STARTCHARGE4VBAT?CHARGERCTL
+  +--> ?PR?DELAY1000MS?DELAY
+
+?PR?INITADC?ADC
+  +--> ?PR?DELAY1MS?DELAY
+
+
+
+SYMBOL TABLE OF MODULE:  .\Objects\bat (MAIN)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  B:0090H.2       PUBLIC        Relay
+  D:0080H         PUBLIC        P0
+  D:0090H         PUBLIC        P1
+  D:00A0H         PUBLIC        P2
+  D:00B0H         PUBLIC        P3
+  D:00C0H         PUBLIC        P4
+  D:00C8H         PUBLIC        P5
+  D:00E8H         PUBLIC        P6
+  D:00F8H         PUBLIC        P7
+  D:00A8H         PUBLIC        IE
+  D:00B8H         PUBLIC        IP
+  D:00D8H         PUBLIC        CCON
+  C:02A8H         PUBLIC        main
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  D:00F0H         PUBLIC        B
+  D:00E0H         PUBLIC        ACC
+  B:0020H.0       PUBLIC        Relay_Status
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          MAIN
+  C:02A8H         LINE#         14
+  C:02A8H         LINE#         15
+  C:02A8H         LINE#         16
+  C:02ACH         LINE#         17
+  C:02AFH         LINE#         19
+  C:02B2H         LINE#         20
+  C:02B5H         LINE#         21
+  C:02B5H         LINE#         22
+  C:02B5H         LINE#         23
+  C:02B8H         LINE#         32
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/12/2026  15:31:42  PAGE 3
+
+
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        MAIN
+
+  -------         MODULE        ADC
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  C:02BAH         PUBLIC        initADC
+  D:0080H         PUBLIC        P0
+  D:0090H         PUBLIC        P1
+  D:00A0H         PUBLIC        P2
+  D:00B0H         PUBLIC        P3
+  D:00C0H         PUBLIC        P4
+  D:00C8H         PUBLIC        P5
+  D:00E8H         PUBLIC        P6
+  D:00F8H         PUBLIC        P7
+  C:025FH         PUBLIC        _getADC
+  D:00A8H         PUBLIC        IE
+  C:022BH         PUBLIC        getBatter_4V
+  D:00BDH         PUBLIC        ADC_RES
+  C:028AH         PUBLIC        getBatter_6V
+  D:00B8H         PUBLIC        IP
+  D:00D8H         PUBLIC        CCON
+  D:00BCH         PUBLIC        ADC_CONTR
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  D:00F0H         PUBLIC        B
+  D:00E0H         PUBLIC        ACC
+  D:009DH         PUBLIC        P1ASF
+  D:00BEH         PUBLIC        ADC_RESL
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          INITADC
+  C:02BAH         LINE#         10
+  C:02BAH         LINE#         11
+  C:02BAH         LINE#         13
+  C:02BDH         LINE#         14
+  C:02C0H         LINE#         15
+  C:02C3H         LINE#         16
+  C:02C6H         LINE#         17
+  C:02C9H         LINE#         18
+  -------         ENDPROC       INITADC
+  -------         PROC          GETBATTER_6V
+  -------         DO            
+  D:0008H         SYMBOL        adcValue
+  D:0004H         SYMBOL        voltage
+  D:000AH         SYMBOL        prop
+  -------         ENDDO         
+  C:028AH         LINE#         21
+  C:028AH         LINE#         22
+  C:028AH         LINE#         23
+  C:0293H         LINE#         24
+  C:029BH         LINE#         25
+  C:02A7H         LINE#         27
+  C:02A7H         LINE#         28
+  C:02A7H         LINE#         29
+  -------         ENDPROC       GETBATTER_6V
+  -------         PROC          GETBATTER_4V
+  -------         DO            
+  D:0006H         SYMBOL        adcValue
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/12/2026  15:31:42  PAGE 4
+
+
+  D:0000H         SYMBOL        voltage
+  D:000EH         SYMBOL        prop
+  -------         ENDDO         
+  C:022BH         LINE#         31
+  C:022BH         LINE#         32
+  C:022BH         LINE#         33
+  C:022EH         LINE#         34
+  C:0232H         LINE#         35
+  C:023EH         LINE#         37
+  C:0241H         LINE#         38
+  -------         ENDPROC       GETBATTER_4V
+  -------         PROC          _GETADC
+  D:0007H         SYMBOL        ch
+  -------         DO            
+  D:0004H         SYMBOL        adcvalue
+  -------         ENDDO         
+  C:025FH         LINE#         43
+  C:025FH         LINE#         44
+  C:025FH         LINE#         45
+  C:0262H         LINE#         48
+  C:0265H         LINE#         49
+  C:026AH         LINE#         50
+  C:026DH         LINE#         52
+  C:0272H         LINE#         54
+  C:0275H         LINE#         57
+  C:027FH         LINE#         58
+  C:0285H         LINE#         60
+  C:0289H         LINE#         61
+  -------         ENDPROC       _GETADC
+  -------         ENDMOD        ADC
+
+  -------         MODULE        DELAY
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0080H         PUBLIC        P0
+  D:0090H         PUBLIC        P1
+  D:00A0H         PUBLIC        P2
+  D:00B0H         PUBLIC        P3
+  D:00C0H         PUBLIC        P4
+  C:02E8H         PUBLIC        Delay1ms
+  D:00C8H         PUBLIC        P5
+  D:00E8H         PUBLIC        P6
+  D:00F8H         PUBLIC        P7
+  C:02F4H         PUBLIC        Delay1us
+  D:00A8H         PUBLIC        IE
+  C:02CCH         PUBLIC        Delay1000ms
+  D:00B8H         PUBLIC        IP
+  D:00D8H         PUBLIC        CCON
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  D:00F0H         PUBLIC        B
+  D:00E0H         PUBLIC        ACC
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          DELAY1000MS
+  -------         DO            
+  D:0007H         SYMBOL        i
+  D:0006H         SYMBOL        j
+  D:0005H         SYMBOL        k
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/12/2026  15:31:42  PAGE 5
+
+
+  -------         ENDDO         
+  C:02CCH         LINE#         3
+  C:02CCH         LINE#         4
+  C:02CCH         LINE#         7
+  C:02CDH         LINE#         8
+  C:02CEH         LINE#         9
+  C:02D0H         LINE#         10
+  C:02D2H         LINE#         11
+  C:02D4H         LINE#         13
+  C:02D4H         LINE#         15
+  C:02D4H         LINE#         16
+  C:02D6H         LINE#         18
+  C:02D8H         LINE#         19
+  C:02DAH         LINE#         20
+  -------         ENDPROC       DELAY1000MS
+  -------         PROC          DELAY1MS
+  -------         DO            
+  D:0007H         SYMBOL        i
+  D:0006H         SYMBOL        j
+  -------         ENDDO         
+  C:02E8H         LINE#         22
+  C:02E8H         LINE#         23
+  C:02E8H         LINE#         26
+  C:02E9H         LINE#         27
+  C:02EAH         LINE#         28
+  C:02EBH         LINE#         29
+  C:02EDH         LINE#         30
+  C:02EFH         LINE#         32
+  C:02EFH         LINE#         33
+  C:02F1H         LINE#         35
+  C:02F3H         LINE#         36
+  -------         ENDPROC       DELAY1MS
+  -------         PROC          DELAY1US
+  C:02F4H         LINE#         38
+  C:02F4H         LINE#         39
+  C:02F4H         LINE#         40
+  C:02F5H         LINE#         41
+  C:02F6H         LINE#         42
+  C:02F7H         LINE#         43
+  -------         ENDPROC       DELAY1US
+  -------         ENDMOD        DELAY
+
+  -------         MODULE        CHARGERCTL
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0092H         PUBLIC        P1M0
+  D:0091H         PUBLIC        P1M1
+  D:0080H         PUBLIC        P0
+  D:0090H         PUBLIC        P1
+  D:00A0H         PUBLIC        P2
+  D:00CAH         PUBLIC        P5M0
+  D:00B0H         PUBLIC        P3
+  D:00C9H         PUBLIC        P5M1
+  D:00C0H         PUBLIC        P4
+  D:00C8H         PUBLIC        P5
+  D:00E8H         PUBLIC        P6
+  D:00F8H         PUBLIC        P7
+  D:00A8H         PUBLIC        IE
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/12/2026  15:31:42  PAGE 6
+
+
+  C:02DBH         PUBLIC        InitP0
+  D:00B8H         PUBLIC        IP
+  D:00D8H         PUBLIC        CCON
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  B:00C8H.4       PUBLIC        Charge4VCTL
+  B:0090H.5       PUBLIC        Charge6VCTL
+  D:00F0H         PUBLIC        B
+  D:00E0H         PUBLIC        ACC
+  C:0301H         PUBLIC        startCharge4VBAT
+  C:02FBH         PUBLIC        startCharge6VBAT
+  C:0304H         PUBLIC        stopCharge4VBAT
+  D:00D0H         PUBLIC        PSW
+  C:02FEH         PUBLIC        stopCharge6VBAT
+  -------         PROC          INITP0
+  C:02DBH         LINE#         6
+  C:02DBH         LINE#         7
+  C:02DBH         LINE#         8
+  C:02DEH         LINE#         9
+  C:02E1H         LINE#         11
+  C:02E4H         LINE#         12
+  C:02E7H         LINE#         13
+  -------         ENDPROC       INITP0
+  -------         PROC          STARTCHARGE6VBAT
+  C:02FBH         LINE#         15
+  C:02FBH         LINE#         16
+  C:02FBH         LINE#         17
+  C:02FDH         LINE#         18
+  -------         ENDPROC       STARTCHARGE6VBAT
+  -------         PROC          STOPCHARGE6VBAT
+  C:02FEH         LINE#         20
+  C:02FEH         LINE#         21
+  C:02FEH         LINE#         22
+  C:0300H         LINE#         23
+  -------         ENDPROC       STOPCHARGE6VBAT
+  -------         PROC          STARTCHARGE4VBAT
+  C:0301H         LINE#         25
+  C:0301H         LINE#         26
+  C:0301H         LINE#         27
+  C:0303H         LINE#         28
+  -------         ENDPROC       STARTCHARGE4VBAT
+  -------         PROC          STOPCHARGE4VBAT
+  C:0304H         LINE#         30
+  C:0304H         LINE#         31
+  C:0304H         LINE#         32
+  C:0306H         LINE#         33
+  -------         ENDPROC       STOPCHARGE4VBAT
+  -------         ENDMOD        CHARGERCTL
+
+  -------         MODULE        ?C?FPMUL
+  C:0003H         PUBLIC        ?C?FPMUL
+  -------         ENDMOD        ?C?FPMUL
+
+  -------         MODULE        ?C?FCAST
+  C:0113H         PUBLIC        ?C?FCASTC
+  C:010EH         PUBLIC        ?C?FCASTI
+  C:0109H         PUBLIC        ?C?FCASTL
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/12/2026  15:31:42  PAGE 7
+
+
+  -------         ENDMOD        ?C?FCAST
+
+  -------         MODULE        ?C?LNEG
+  C:0191H         PUBLIC        ?C?LNEG
+  -------         ENDMOD        ?C?LNEG
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?GETBATTER_6V?ADC
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?GETBATTER_4V?ADC
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?DELAY1US?DELAY
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?INITP0?CHARGERCTL
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?STOPCHARGE6VBAT?CHARGERCTL
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?STOPCHARGE4VBAT?CHARGERCTL
+
+Program Size: data=19.1 xdata=0 code=775
+LINK/LOCATE RUN COMPLETE.  6 WARNING(S),  0 ERROR(S)

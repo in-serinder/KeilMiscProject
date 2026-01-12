@@ -1,0 +1,58 @@
+C51 COMPILER V9.59.0.0   CHARGERCTL                                                        01/12/2026 15:28:53 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE CHARGERCTL
+OBJECT MODULE PLACED IN .\Objects\ChargerCTL.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE System\ChargerCTL.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\System;..\STC15w40
+                    -8as_4V~6vBatterChangerSimple) DEBUG OBJECTEXTEND PRINT(.\Listings\ChargerCTL.lst) TABS(2) OBJECT(.\Objects\ChargerCTL.ob
+                    -j)
+
+line level    source
+
+   1          #include "stc15w.h"
+   2          
+   3          sbit Charge6VCTL = P1 ^ 5;
+   4          sbit Charge4VCTL = P5 ^ 4;
+   5          
+   6          void InitP0(void)
+   7          {
+   8   1          P1M0 |= 0x04 | 0x02;
+   9   1          P1M1 &= ~(0x04 | 0x20);
+  10   1      
+  11   1          P5M0 |= 0x10;
+  12   1          P5M1 &= ~0x10;
+  13   1      }
+  14          
+  15          void startCharge6VBAT(void)
+  16          {
+  17   1          Charge6VCTL = 1;
+  18   1      }
+  19          
+  20          void stopCharge6VBAT(void)
+  21          {
+  22   1          Charge6VCTL = 0;
+  23   1      }
+  24          
+  25          void startCharge4VBAT(void)
+  26          {
+  27   1          Charge4VCTL = 1;
+  28   1      }
+  29          
+  30          void stopCharge4VBAT(void)
+  31          {
+  32   1          Charge4VCTL = 0;
+  33   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     25    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
