@@ -1,0 +1,7 @@
+".\Objects\STARTUP.obj",
+".\Objects\main.obj",
+".\Objects\LCD1602.obj",
+".\Objects\Timer.obj",
+".\Objects\DS1302.obj" 
+TO ".\Objects\51Oclock" 
+PRINT(".\Listings\51Oclock.m51") RAMSIZE(256) 
