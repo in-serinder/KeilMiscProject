@@ -17,10 +17,11 @@
 // 90个时钟
 
 typedef unsigned char uint8_t;
-typedef unsigned int  uint16_t;
+typedef unsigned int uint16_t;
 
 void initADC();
 float getBatter_6V(void);
 float getBatter_4V(void);
-
+float getBatter_6V_AVG(void);
+float getBatter_4V_AVG(void);
 #endif
