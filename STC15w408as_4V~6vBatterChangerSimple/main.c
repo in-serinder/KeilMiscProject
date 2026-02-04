@@ -71,7 +71,7 @@ void init_RelayCTRL(void)
 void INT0_ISR(void) interrupt 0
 {
 
-	Delay_ms(10);
+	Delay1ms();
 	if (Relay_CTRL == 0)
 	{
 		Relay_Status = !Relay_Status;

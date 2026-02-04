@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              01/12/2026 15:31:42 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              01/17/2026 15:21:54 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -13,44 +13,105 @@ line level    source
    3          #include "Delay.h"
    4          #include "ChargerCTL.h"
    5          
-   6          /*
-   7          继电器控制默认低电平 P1.2
-   8          继电器切换P3.2中断控制
-   9          
-  10          */
-  11          
-  12          sbit Relay = P1 ^ 2;
-  13          bit Relay_Status = 0;
-  14          int main()
-  15          {
-  16   1        Relay = Relay_Status;
-  17   1        initADC();
-  18   1      
-  19   1        startCharge6VBAT();
-  20   1        startCharge4VBAT();
-  21   1        while (1)
-  22   1        {
-  23   2          Delay1000ms();
-  24   2          // Relay=!Relay;
-  25   2          //  if(Relay){
-  26   2          //  startCharge6VBAT();
-  27   2          //    startCharge4VBAT();
-  28   2          //  }else{
-  29   2          //  stopCharge6VBAT();
-  30   2          //    stopCharge4VBAT();
-  31   2          //}
-  32   2        }
-  33   1      }
+   6          void init_RelayCTRL(void);
+   7          /*
+   8          继电器控制默认低电平 P1.2
+   9          继电器切换P3.2中断控制
+  10          
+  11          */
+  12          
+  13          sbit Relay = P1 ^ 2;
+  14          sbit Relay_CTRL = P3 ^ 2;
+  15          bit Relay_Status = 0;
+  16          bit stop6vCharge = 0;
+  17          int main()
+  18          {
+  19   1        Relay = Relay_Status;
+  20   1        initADC();
+  21   1        init_RelayCTRL();
+  22   1      
+  23   1        startCharge6VBAT();
+  24   1        startCharge4VBAT();
+  25   1        while (1)
+  26   1        {
+  27   2          Delay1000ms();
+  28   2          // Relay=!Relay;
+  29   2          //  if(Relay){
+  30   2          //  startCharge6VBAT();
+  31   2          //    startCharge4VBAT();
+  32   2          //  }else{
+  33   2          //  stopCharge6VBAT();
+  34   2          //    stopCharge4VBAT();
+  35   2          //}
+  36   2          if (getBatter_6V_AVG() <= 7.0 && (!stop6vCharge))
+  37   2          {
+  38   3            // 当对6v充电必须为低电平继电器电池连接控制
+  39   3            // ups电源配置外部电源接入为第一次，内部adc检测后为第二次控制
+  40   3            Relay = 0;
+  41   3            Relay_Status = 0;
+  42   3            startCharge6VBAT();
+  43   3          }
+  44   2          else if (getBatter_6V_AVG() >= 7.4)
+  45   2          {
+  46   3            stopCharge6VBAT();
+  47   3          }
+  48   2      
+  49   2          if (getBatter_4V_AVG() <= 4.2)
+  50   2          {
+  51   3            startCharge4VBAT();
+  52   3          }
+  53   2          else if (getBatter_4V_AVG() >= 4.4)
+  54   2          {
+C51 COMPILER V9.59.0.0   MAIN                                                              01/17/2026 15:21:54 PAGE 2   
+
+  55   3            stopCharge4VBAT();
+  56   3          }
+  57   2      
+  58   2          Relay = Relay_Status;
+  59   2        }
+  60   1      }
+  61          
+  62          void init_RelayCTRL(void)
+  63          {
+  64   1        P3M0 &= ~(1 << 2);
+  65   1        P3M1 &= ~(1 << 2);
+  66   1        IT0 = 1;
+  67   1        EX0 = 1;
+  68   1        EA = 1;
+  69   1      }
+  70          
+  71          void INT0_ISR(void) interrupt 0
+  72          {
+  73   1      
+  74   1        Delay1ms();
+  75   1        if (Relay_CTRL == 0)
+  76   1        {
+  77   2          Relay_Status = !Relay_Status;
+  78   2          // 当处于串联继电器逻辑必须关闭6v充电
+  79   2          if (Relay_Status)
+  80   2          {
+  81   3            stop6vCharge = 1;
+  82   3            stopCharge6VBAT();
+  83   3          }
+  84   2          else if (!Relay_Status && getBatter_6V() < 7.6)
+  85   2          {
+  86   3            stop6vCharge = 0;
+  87   3          }
+  88   2      
+  89   2          while (Relay_CTRL == 0)
+  90   2            ;
+  91   2        }
+  92   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     18    ----
+   CODE SIZE        =    228    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
-   BIT SIZE         =      1    ----
+   BIT SIZE         =      2    ----
 END OF MODULE INFORMATION.
 
 

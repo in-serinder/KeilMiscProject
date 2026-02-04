@@ -1,4 +1,4 @@
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                    01/12/2026  15:31:42  PAGE 1
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                    01/17/2026  15:21:54  PAGE 1
 
 
 BL51 BANKED LINKER/LOCATER V6.22.2.0, INVOKED BY:
@@ -14,7 +14,10 @@ INPUT MODULES INCLUDED:
   .\Objects\ADC.obj (ADC)
   .\Objects\Delay.obj (DELAY)
   .\Objects\ChargerCTL.obj (CHARGERCTL)
+  D:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPADD)
   D:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPMUL)
+  D:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPDIV)
+  D:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPCMP)
   D:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FCAST)
   D:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPGETOPN)
   D:\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
@@ -30,55 +33,85 @@ LINK MAP OF MODULE:  .\Objects\bat (MAIN)
 
             * * * * * * *   D A T A   M E M O R Y   * * * * * * *
             REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
-            DATA    0008H     0006H     UNIT         ?DT?GETBATTER_6V?ADC
-            DATA    000EH     0004H     UNIT         ?DT?GETBATTER_4V?ADC
-                    0012H     000EH                  *** GAP ***
-            BIT     0020H.0   0000H.1   UNIT         ?BI?MAIN
-                    0020H.1   0000H.7                *** GAP ***
+            DATA    0008H     0011H     UNIT         _DATA_GROUP_
+                    0019H     0007H                  *** GAP ***
+            BIT     0020H.0   0000H.2   UNIT         ?BI?MAIN
+                    0020H.2   0000H.6                *** GAP ***
             IDATA   0021H     0001H     UNIT         ?STACK
 
             * * * * * * *   C O D E   M E M O R Y   * * * * * * *
             CODE    0000H     0003H     ABSOLUTE     
-            CODE    0003H     019CH     UNIT         ?C?LIB_CODE
-            CODE    019FH     008CH     UNIT         ?C_C51STARTUP
-            CODE    022BH     0034H     UNIT         ?PR?GETBATTER_4V?ADC
-            CODE    025FH     002BH     UNIT         ?PR?_GETADC?ADC
-            CODE    028AH     001EH     UNIT         ?PR?GETBATTER_6V?ADC
-            CODE    02A8H     0012H     UNIT         ?PR?MAIN?MAIN
-            CODE    02BAH     0012H     UNIT         ?PR?INITADC?ADC
-            CODE    02CCH     000FH     UNIT         ?PR?DELAY1000MS?DELAY
-            CODE    02DBH     000DH     UNIT         ?PR?INITP0?CHARGERCTL
-            CODE    02E8H     000CH     UNIT         ?PR?DELAY1MS?DELAY
-            CODE    02F4H     0004H     UNIT         ?PR?DELAY1US?DELAY
-            CODE    02F8H     0003H     UNIT         ?C_INITSEG
-            CODE    02FBH     0003H     UNIT         ?PR?STARTCHARGE6VBAT?CHARGERCTL
-            CODE    02FEH     0003H     UNIT         ?PR?STOPCHARGE6VBAT?CHARGERCTL
-            CODE    0301H     0003H     UNIT         ?PR?STARTCHARGE4VBAT?CHARGERCTL
-            CODE    0304H     0003H     UNIT         ?PR?STOPCHARGE4VBAT?CHARGERCTL
+            CODE    0003H     0003H     ABSOLUTE     
+            CODE    0006H     03ADH     UNIT         ?C?LIB_CODE
+            CODE    03B3H     008CH     UNIT         ?C_C51STARTUP
+            CODE    043FH     0073H     UNIT         ?PR?MAIN?MAIN
+            CODE    04B2H     0064H     UNIT         ?PR?INT0_ISR?MAIN
+            CODE    0516H     0060H     UNIT         ?PR?GETBATTER_6V_AVG?ADC
+            CODE    0576H     0060H     UNIT         ?PR?GETBATTER_4V_AVG?ADC
+            CODE    05D6H     0034H     UNIT         ?PR?GETBATTER_4V?ADC
+            CODE    060AH     002BH     UNIT         ?PR?_GETADC?ADC
+            CODE    0635H     001EH     UNIT         ?PR?GETBATTER_6V?ADC
+            CODE    0653H     0012H     UNIT         ?PR?INITADC?ADC
+            CODE    0665H     000FH     UNIT         ?PR?DELAY1000MS?DELAY
+            CODE    0674H     000DH     UNIT         ?PR?INIT_RELAYCTRL?MAIN
+            CODE    0681H     000DH     UNIT         ?PR?INITP0?CHARGERCTL
+            CODE    068EH     000CH     UNIT         ?PR?DELAY1MS?DELAY
+            CODE    069AH     0005H     UNIT         ?C_INITSEG
+            CODE    069FH     0004H     UNIT         ?PR?DELAY1US?DELAY
+            CODE    06A3H     0003H     UNIT         ?PR?STARTCHARGE6VBAT?CHARGERCTL
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/17/2026  15:21:54  PAGE 2
+
+
+            CODE    06A6H     0003H     UNIT         ?PR?STOPCHARGE6VBAT?CHARGERCTL
+            CODE    06A9H     0003H     UNIT         ?PR?STARTCHARGE4VBAT?CHARGERCTL
+            CODE    06ACH     0003H     UNIT         ?PR?STOPCHARGE4VBAT?CHARGERCTL
 
 
 
 OVERLAY MAP OF MODULE:   .\Objects\bat (MAIN)
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/12/2026  15:31:42  PAGE 2
 
 
+SEGMENT                                   DATA_GROUP 
+  +--> CALLED SEGMENT                   START    LENGTH
+-------------------------------------------------------
+?PR?INT0_ISR?MAIN                       -----    -----
+  +--> ?PR?DELAY1MS?DELAY
+  +--> ?PR?STOPCHARGE6VBAT?CHARGERCTL
+  +--> ?PR?GETBATTER_6V?ADC
 
+?PR?GETBATTER_6V?ADC                    0013H    0006H
+  +--> ?PR?_GETADC?ADC
 
-SEGMENT
-  +--> CALLED SEGMENT
----------------------
-?C_C51STARTUP
+*** NEW ROOT ***************************************************
+
+?C_C51STARTUP                           -----    -----
   +--> ?PR?MAIN?MAIN
   +--> ?C_INITSEG
 
-?PR?MAIN?MAIN
+?PR?MAIN?MAIN                           -----    -----
   +--> ?PR?INITADC?ADC
+  +--> ?PR?INIT_RELAYCTRL?MAIN
   +--> ?PR?STARTCHARGE6VBAT?CHARGERCTL
   +--> ?PR?STARTCHARGE4VBAT?CHARGERCTL
   +--> ?PR?DELAY1000MS?DELAY
+  +--> ?PR?GETBATTER_6V_AVG?ADC
+  +--> ?PR?STOPCHARGE6VBAT?CHARGERCTL
+  +--> ?PR?GETBATTER_4V_AVG?ADC
+  +--> ?PR?STOPCHARGE4VBAT?CHARGERCTL
 
-?PR?INITADC?ADC
+?PR?INITADC?ADC                         -----    -----
   +--> ?PR?DELAY1MS?DELAY
+
+?PR?GETBATTER_6V_AVG?ADC                000EH    0005H
+  +--> ?PR?GETBATTER_6V?ADC
+  +--> ?PR?DELAY1MS?DELAY
+
+?PR?GETBATTER_4V_AVG?ADC                000EH    0005H
+  +--> ?PR?GETBATTER_4V?ADC
+  +--> ?PR?DELAY1MS?DELAY
+
+?PR?GETBATTER_4V?ADC                    0013H    0004H
+  +--> ?PR?_GETADC?ADC
 
 
 
@@ -86,48 +119,109 @@ SYMBOL TABLE OF MODULE:  .\Objects\bat (MAIN)
 
   VALUE           TYPE          NAME
   ----------------------------------
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/17/2026  15:21:54  PAGE 3
+
+
 
   -------         MODULE        MAIN
   C:0000H         SYMBOL        _ICE_DUMMY_
   B:0090H.2       PUBLIC        Relay
   D:0080H         PUBLIC        P0
+  D:00B2H         PUBLIC        P3M0
   D:0090H         PUBLIC        P1
+  D:00B1H         PUBLIC        P3M1
   D:00A0H         PUBLIC        P2
   D:00B0H         PUBLIC        P3
   D:00C0H         PUBLIC        P4
   D:00C8H         PUBLIC        P5
   D:00E8H         PUBLIC        P6
+  B:00A8H.7       PUBLIC        EA
   D:00F8H         PUBLIC        P7
   D:00A8H         PUBLIC        IE
+  B:00B0H.2       PUBLIC        Relay_CTRL
   D:00B8H         PUBLIC        IP
   D:00D8H         PUBLIC        CCON
-  C:02A8H         PUBLIC        main
+  C:043FH         PUBLIC        main
   D:0098H         PUBLIC        SCON
   D:0088H         PUBLIC        TCON
   D:00F0H         PUBLIC        B
+  B:0020H.0       PUBLIC        stop6vCharge
   D:00E0H         PUBLIC        ACC
-  B:0020H.0       PUBLIC        Relay_Status
+  B:00A8H.0       PUBLIC        EX0
+  B:0088H.0       PUBLIC        IT0
+  C:0674H         PUBLIC        init_RelayCTRL
+  B:0020H.1       PUBLIC        Relay_Status
+  C:04B2H         PUBLIC        INT0_ISR
   D:00D0H         PUBLIC        PSW
   -------         PROC          MAIN
-  C:02A8H         LINE#         14
-  C:02A8H         LINE#         15
-  C:02A8H         LINE#         16
-  C:02ACH         LINE#         17
-  C:02AFH         LINE#         19
-  C:02B2H         LINE#         20
-  C:02B5H         LINE#         21
-  C:02B5H         LINE#         22
-  C:02B5H         LINE#         23
-  C:02B8H         LINE#         32
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/12/2026  15:31:42  PAGE 3
+  C:043FH         LINE#         17
+  C:043FH         LINE#         18
+  C:043FH         LINE#         19
+  C:0443H         LINE#         20
+  C:0446H         LINE#         21
+  C:0449H         LINE#         23
+  C:044CH         LINE#         24
+  C:044FH         LINE#         25
+  C:044FH         LINE#         26
+  C:044FH         LINE#         27
+  C:0452H         LINE#         36
+  C:0464H         LINE#         37
+  C:0464H         LINE#         40
+  C:0466H         LINE#         41
+  C:0468H         LINE#         42
+  C:046BH         LINE#         43
+  C:046DH         LINE#         44
+  C:047FH         LINE#         45
+  C:047FH         LINE#         46
+  C:0482H         LINE#         47
+  C:0482H         LINE#         49
+  C:0492H         LINE#         50
+  C:0492H         LINE#         51
+  C:0495H         LINE#         52
+  C:0497H         LINE#         53
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/17/2026  15:21:54  PAGE 4
 
 
+  C:04A9H         LINE#         54
+  C:04A9H         LINE#         55
+  C:04ACH         LINE#         56
+  C:04ACH         LINE#         58
+  C:04B0H         LINE#         59
   -------         ENDPROC       MAIN
+  -------         PROC          INIT_RELAYCTRL
+  C:0674H         LINE#         62
+  C:0674H         LINE#         63
+  C:0674H         LINE#         64
+  C:0677H         LINE#         65
+  C:067AH         LINE#         66
+  C:067CH         LINE#         67
+  C:067EH         LINE#         68
+  C:0680H         LINE#         69
+  -------         ENDPROC       INIT_RELAYCTRL
+  -------         PROC          INT0_ISR
+  C:04B2H         LINE#         71
+  C:04CFH         LINE#         74
+  C:04D2H         LINE#         75
+  C:04D5H         LINE#         76
+  C:04D5H         LINE#         77
+  C:04D7H         LINE#         79
+  C:04DAH         LINE#         80
+  C:04DAH         LINE#         81
+  C:04DCH         LINE#         82
+  C:04DFH         LINE#         83
+  C:04E1H         LINE#         84
+  C:04F6H         LINE#         85
+  C:04F6H         LINE#         86
+  C:04F8H         LINE#         87
+  C:04F8H         LINE#         89
+  C:04FBH         LINE#         91
+  C:04FBH         LINE#         92
+  -------         ENDPROC       INT0_ISR
   -------         ENDMOD        MAIN
 
   -------         MODULE        ADC
   C:0000H         SYMBOL        _ICE_DUMMY_
-  C:02BAH         PUBLIC        initADC
+  C:0653H         PUBLIC        initADC
   D:0080H         PUBLIC        P0
   D:0090H         PUBLIC        P1
   D:00A0H         PUBLIC        P2
@@ -136,81 +230,122 @@ SYMBOL TABLE OF MODULE:  .\Objects\bat (MAIN)
   D:00C8H         PUBLIC        P5
   D:00E8H         PUBLIC        P6
   D:00F8H         PUBLIC        P7
-  C:025FH         PUBLIC        _getADC
+  C:060AH         PUBLIC        _getADC
   D:00A8H         PUBLIC        IE
-  C:022BH         PUBLIC        getBatter_4V
+  C:05D6H         PUBLIC        getBatter_4V
   D:00BDH         PUBLIC        ADC_RES
-  C:028AH         PUBLIC        getBatter_6V
+  C:0635H         PUBLIC        getBatter_6V
   D:00B8H         PUBLIC        IP
   D:00D8H         PUBLIC        CCON
   D:00BCH         PUBLIC        ADC_CONTR
   D:0098H         PUBLIC        SCON
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/17/2026  15:21:54  PAGE 5
+
+
   D:0088H         PUBLIC        TCON
   D:00F0H         PUBLIC        B
   D:00E0H         PUBLIC        ACC
+  C:0576H         PUBLIC        getBatter_4V_AVG
+  C:0516H         PUBLIC        getBatter_6V_AVG
   D:009DH         PUBLIC        P1ASF
   D:00BEH         PUBLIC        ADC_RESL
   D:00D0H         PUBLIC        PSW
   -------         PROC          INITADC
-  C:02BAH         LINE#         10
-  C:02BAH         LINE#         11
-  C:02BAH         LINE#         13
-  C:02BDH         LINE#         14
-  C:02C0H         LINE#         15
-  C:02C3H         LINE#         16
-  C:02C6H         LINE#         17
-  C:02C9H         LINE#         18
+  C:0653H         LINE#         10
+  C:0653H         LINE#         11
+  C:0653H         LINE#         13
+  C:0656H         LINE#         14
+  C:0659H         LINE#         15
+  C:065CH         LINE#         16
+  C:065FH         LINE#         17
+  C:0662H         LINE#         18
   -------         ENDPROC       INITADC
   -------         PROC          GETBATTER_6V
   -------         DO            
-  D:0008H         SYMBOL        adcValue
+  D:0013H         SYMBOL        adcValue
   D:0004H         SYMBOL        voltage
-  D:000AH         SYMBOL        prop
+  D:0015H         SYMBOL        prop
   -------         ENDDO         
-  C:028AH         LINE#         21
-  C:028AH         LINE#         22
-  C:028AH         LINE#         23
-  C:0293H         LINE#         24
-  C:029BH         LINE#         25
-  C:02A7H         LINE#         27
-  C:02A7H         LINE#         28
-  C:02A7H         LINE#         29
+  C:0635H         LINE#         21
+  C:0635H         LINE#         22
+  C:0635H         LINE#         23
+  C:063EH         LINE#         24
+  C:0646H         LINE#         25
+  C:0652H         LINE#         27
+  C:0652H         LINE#         28
+  C:0652H         LINE#         29
   -------         ENDPROC       GETBATTER_6V
   -------         PROC          GETBATTER_4V
   -------         DO            
   D:0006H         SYMBOL        adcValue
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/12/2026  15:31:42  PAGE 4
-
-
   D:0000H         SYMBOL        voltage
-  D:000EH         SYMBOL        prop
+  D:0013H         SYMBOL        prop
   -------         ENDDO         
-  C:022BH         LINE#         31
-  C:022BH         LINE#         32
-  C:022BH         LINE#         33
-  C:022EH         LINE#         34
-  C:0232H         LINE#         35
-  C:023EH         LINE#         37
-  C:0241H         LINE#         38
+  C:05D6H         LINE#         31
+  C:05D6H         LINE#         32
+  C:05D6H         LINE#         33
+  C:05D9H         LINE#         34
+  C:05DDH         LINE#         35
+  C:05E9H         LINE#         37
+  C:05ECH         LINE#         38
   -------         ENDPROC       GETBATTER_4V
   -------         PROC          _GETADC
   D:0007H         SYMBOL        ch
   -------         DO            
   D:0004H         SYMBOL        adcvalue
   -------         ENDDO         
-  C:025FH         LINE#         43
-  C:025FH         LINE#         44
-  C:025FH         LINE#         45
-  C:0262H         LINE#         48
-  C:0265H         LINE#         49
-  C:026AH         LINE#         50
-  C:026DH         LINE#         52
-  C:0272H         LINE#         54
-  C:0275H         LINE#         57
-  C:027FH         LINE#         58
-  C:0285H         LINE#         60
-  C:0289H         LINE#         61
+  C:060AH         LINE#         43
+  C:060AH         LINE#         44
+  C:060AH         LINE#         45
+  C:060DH         LINE#         47
+  C:0610H         LINE#         48
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/17/2026  15:21:54  PAGE 6
+
+
+  C:0615H         LINE#         49
+  C:0618H         LINE#         51
+  C:061DH         LINE#         53
+  C:0620H         LINE#         55
+  C:062AH         LINE#         56
+  C:0630H         LINE#         58
+  C:0634H         LINE#         59
   -------         ENDPROC       _GETADC
+  -------         PROC          GETBATTER_6V_AVG
+  -------         DO            
+  D:000EH         SYMBOL        count
+  D:000FH         SYMBOL        voltageSum
+  -------         ENDDO         
+  C:0516H         LINE#         61
+  C:0516H         LINE#         62
+  C:0516H         LINE#         63
+  C:0519H         LINE#         64
+  C:0521H         LINE#         65
+  C:052EH         LINE#         66
+  C:052EH         LINE#         67
+  C:0554H         LINE#         68
+  C:0557H         LINE#         69
+  C:055BH         LINE#         70
+  C:0575H         LINE#         71
+  C:0575H         LINE#         72
+  -------         ENDPROC       GETBATTER_6V_AVG
+  -------         PROC          GETBATTER_4V_AVG
+  -------         DO            
+  D:000EH         SYMBOL        count
+  D:000FH         SYMBOL        voltageSum
+  -------         ENDDO         
+  C:0576H         LINE#         74
+  C:0576H         LINE#         75
+  C:0576H         LINE#         76
+  C:0579H         LINE#         77
+  C:0581H         LINE#         78
+  C:058EH         LINE#         79
+  C:058EH         LINE#         80
+  C:05B4H         LINE#         81
+  C:05B7H         LINE#         82
+  C:05BBH         LINE#         83
+  C:05D5H         LINE#         84
+  C:05D5H         LINE#         85
+  -------         ENDPROC       GETBATTER_4V_AVG
   -------         ENDMOD        ADC
 
   -------         MODULE        DELAY
@@ -220,13 +355,16 @@ SYMBOL TABLE OF MODULE:  .\Objects\bat (MAIN)
   D:00A0H         PUBLIC        P2
   D:00B0H         PUBLIC        P3
   D:00C0H         PUBLIC        P4
-  C:02E8H         PUBLIC        Delay1ms
+  C:068EH         PUBLIC        Delay1ms
   D:00C8H         PUBLIC        P5
   D:00E8H         PUBLIC        P6
   D:00F8H         PUBLIC        P7
-  C:02F4H         PUBLIC        Delay1us
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/17/2026  15:21:54  PAGE 7
+
+
+  C:069FH         PUBLIC        Delay1us
   D:00A8H         PUBLIC        IE
-  C:02CCH         PUBLIC        Delay1000ms
+  C:0665H         PUBLIC        Delay1000ms
   D:00B8H         PUBLIC        IP
   D:00D8H         PUBLIC        CCON
   D:0098H         PUBLIC        SCON
@@ -239,50 +377,50 @@ SYMBOL TABLE OF MODULE:  .\Objects\bat (MAIN)
   D:0007H         SYMBOL        i
   D:0006H         SYMBOL        j
   D:0005H         SYMBOL        k
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/12/2026  15:31:42  PAGE 5
-
-
   -------         ENDDO         
-  C:02CCH         LINE#         3
-  C:02CCH         LINE#         4
-  C:02CCH         LINE#         7
-  C:02CDH         LINE#         8
-  C:02CEH         LINE#         9
-  C:02D0H         LINE#         10
-  C:02D2H         LINE#         11
-  C:02D4H         LINE#         13
-  C:02D4H         LINE#         15
-  C:02D4H         LINE#         16
-  C:02D6H         LINE#         18
-  C:02D8H         LINE#         19
-  C:02DAH         LINE#         20
+  C:0665H         LINE#         3
+  C:0665H         LINE#         4
+  C:0665H         LINE#         7
+  C:0666H         LINE#         8
+  C:0667H         LINE#         9
+  C:0669H         LINE#         10
+  C:066BH         LINE#         11
+  C:066DH         LINE#         13
+  C:066DH         LINE#         15
+  C:066DH         LINE#         16
+  C:066FH         LINE#         18
+  C:0671H         LINE#         19
+  C:0673H         LINE#         20
   -------         ENDPROC       DELAY1000MS
   -------         PROC          DELAY1MS
   -------         DO            
   D:0007H         SYMBOL        i
   D:0006H         SYMBOL        j
   -------         ENDDO         
-  C:02E8H         LINE#         22
-  C:02E8H         LINE#         23
-  C:02E8H         LINE#         26
-  C:02E9H         LINE#         27
-  C:02EAH         LINE#         28
-  C:02EBH         LINE#         29
-  C:02EDH         LINE#         30
-  C:02EFH         LINE#         32
-  C:02EFH         LINE#         33
-  C:02F1H         LINE#         35
-  C:02F3H         LINE#         36
+  C:068EH         LINE#         22
+  C:068EH         LINE#         23
+  C:068EH         LINE#         26
+  C:068FH         LINE#         27
+  C:0690H         LINE#         28
+  C:0691H         LINE#         29
+  C:0693H         LINE#         30
+  C:0695H         LINE#         32
+  C:0695H         LINE#         33
+  C:0697H         LINE#         35
+  C:0699H         LINE#         36
   -------         ENDPROC       DELAY1MS
   -------         PROC          DELAY1US
-  C:02F4H         LINE#         38
-  C:02F4H         LINE#         39
-  C:02F4H         LINE#         40
-  C:02F5H         LINE#         41
-  C:02F6H         LINE#         42
-  C:02F7H         LINE#         43
+  C:069FH         LINE#         38
+  C:069FH         LINE#         39
+  C:069FH         LINE#         40
+  C:06A0H         LINE#         41
+  C:06A1H         LINE#         42
+  C:06A2H         LINE#         43
   -------         ENDPROC       DELAY1US
   -------         ENDMOD        DELAY
+
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/17/2026  15:21:54  PAGE 8
+
 
   -------         MODULE        CHARGERCTL
   C:0000H         SYMBOL        _ICE_DUMMY_
@@ -299,10 +437,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\bat (MAIN)
   D:00E8H         PUBLIC        P6
   D:00F8H         PUBLIC        P7
   D:00A8H         PUBLIC        IE
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/12/2026  15:31:42  PAGE 6
-
-
-  C:02DBH         PUBLIC        InitP0
+  C:0681H         PUBLIC        InitP0
   D:00B8H         PUBLIC        IP
   D:00D8H         PUBLIC        CCON
   D:0098H         PUBLIC        SCON
@@ -311,68 +446,76 @@ SYMBOL TABLE OF MODULE:  .\Objects\bat (MAIN)
   B:0090H.5       PUBLIC        Charge6VCTL
   D:00F0H         PUBLIC        B
   D:00E0H         PUBLIC        ACC
-  C:0301H         PUBLIC        startCharge4VBAT
-  C:02FBH         PUBLIC        startCharge6VBAT
-  C:0304H         PUBLIC        stopCharge4VBAT
+  C:06A9H         PUBLIC        startCharge4VBAT
+  C:06A3H         PUBLIC        startCharge6VBAT
+  C:06ACH         PUBLIC        stopCharge4VBAT
   D:00D0H         PUBLIC        PSW
-  C:02FEH         PUBLIC        stopCharge6VBAT
+  C:06A6H         PUBLIC        stopCharge6VBAT
   -------         PROC          INITP0
-  C:02DBH         LINE#         6
-  C:02DBH         LINE#         7
-  C:02DBH         LINE#         8
-  C:02DEH         LINE#         9
-  C:02E1H         LINE#         11
-  C:02E4H         LINE#         12
-  C:02E7H         LINE#         13
+  C:0681H         LINE#         6
+  C:0681H         LINE#         7
+  C:0681H         LINE#         8
+  C:0684H         LINE#         9
+  C:0687H         LINE#         11
+  C:068AH         LINE#         12
+  C:068DH         LINE#         13
   -------         ENDPROC       INITP0
   -------         PROC          STARTCHARGE6VBAT
-  C:02FBH         LINE#         15
-  C:02FBH         LINE#         16
-  C:02FBH         LINE#         17
-  C:02FDH         LINE#         18
+  C:06A3H         LINE#         15
+  C:06A3H         LINE#         16
+  C:06A3H         LINE#         17
+  C:06A5H         LINE#         18
   -------         ENDPROC       STARTCHARGE6VBAT
   -------         PROC          STOPCHARGE6VBAT
-  C:02FEH         LINE#         20
-  C:02FEH         LINE#         21
-  C:02FEH         LINE#         22
-  C:0300H         LINE#         23
+  C:06A6H         LINE#         20
+  C:06A6H         LINE#         21
+  C:06A6H         LINE#         22
+  C:06A8H         LINE#         23
   -------         ENDPROC       STOPCHARGE6VBAT
   -------         PROC          STARTCHARGE4VBAT
-  C:0301H         LINE#         25
-  C:0301H         LINE#         26
-  C:0301H         LINE#         27
-  C:0303H         LINE#         28
+  C:06A9H         LINE#         25
+  C:06A9H         LINE#         26
+  C:06A9H         LINE#         27
+  C:06ABH         LINE#         28
   -------         ENDPROC       STARTCHARGE4VBAT
   -------         PROC          STOPCHARGE4VBAT
-  C:0304H         LINE#         30
-  C:0304H         LINE#         31
-  C:0304H         LINE#         32
-  C:0306H         LINE#         33
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/17/2026  15:21:54  PAGE 9
+
+
+  C:06ACH         LINE#         30
+  C:06ACH         LINE#         31
+  C:06ACH         LINE#         32
+  C:06AEH         LINE#         33
   -------         ENDPROC       STOPCHARGE4VBAT
   -------         ENDMOD        CHARGERCTL
 
+  -------         MODULE        ?C?FPADD
+  C:000DH         PUBLIC        ?C?FPADD
+  C:0009H         PUBLIC        ?C?FPSUB
+  -------         ENDMOD        ?C?FPADD
+
   -------         MODULE        ?C?FPMUL
-  C:0003H         PUBLIC        ?C?FPMUL
+  C:00FEH         PUBLIC        ?C?FPMUL
   -------         ENDMOD        ?C?FPMUL
 
+  -------         MODULE        ?C?FPDIV
+  C:0207H         PUBLIC        ?C?FPDIV
+  -------         ENDMOD        ?C?FPDIV
+
+  -------         MODULE        ?C?FPCMP
+  C:02A6H         PUBLIC        ?C?FPCMP
+  C:02A4H         PUBLIC        ?C?FPCMP3
+  -------         ENDMOD        ?C?FPCMP
+
   -------         MODULE        ?C?FCAST
-  C:0113H         PUBLIC        ?C?FCASTC
-  C:010EH         PUBLIC        ?C?FCASTI
-  C:0109H         PUBLIC        ?C?FCASTL
-BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  01/12/2026  15:31:42  PAGE 7
-
-
+  C:0327H         PUBLIC        ?C?FCASTC
+  C:0322H         PUBLIC        ?C?FCASTI
+  C:031DH         PUBLIC        ?C?FCASTL
   -------         ENDMOD        ?C?FCAST
 
   -------         MODULE        ?C?LNEG
-  C:0191H         PUBLIC        ?C?LNEG
+  C:03A5H         PUBLIC        ?C?LNEG
   -------         ENDMOD        ?C?LNEG
-
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?GETBATTER_6V?ADC
-
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?GETBATTER_4V?ADC
 
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?DELAY1US?DELAY
@@ -380,11 +523,10 @@ SYMBOL TABLE OF MODULE:  .\Objects\bat (MAIN)
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?INITP0?CHARGERCTL
 
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?STOPCHARGE6VBAT?CHARGERCTL
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?GETBATTER_6V?ADC
+    CALLER1: ?PR?INT0_ISR?MAIN
+    CALLER2: ?C_C51STARTUP
 
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?STOPCHARGE4VBAT?CHARGERCTL
-
-Program Size: data=19.1 xdata=0 code=775
-LINK/LOCATE RUN COMPLETE.  6 WARNING(S),  0 ERROR(S)
+Program Size: data=26.2 xdata=0 code=1711
+LINK/LOCATE RUN COMPLETE.  3 WARNING(S),  0 ERROR(S)

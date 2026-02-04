@@ -1,1 +1,0 @@
-"System\ADC.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(.\System;..\STC15w408as_4V~6vBatterChangerSimple) DEBUG OBJECTEXTEND PRINT(.\Listings\ADC.lst) TABS (2) OBJECT(.\Objects\ADC.obj)

@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   ADC                                                               01/08/2026 23:05:14 PAGE 1   
+C51 COMPILER V9.59.0.0   ADC                                                               01/17/2026 15:21:01 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE ADC
@@ -54,31 +54,55 @@ line level    source
   44          {
   45   1          uint16_t adcvalue = 0;
   46   1      
-  47   1          // 通道选择+启动转换（逻辑不变，格式标准化）
-  48   1          ADC_CONTR &= ~0x07;
-  49   1          ADC_CONTR |= (ch & 0x07);
-  50   1          ADC_CONTR |= ADC_START;
-  51   1      
-  52   1          while (!(ADC_CONTR & ADCFLAG))
-  53   1              ; // 合并为一行，避免空行干扰
-  54   1          ADC_CONTR &= ~ADCFLAG;
-C51 COMPILER V9.59.0.0   ADC                                                               01/08/2026 23:05:14 PAGE 2   
+  47   1          ADC_CONTR &= ~0x07;
+  48   1          ADC_CONTR |= (ch & 0x07);
+  49   1          ADC_CONTR |= ADC_START;
+  50   1      
+  51   1          while (!(ADC_CONTR & ADCFLAG))
+  52   1              ;
+  53   1          ADC_CONTR &= ~ADCFLAG;
+  54   1      
+C51 COMPILER V9.59.0.0   ADC                                                               01/17/2026 15:21:01 PAGE 2   
 
-  55   1      
-  56   1          // 合并10位ADC结果（格式标准化）
-  57   1          adcvalue = (uint16_t)ADC_RES << 2; // 显式类型转换，避免编译器歧义
-  58   1          adcvalue |= (uint16_t)(ADC_RESL & 0x03);
-  59   1      
-  60   1          return adcvalue;
-  61   1      }
+  55   1          adcvalue = (uint16_t)ADC_RES << 2;
+  56   1          adcvalue |= (uint16_t)(ADC_RESL & 0x03);
+  57   1      
+  58   1          return adcvalue;
+  59   1      }
+  60          
+  61          float getBatter_6V_AVG(void)
+  62          {
+  63   1          uint8_t count = 0;
+  64   1          float voltageSum = 0.0f;
+  65   1          for (count = 0; count < 10; count++)
+  66   1          {
+  67   2              voltageSum += getBatter_6V();
+  68   2              Delay1ms();
+  69   2          }
+  70   1          voltageSum /= 10.0f;
+  71   1          return voltageSum;
+  72   1      }
+  73          
+  74          float getBatter_4V_AVG(void)
+  75          {
+  76   1          uint8_t count = 0;
+  77   1          float voltageSum = 0.0f;
+  78   1          for (count = 0; count < 10; count++)
+  79   1          {
+  80   2              voltageSum += getBatter_4V();
+  81   2              Delay1ms();
+  82   2          }
+  83   1          voltageSum /= 10.0f;
+  84   1          return voltageSum;
+  85   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    143    ----
+   CODE SIZE        =    335    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =   ----      10
+   DATA SIZE        =   ----      20
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
