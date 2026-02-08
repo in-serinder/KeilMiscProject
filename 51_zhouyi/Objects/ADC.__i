@@ -1,0 +1,1 @@
+"System\ADC.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(.\System) DEBUG OBJECTEXTEND PRINT(.\Listings\ADC.lst) TABS (2) OBJECT(.\Objects\ADC.obj)

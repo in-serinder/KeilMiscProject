@@ -1,0 +1,5 @@
+".\Objects\main.obj",
+".\Objects\ADC.obj",
+".\Objects\Delay.obj" 
+TO ".\Objects\zy" 
+PRINT(".\Listings\zy.m51") RAMSIZE(256) 
