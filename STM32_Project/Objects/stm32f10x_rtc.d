@@ -2,7 +2,7 @@
 .\objects\stm32f10x_rtc.o: Library\stm32f10x_rtc.h
 .\objects\stm32f10x_rtc.o: .\Booter\stm32f10x.h
 .\objects\stm32f10x_rtc.o: .\Booter\core_cm3.h
-.\objects\stm32f10x_rtc.o: D:\Keil_v5_25\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\stm32f10x_rtc.o: D:\Keil_ARM\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\stm32f10x_rtc.o: .\Booter\system_stm32f10x.h
 .\objects\stm32f10x_rtc.o: .\User\stm32f10x_conf.h
 .\objects\stm32f10x_rtc.o: .\Library\stm32f10x_adc.h

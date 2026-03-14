@@ -2,7 +2,7 @@
 .\objects\stm32f10x_tim.o: Library\stm32f10x_tim.h
 .\objects\stm32f10x_tim.o: .\Booter\stm32f10x.h
 .\objects\stm32f10x_tim.o: .\Booter\core_cm3.h
-.\objects\stm32f10x_tim.o: D:\Keil_v5_25\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\stm32f10x_tim.o: D:\Keil_ARM\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\stm32f10x_tim.o: .\Booter\system_stm32f10x.h
 .\objects\stm32f10x_tim.o: .\User\stm32f10x_conf.h
 .\objects\stm32f10x_tim.o: .\Library\stm32f10x_adc.h

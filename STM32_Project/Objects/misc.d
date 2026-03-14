@@ -2,7 +2,7 @@
 .\objects\misc.o: Library\misc.h
 .\objects\misc.o: .\Booter\stm32f10x.h
 .\objects\misc.o: .\Booter\core_cm3.h
-.\objects\misc.o: D:\Keil_v5_25\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\misc.o: D:\Keil_ARM\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\misc.o: .\Booter\system_stm32f10x.h
 .\objects\misc.o: .\User\stm32f10x_conf.h
 .\objects\misc.o: .\Library\stm32f10x_adc.h
