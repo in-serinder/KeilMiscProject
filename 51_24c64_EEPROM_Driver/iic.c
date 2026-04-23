@@ -4,7 +4,7 @@
 void I2C_Delay(void)
 {
     // unsigned char i = 2;
-    unsigned char i = 100; // 低于100延时在解码中会出现多1字符解码问题 或许加个电阻同步阻抗会很好
+    unsigned char i = 100; // 低于100延时在解码中会出现多1字符解码问题（逻辑分析仪显示FF） 或许加个电阻同步阻抗会很好
     while (i--)
         ;
 }
