@@ -1,5 +1,0 @@
-".\Objects\main.obj",
-".\Objects\IIC.obj",
-".\Objects\Timer.obj" 
-TO ".\Objects\IIC" 
-PRINT(".\Listings\IIC.m51") RAMSIZE(256) 
