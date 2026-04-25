@@ -1,0 +1,69 @@
+C51 COMPILER V9.59.0.0   DELAY                                                             04/25/2026 22:14:18 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE DELAY
+OBJECT MODULE PLACED IN .\Objects\delay.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE delay.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\del
+                    -ay.lst) TABS(2) OBJECT(.\Objects\delay.obj)
+
+line level    source
+
+   1          #include "delay.h"
+   2          #include <INTRINS.H>
+   3          
+   4          void Delay_us(uint8_t t)
+   5          {
+   6   1          while (t--)
+   7   1              ;
+   8   1      }
+   9          
+  10          void Delay1000us(void) //@11.0592MHz
+  11          {
+  12   1          uint8_t data i, j;
+  13   1      
+  14   1          _nop_();
+  15   1          i = 2;
+  16   1          j = 199;
+  17   1          do
+  18   1          {
+  19   2              while (--j)
+  20   2                  ;
+  21   2          } while (--i);
+  22   1      }
+  23          
+  24          
+  25          
+  26          void Delay_ms(uint8_t i) 
+  27          {
+  28   1          while (i)
+  29   1          {
+  30   2              Delay1000us();
+  31   2              i--;
+  32   2          }
+  33   1      }
+  34          
+  35          void Delay_s(unsigned int i) //@12.000MHz
+  36          {
+  37   1          while (i)
+  38   1          {
+  39   2              Delay_ms();
+*** WARNING C209 IN LINE 39 OF delay.c: '_Delay_ms': too few actual parameters
+  40   2              i--;
+  41   2          }
+  42   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     48    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+C51 COMPILER V9.59.0.0   DELAY                                                             04/25/2026 22:14:18 PAGE 2   
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

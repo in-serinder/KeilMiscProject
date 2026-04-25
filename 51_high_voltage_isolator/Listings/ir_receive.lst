@@ -1,0 +1,238 @@
+C51 COMPILER V9.59.0.0   IR_RECEIVE                                                        04/25/2026 22:14:18 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE IR_RECEIVE
+OBJECT MODULE PLACED IN .\Objects\ir_receive.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE ir_receive.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\ir_receive.lst) TABS(2) OBJECT(.\Objects\ir_receive.obj)
+
+line level    source
+
+   1          #include "ir_receive.h"
+   2          #include "uart.h"
+   3          
+   4          // 红外接收相关变量
+   5          unsigned char ir_raw_data[4]; // 存储红外接收的原始数据，共4字节
+   6          bit ir_receive_complete = 0;   // 红外接收完成标志
+   7          unsigned char ir_key_code = 0;  // 解码后的按键编码
+   8          
+   9          // 定时器0计数变量
+  10          unsigned int time_count = 0;
+  11          // 数据位计数
+  12          unsigned char bit_count = 0;
+  13          // 接收状态
+  14          unsigned char ir_state = 0;
+  15          
+  16          // 当主进程获取后清除
+  17          uint8_t receive_flag =0 ;
+  18          
+  19          // 按键编码映射表（根据实际遥控器调整）
+  20          // 这里使用常见的NEC协议遥控器按键编码
+  21          code unsigned char IR_KEY_MAP[] = {
+  22              0x00, // 无按键
+  23              0x16, // 0
+  24              0x0C, // 1
+  25              0x18, // 2
+  26              0x5E, // 3
+  27              0x08, // 4
+  28              0x1C, // 5
+  29              0x5A, // 6
+  30              0x42, // 7
+  31              0x52, // 8
+  32              0x4A  // 9
+  33          };
+  34          
+  35          // 初始化红外接收
+  36          void IR_Init(void)
+  37          {
+  38   1          // 初始化INT1为下降沿触发
+  39   1          IT1 = 1;
+  40   1          // 开启INT1中断
+  41   1          EX1 = 1;
+  42   1          // 开启总中断
+  43   1          EA = 1;
+  44   1      
+  45   1          // 初始化定时器0，用于测量脉冲宽度
+  46   1          TMOD &= 0xF0;
+  47   1          TMOD |= 0x01; // 定时器0工作在模式1
+  48   1          TH0 = 0;
+  49   1          TL0 = 0;
+  50   1          TR0 = 0; // 先关闭定时器
+  51   1      }
+  52          
+  53          // INT1中断处理函数，用于红外接收
+  54          void IR_ISR(void) interrupt 2
+C51 COMPILER V9.59.0.0   IR_RECEIVE                                                        04/25/2026 22:14:18 PAGE 2   
+
+  55          {
+  56   1          switch (ir_state)
+  57   1          {
+  58   2          case 0:      // 初始状态，检测引导码
+  59   2              TR0 = 1; // 启动定时器
+  60   2              TH0 = 0;
+  61   2              TL0 = 0;
+  62   2              ir_state = 1;
+  63   2              break;
+  64   2          case 1: // 检测引导码低电平
+  65   2              time_count = TH0 * 256 + TL0;
+  66   2              TH0 = 0;
+  67   2              TL0 = 0;
+  68   2              // 引导码低电平约9ms，允许误差
+  69   2              if (time_count > 8000 && time_count < 10000)
+  70   2              {
+  71   3                  ir_state = 2;
+  72   3              }
+  73   2              else
+  74   2              {
+  75   3                  ir_state = 0;
+  76   3              }
+  77   2              break;
+  78   2          case 2: // 检测引导码高电平
+  79   2              time_count = TH0 * 256 + TL0;
+  80   2              TH0 = 0;
+  81   2              TL0 = 0;
+  82   2              // 引导码高电平约4.5ms，允许误差
+  83   2              if (time_count > 4000 && time_count < 5000)
+  84   2              {
+  85   3                  ir_state = 3;
+  86   3                  bit_count = 0;
+  87   3              }
+  88   2              else
+  89   2              {
+  90   3                  ir_state = 0;
+  91   3              }
+  92   2              break;
+  93   2          case 3: // 接收数据位
+  94   2              time_count = TH0 * 256 + TL0;
+  95   2              TH0 = 0;
+  96   2              TL0 = 0;
+  97   2      
+  98   2              // 数据位低电平约560us
+  99   2              if (time_count > 400 && time_count < 700)
+ 100   2              {
+ 101   3                  ir_state = 4;
+ 102   3              }
+ 103   2              else
+ 104   2              {
+ 105   3                  ir_state = 0;
+ 106   3              }
+ 107   2              break;
+ 108   2          case 4: // 检测数据位高电平
+ 109   2              time_count = TH0 * 256 + TL0;
+ 110   2              TH0 = 0;
+ 111   2              TL0 = 0;
+ 112   2      
+ 113   2              // 数据位高电平：0为560us，1为1680us
+ 114   2              if (time_count > 400 && time_count < 700) // 0
+ 115   2              {
+ 116   3                  ir_raw_data[bit_count / 8] &= ~(0x80 >> (bit_count % 8));
+C51 COMPILER V9.59.0.0   IR_RECEIVE                                                        04/25/2026 22:14:18 PAGE 3   
+
+ 117   3              }
+ 118   2              else if (time_count > 1500 && time_count < 1900) // 1
+ 119   2              {
+ 120   3                  ir_raw_data[bit_count / 8] |= (0x80 >> (bit_count % 8));
+ 121   3              }
+ 122   2              else
+ 123   2              {
+ 124   3                  ir_state = 0;
+ 125   3                  break;
+ 126   3              }
+ 127   2      
+ 128   2              bit_count++;
+ 129   2              if (bit_count >= 32) // 接收完32位数据
+ 130   2              {
+ 131   3                  // 验证数据有效性（地址码与地址反码应互补）
+ 132   3                  if ((ir_raw_data[0] ^ ir_raw_data[1]) == 0xFF)
+ 133   3                  {
+ 134   4                      // 验证数据码与数据反码应互补
+ 135   4                      if ((ir_raw_data[2] ^ ir_raw_data[3]) == 0xFF)
+ 136   4                      {
+ 137   5                          // 解码按键编码
+ 138   5                          ir_key_code = ir_raw_data[2];
+ 139   5                          ir_receive_complete = 1; // 设置接收完成标志
+ 140   5                      }
+ 141   4                  }
+ 142   3                  ir_state = 0;
+ 143   3              }
+ 144   2              else
+ 145   2              {
+ 146   3                  ir_state = 3;
+ 147   3              }
+ 148   2              break;
+ 149   2          }
+ 150   1      }
+ 151          
+ 152          // 获取解码后的按键编码
+ 153          unsigned char IR_GetKeyCode(void)
+ 154          {
+ 155   1          if (ir_receive_complete)
+ 156   1          {
+ 157   2              ir_receive_complete = 0; // 清除标志
+ 158   2              receive_flag = 1; // 设置接收完成标志
+ 159   2              return ir_key_code;
+ 160   2          }
+ 161   1          return 0; // 无按键
+ 162   1      }
+ 163          
+ 164          // 获取数字按键值（0-9）
+ 165          unsigned char IR_GetDigit(void)
+ 166          {
+ 167   1          unsigned char key_code = IR_GetKeyCode();
+ 168   1          unsigned char i;
+ 169   1          
+ 170   1          // 查找按键编码对应的数字
+ 171   1          for (i = 0; i < 11; i++)
+ 172   1          {
+ 173   2              if (IR_KEY_MAP[i] == key_code)
+ 174   2              {
+ 175   3                  return i; // 返回数字（0-9）
+ 176   3              }
+ 177   2          }
+ 178   1          return 0xFF; // 非数字按键
+C51 COMPILER V9.59.0.0   IR_RECEIVE                                                        04/25/2026 22:14:18 PAGE 4   
+
+ 179   1      }
+ 180          
+ 181          
+ 182          uint8_t get_receive_flag(){
+ 183   1          return receive_flag;
+ 184   1      }
+ 185          
+ 186          void clear_receive_flag(){
+ 187   1          receive_flag = 0;
+ 188   1      }
+ 189          
+ 190          // 通过串口发送红外数据
+ 191          void IR_SendData(void)
+ 192          {
+ 193   1          if (ir_receive_complete)
+ 194   1          {
+ 195   2              UART_SendString("IR Data: ");
+ 196   2              UART_SendHex(ir_raw_data[0]); // 地址码
+ 197   2              UART_SendByte(' ');
+ 198   2              UART_SendHex(ir_raw_data[1]); // 地址反码
+ 199   2              UART_SendByte(' ');
+ 200   2              UART_SendHex(ir_raw_data[2]); // 数据码
+ 201   2              UART_SendByte(' ');
+ 202   2              UART_SendHex(ir_raw_data[3]); // 数据反码
+ 203   2              UART_SendString(" Key: ");
+ 204   2              UART_SendHex(ir_key_code);     // 按键编码
+ 205   2              UART_SendString("\r\n");
+ 206   2              ir_receive_complete = 0; // 清除标志
+ 207   2          }
+ 208   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    549    ----
+   CONSTANT SIZE    =     31    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     10    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,169 @@
+C51 COMPILER V9.59.0.0   RELAY                                                             04/25/2026 22:14:18 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE RELAY
+OBJECT MODULE PLACED IN .\Objects\relay.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE relay.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\rel
+                    -ay.lst) TABS(2) OBJECT(.\Objects\relay.obj)
+
+line level    source
+
+   1          #include "relay.h"
+   2          
+   3          void init_relays()
+   4          {
+   5   1          CH1_RELAY = 0; // Initialize all relays to off
+   6   1          CH2_RELAY = 0;
+   7   1          CH3_RELAY = 0;
+   8   1          CH4_RELAY = 0;
+   9   1      }
+  10          
+  11          void set_relay_state(unsigned char channel, unsigned char state)
+  12          {
+  13   1          switch (channel)
+  14   1          {
+  15   2          case 1:
+  16   2              CH1_RELAY = state;
+  17   2              break;
+  18   2          case 2:
+  19   2              CH2_RELAY = state;
+  20   2              break;
+  21   2          case 3:
+  22   2              CH3_RELAY = state;
+  23   2              break;
+  24   2          case 4:
+  25   2              CH4_RELAY = state;
+  26   2              break;
+  27   2          default:
+  28   2              // Invalid channel, handle error if necessary
+  29   2              break;
+  30   2          }
+  31   1      }
+  32          
+  33          void toggle_relay(unsigned char channel)
+  34          {
+  35   1          switch (channel)
+  36   1          {
+  37   2          case 1:
+  38   2              CH1_RELAY = !CH1_RELAY;
+  39   2              break;
+  40   2          case 2:
+  41   2              CH2_RELAY = !CH2_RELAY;
+  42   2              break;
+  43   2          case 3:
+  44   2              CH3_RELAY = !CH3_RELAY;
+  45   2              break;
+  46   2          case 4:
+  47   2              CH4_RELAY = !CH4_RELAY;
+  48   2              break;
+  49   2          default:
+  50   2              // Invalid channel, handle error if necessary
+  51   2              break;
+  52   2          }
+  53   1      }
+  54          
+C51 COMPILER V9.59.0.0   RELAY                                                             04/25/2026 22:14:18 PAGE 2   
+
+  55          void turn_off_all_relays()
+  56          {
+  57   1          CH1_RELAY = 0;
+  58   1          CH2_RELAY = 0;
+  59   1          CH3_RELAY = 0;
+  60   1          CH4_RELAY = 0;
+  61   1      }
+  62          
+  63          void trun_on_all_relays()
+  64          {
+  65   1          CH1_RELAY = 0;
+  66   1          CH2_RELAY = 0;
+  67   1          CH3_RELAY = 0;
+  68   1          CH4_RELAY = 0;
+  69   1      }
+  70          
+  71          void self_checking_relays()
+  72          {
+  73   1          // 流水检测所有继电器
+  74   1          for (unsigned char i = 1; i <= 4; i++)
+*** ERROR C141 IN LINE 74 OF relay.c: syntax error near 'unsigned', expected 'sizeof'
+*** ERROR C202 IN LINE 74 OF relay.c: 'i': undefined identifier
+*** ERROR C202 IN LINE 74 OF relay.c: 'i': undefined identifier
+*** ERROR C202 IN LINE 74 OF relay.c: 'i': undefined identifier
+*** ERROR C141 IN LINE 74 OF relay.c: syntax error near ')', expected ';'
+  75   1          {
+  76   2              set_relay_state(i, 1); // Turn on relay
+  77   2              Delay_ms(500);         // Wait for 500ms
+  78   2              set_relay_state(i, 0); // Turn off relay
+*** ERROR C202 IN LINE 78 OF relay.c: 'i': undefined identifier
+  79   2              Delay_ms(500);         // Wait for 500ms
+  80   2          }
+  81   1      
+  82   1          for (unsigned char i = 4; i >= 1; i--)
+*** ERROR C141 IN LINE 82 OF relay.c: syntax error near 'unsigned', expected 'sizeof'
+*** ERROR C202 IN LINE 82 OF relay.c: 'i': undefined identifier
+*** ERROR C202 IN LINE 82 OF relay.c: 'i': undefined identifier
+*** ERROR C202 IN LINE 82 OF relay.c: 'i': undefined identifier
+*** ERROR C141 IN LINE 82 OF relay.c: syntax error near ')', expected ';'
+  83   1          {
+  84   2              set_relay_state(i, 1); // Turn on relay
+  85   2              Delay_ms(500);         // Wait for 500ms
+  86   2              set_relay_state(i, 0); // Turn off relay
+*** ERROR C202 IN LINE 86 OF relay.c: 'i': undefined identifier
+  87   2              Delay_ms(500);         // Wait for 500ms
+  88   2          }
+  89   1          // 开关全部
+  90   1          trun_on_all_relays();
+  91   1          Delay_ms(500);
+  92   1          turn_off_all_relays();
+  93   1          Delay_ms(500);
+  94   1      }
+  95          
+  96          uint8_t get_relay_status(){
+  97   1          return 0|(CH1_RELAY << 0)|
+  98   1                 (CH2_RELAY << 1)|
+  99   1                 (CH3_RELAY << 2)|
+ 100   1                 (CH4_RELAY << 3);
+ 101   1      }
+ 102          
+ 103          void set_ao_led(){
+ 104   1          if(get_relay_status()==0x0F)
+C51 COMPILER V9.59.0.0   RELAY                                                             04/25/2026 22:14:18 PAGE 3   
+
+ 105   1              RELAY_ALLOPEN = 1;
+ 106   1      }
+ 107          
+ 108          // 红外编码映射功能
+ 109          uint8_t ir_key_code_map_to_channel(uint8_t key_code){
+ 110   1          switch (key_code)
+ 111   1          {
+ 112   2          case 0:
+ 113   2              set_relay_state(1, !CH1_RELAY);
+ 114   2              return 0;
+ 115   2          case 1:
+ 116   2              set_relay_state(2, !CH2_RELAY);
+ 117   2              return 0;
+ 118   2          case 2:
+ 119   2              set_relay_state(3, !CH3_RELAY);
+ 120   2              return 0;
+ 121   2          case 3:
+ 122   2              set_relay_state(4, !CH4_RELAY);
+ 123   2              return 0;
+ 124   2              break;
+ 125   2          // 其他指令处理
+ 126   2          // 全开
+ 127   2          case 4:
+ 128   2              trun_on_all_relays();
+ 129   2              return 0;
+ 130   2          // 全关
+ 131   2          case 5:
+ 132   2              turn_off_all_relays();
+ 133   2              return 0;
+ 134   2          // 再次自检
+ 135   2          case 6:
+ 136   2              self_checking_relays();
+ 137   2              return 0;
+ 138   2          default:
+ 139   2              return 1;
+ 140   2          }
+ 141   1      }
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  12 ERROR(S)
