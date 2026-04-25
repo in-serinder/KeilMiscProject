@@ -1,6 +1,6 @@
 #ifndef RELAY_H
 #define RELAY_H
-#include "stc89c52.h"
+#include "stc15w.h"
 #include "delay.h"
 
 #define CH1_RELAY P33
@@ -11,8 +11,8 @@
 #define RELAY_ALLOPEN P12
 
 void init_relays();
-void set_relay_state(unsigned char channel, unsigned char state);
-void toggle_relay(unsigned char channel);
+void set_relay_state(uint8_t channel, uint8_t state);
+void toggle_relay(uint8_t channel);
 void turn_off_all_relays();
 void trun_on_all_relays();
 void self_checking_relays();

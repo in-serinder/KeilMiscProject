@@ -1,7 +1,7 @@
 #ifndef __UART_H__
 #define __UART_H__
 
-#include "stc89c52.h"
+#include "stc15w.h"
 
 void UART_Init(void);
 void UART_SendByte(unsigned char byte);

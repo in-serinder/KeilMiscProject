@@ -1,7 +1,7 @@
 #ifndef __IR_RECEIVE_H__
 #define __IR_RECEIVE_H__
 
-#include "stc89c52.h"
+#include "stc15w.h"
 
 // 红外接收相关变量
 extern unsigned char ir_raw_data[4]; // 存储红外接收的原始数据，共4字节

@@ -8,7 +8,7 @@ void init_relays()
     CH4_RELAY = 0;
 }
 
-void set_relay_state(unsigned char channel, unsigned char state)
+void set_relay_state(uint8_t channel, uint8_t state)
 {
     switch (channel)
     {
@@ -30,7 +30,7 @@ void set_relay_state(unsigned char channel, unsigned char state)
     }
 }
 
-void toggle_relay(unsigned char channel)
+void toggle_relay(uint8_t channel)
 {
     switch (channel)
     {
@@ -70,8 +70,9 @@ void trun_on_all_relays()
 
 void self_checking_relays()
 {
+    uint8_t i =0;
     // 流水检测所有继电器
-    for (unsigned char i = 1; i <= 4; i++)
+    for (i = 1; i <= 4; i++)
     {
         set_relay_state(i, 1); // Turn on relay
         Delay_ms(500);         // Wait for 500ms
@@ -79,7 +80,7 @@ void self_checking_relays()
         Delay_ms(500);         // Wait for 500ms
     }
 
-    for (unsigned char i = 4; i >= 1; i--)
+    for (i = 4; i >= 1; i--)
     {
         set_relay_state(i, 1); // Turn on relay
         Delay_ms(500);         // Wait for 500ms

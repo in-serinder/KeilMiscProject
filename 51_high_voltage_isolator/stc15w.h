@@ -3,11 +3,12 @@
 
 /////////////////////////////////////////////////
 
-//包含本头文件后,不用另外再包含"REG51.H"
+//锟斤拷锟斤拷锟斤拷头锟侥硷拷锟斤拷,锟斤拷锟斤拷锟斤拷锟斤拷锟劫帮拷锟斤拷"REG51.H"
 
 #include "stdio.h"
 #include "intrins.h"
 
+typedef unsigned char uint8_t;
 /////////////////////////////////////////////////
 
 sfr         P0          =           0x80;
@@ -287,8 +288,8 @@ sfr         CCAP0H      =           0xFA;
 sfr         CCAP1H      =           0xFB;
 sfr         CCAP2H      =           0xFC;
 
-//如下特殊功能寄存器位于扩展RAM区域
-//访问这些寄存器,需先将P_SW2的BIT7设置为1,才可正常读写
+//锟斤拷锟斤拷锟斤拷锟解功锟杰寄达拷锟斤拷位锟斤拷锟斤拷展RAM锟斤拷锟斤拷
+//锟斤拷锟斤拷锟斤拷些锟侥达拷锟斤拷,锟斤拷锟饺斤拷P_SW2锟斤拷BIT7锟斤拷锟斤拷为1,锟脚匡拷锟斤拷锟斤拷锟斤拷写
 
 #define     PWMC                (*(unsigned int  volatile xdata *)0xfff0)
 #define     PWMCH               (*(unsigned char volatile xdata *)0xfff0)
