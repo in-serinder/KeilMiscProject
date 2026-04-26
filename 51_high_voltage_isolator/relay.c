@@ -94,13 +94,17 @@ void self_checking_relays()
     Delay_ms(500);
 }
 
-uint8_t get_relay_status(){
-    return 0|(CH1_RELAY << 0)|
-           (CH2_RELAY << 1)|
-           (CH3_RELAY << 2)|
-           (CH4_RELAY << 3);
-}
+uint8_t get_relay_status(void)
+{
+    uint8_t status = 0;
 
+    if (CH1_RELAY) status |= (1 << 0);
+    if (CH2_RELAY) status |= (1 << 1);
+    if (CH3_RELAY) status |= (1 << 2);
+    if (CH4_RELAY) status |= (1 << 3);
+
+    return status;
+}
 void set_ao_led(){
     if(get_relay_status()==0x0F)
         RELAY_ALLOPEN = 1;

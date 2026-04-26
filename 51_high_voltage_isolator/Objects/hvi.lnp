@@ -1,0 +1,7 @@
+".\Objects\delay.obj",
+".\Objects\ir_receive.obj",
+".\Objects\main.obj",
+".\Objects\relay.obj",
+".\Objects\uart.obj" 
+TO ".\Objects\hvi" 
+PRINT(".\Listings\hvi.m51") RAMSIZE(256) 

@@ -36,7 +36,7 @@ void Delay_s(unsigned int i) //@12.000MHz
 {
     while (i)
     {
-        Delay_ms();
+        Delay_ms(1000);
         i--;
     }
 }

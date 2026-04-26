@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   RELAY                                                             04/25/2026 22:14:18 PAGE 1   
+C51 COMPILER V9.59.0.0   RELAY                                                             04/26/2026 15:19:49 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE RELAY
@@ -18,7 +18,7 @@ line level    source
    8   1          CH4_RELAY = 0;
    9   1      }
   10          
-  11          void set_relay_state(unsigned char channel, unsigned char state)
+  11          void set_relay_state(uint8_t channel, uint8_t state)
   12          {
   13   1          switch (channel)
   14   1          {
@@ -40,7 +40,7 @@ line level    source
   30   2          }
   31   1      }
   32          
-  33          void toggle_relay(unsigned char channel)
+  33          void toggle_relay(uint8_t channel)
   34          {
   35   1          switch (channel)
   36   1          {
@@ -62,7 +62,7 @@ line level    source
   52   2          }
   53   1      }
   54          
-C51 COMPILER V9.59.0.0   RELAY                                                             04/25/2026 22:14:18 PAGE 2   
+C51 COMPILER V9.59.0.0   RELAY                                                             04/26/2026 15:19:49 PAGE 2   
 
   55          void turn_off_all_relays()
   56          {
@@ -82,88 +82,93 @@ line level    source
   70          
   71          void self_checking_relays()
   72          {
-  73   1          // 流水检测所有继电器
-  74   1          for (unsigned char i = 1; i <= 4; i++)
-*** ERROR C141 IN LINE 74 OF relay.c: syntax error near 'unsigned', expected 'sizeof'
-*** ERROR C202 IN LINE 74 OF relay.c: 'i': undefined identifier
-*** ERROR C202 IN LINE 74 OF relay.c: 'i': undefined identifier
-*** ERROR C202 IN LINE 74 OF relay.c: 'i': undefined identifier
-*** ERROR C141 IN LINE 74 OF relay.c: syntax error near ')', expected ';'
-  75   1          {
-  76   2              set_relay_state(i, 1); // Turn on relay
-  77   2              Delay_ms(500);         // Wait for 500ms
-  78   2              set_relay_state(i, 0); // Turn off relay
-*** ERROR C202 IN LINE 78 OF relay.c: 'i': undefined identifier
-  79   2              Delay_ms(500);         // Wait for 500ms
-  80   2          }
-  81   1      
-  82   1          for (unsigned char i = 4; i >= 1; i--)
-*** ERROR C141 IN LINE 82 OF relay.c: syntax error near 'unsigned', expected 'sizeof'
-*** ERROR C202 IN LINE 82 OF relay.c: 'i': undefined identifier
-*** ERROR C202 IN LINE 82 OF relay.c: 'i': undefined identifier
-*** ERROR C202 IN LINE 82 OF relay.c: 'i': undefined identifier
-*** ERROR C141 IN LINE 82 OF relay.c: syntax error near ')', expected ';'
-  83   1          {
-  84   2              set_relay_state(i, 1); // Turn on relay
-  85   2              Delay_ms(500);         // Wait for 500ms
-  86   2              set_relay_state(i, 0); // Turn off relay
-*** ERROR C202 IN LINE 86 OF relay.c: 'i': undefined identifier
-  87   2              Delay_ms(500);         // Wait for 500ms
-  88   2          }
-  89   1          // 开关全部
-  90   1          trun_on_all_relays();
-  91   1          Delay_ms(500);
-  92   1          turn_off_all_relays();
-  93   1          Delay_ms(500);
-  94   1      }
-  95          
-  96          uint8_t get_relay_status(){
-  97   1          return 0|(CH1_RELAY << 0)|
-  98   1                 (CH2_RELAY << 1)|
-  99   1                 (CH3_RELAY << 2)|
- 100   1                 (CH4_RELAY << 3);
- 101   1      }
- 102          
- 103          void set_ao_led(){
- 104   1          if(get_relay_status()==0x0F)
-C51 COMPILER V9.59.0.0   RELAY                                                             04/25/2026 22:14:18 PAGE 3   
+  73   1          uint8_t i =0;
+  74   1          // 流水检测所有继电器
+  75   1          for (i = 1; i <= 4; i++)
+  76   1          {
+  77   2              set_relay_state(i, 1); // Turn on relay
+  78   2              Delay_ms(500);         // Wait for 500ms
+  79   2              set_relay_state(i, 0); // Turn off relay
+  80   2              Delay_ms(500);         // Wait for 500ms
+  81   2          }
+  82   1      
+  83   1          for (i = 4; i >= 1; i--)
+  84   1          {
+  85   2              set_relay_state(i, 1); // Turn on relay
+  86   2              Delay_ms(500);         // Wait for 500ms
+  87   2              set_relay_state(i, 0); // Turn off relay
+  88   2              Delay_ms(500);         // Wait for 500ms
+  89   2          }
+  90   1          // 开关全部
+  91   1          trun_on_all_relays();
+  92   1          Delay_ms(500);
+  93   1          turn_off_all_relays();
+  94   1          Delay_ms(500);
+  95   1      }
+  96          
+  97          uint8_t get_relay_status(void)
+  98          {
+  99   1          uint8_t status = 0;
+ 100   1      
+ 101   1          if (CH1_RELAY) status |= (1 << 0);
+ 102   1          if (CH2_RELAY) status |= (1 << 1);
+ 103   1          if (CH3_RELAY) status |= (1 << 2);
+ 104   1          if (CH4_RELAY) status |= (1 << 3);
+ 105   1      
+ 106   1          return status;
+ 107   1      }
+ 108          void set_ao_led(){
+ 109   1          if(get_relay_status()==0x0F)
+ 110   1              RELAY_ALLOPEN = 1;
+ 111   1      }
+ 112          
+ 113          // 红外编码映射功能
+ 114          uint8_t ir_key_code_map_to_channel(uint8_t key_code){
+ 115   1          switch (key_code)
+ 116   1          {
+C51 COMPILER V9.59.0.0   RELAY                                                             04/26/2026 15:19:49 PAGE 3   
 
- 105   1              RELAY_ALLOPEN = 1;
- 106   1      }
- 107          
- 108          // 红外编码映射功能
- 109          uint8_t ir_key_code_map_to_channel(uint8_t key_code){
- 110   1          switch (key_code)
- 111   1          {
- 112   2          case 0:
- 113   2              set_relay_state(1, !CH1_RELAY);
- 114   2              return 0;
- 115   2          case 1:
- 116   2              set_relay_state(2, !CH2_RELAY);
- 117   2              return 0;
- 118   2          case 2:
- 119   2              set_relay_state(3, !CH3_RELAY);
- 120   2              return 0;
- 121   2          case 3:
- 122   2              set_relay_state(4, !CH4_RELAY);
- 123   2              return 0;
- 124   2              break;
- 125   2          // 其他指令处理
- 126   2          // 全开
- 127   2          case 4:
- 128   2              trun_on_all_relays();
- 129   2              return 0;
- 130   2          // 全关
- 131   2          case 5:
- 132   2              turn_off_all_relays();
- 133   2              return 0;
- 134   2          // 再次自检
- 135   2          case 6:
- 136   2              self_checking_relays();
- 137   2              return 0;
- 138   2          default:
- 139   2              return 1;
- 140   2          }
- 141   1      }
+ 117   2          case 0:
+ 118   2              set_relay_state(1, !CH1_RELAY);
+ 119   2              return 0;
+ 120   2          case 1:
+ 121   2              set_relay_state(2, !CH2_RELAY);
+ 122   2              return 0;
+ 123   2          case 2:
+ 124   2              set_relay_state(3, !CH3_RELAY);
+ 125   2              return 0;
+ 126   2          case 3:
+ 127   2              set_relay_state(4, !CH4_RELAY);
+ 128   2              return 0;
+ 129   2              break;
+ 130   2          // 其他指令处理
+ 131   2          // 全开
+ 132   2          case 4:
+ 133   2              trun_on_all_relays();
+ 134   2              return 0;
+ 135   2          // 全关
+ 136   2          case 5:
+ 137   2              turn_off_all_relays();
+ 138   2              return 0;
+ 139   2          // 再次自检
+ 140   2          case 6:
+ 141   2              self_checking_relays();
+ 142   2              return 0;
+ 143   2          default:
+ 144   2              return 1;
+ 145   2          }
+ 146   1      }
 
-C51 COMPILATION COMPLETE.  0 WARNING(S),  12 ERROR(S)
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    346    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

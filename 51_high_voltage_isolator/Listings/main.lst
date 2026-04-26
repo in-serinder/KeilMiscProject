@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              04/25/2026 22:14:18 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              04/26/2026 15:17:06 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -8,7 +8,7 @@ COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE 
 
 line level    source
 
-   1          #include "stc89c52.h"
+   1          #include "stc15w.h"
    2          #include "relay.h"
    3          #include "delay.h"
    4          #include "ir_receive.h"
@@ -17,40 +17,42 @@ line level    source
    7          void main()
    8          {
    9   1          uint8_t cmd_flag = 0;
-  10   1          /*初始化位*/
-  11   1          init_relays();
-  12   1          IR_Init();
-  13   1          UART_Init();
-  14   1          /*自检*/
-  15   1          UART_SendString((uint8_t *)"Booted RelaySelf-Checking ....");
-  16   1          Delay_ms(500);
-  17   1          self_checking_relays();
-  18   1          UART_SendString((uint8_t *)"Relay Self-Checking Completed.");
-  19   1          set_ao_led();
-  20   1          while (1)
-  21   1          {
-  22   2              set_ao_led();
-  23   2              if (ir_receive_complete)
-  24   2              {
-  25   3                  unsigned char digit = IR_GetDigit();
-  26   3                  if (digit <= 4) // 仅处理1-4的数字按键
-  27   3                  {
-  28   4                      toggle_relay(digit); // 切换对应继电器状态
-  29   4                      UART_SendString((uint8_t *)"Toggled Relay ");
-  30   4                      cmd_flag = ir_key_code_map_to_channel(digit);
-  31   4                      if (cmd_flag!=0)
-  32   4                          UART_SendString((uint8_t *)"Unknown Command\n");
-  33   4      
-  34   4                      UART_SendByte('0' + digit); // 发送继电器编号
-  35   4                      UART_SendByte('\n');
-  36   4                  }
-  37   3                  else
-  38   3                  {
-  39   4                      UART_SendString((uint8_t *)"Received Non-Digit Key\n");
-  40   4                  }
-  41   3              }
-  42   2          }
-  43   1      }
+  10   1          uint8_t digit;
+  11   1      
+  12   1          /*初始化位*/
+  13   1          init_relays();
+  14   1          IR_Init();
+  15   1          UART_Init();
+  16   1          /*自检*/
+  17   1          UART_SendString((uint8_t *)"Booted RelaySelf-Checking ....");
+  18   1          Delay_ms(500);
+  19   1          self_checking_relays();
+  20   1          UART_SendString((uint8_t *)"Relay Self-Checking Completed.");
+  21   1          set_ao_led();
+  22   1          while (1)
+  23   1          {
+  24   2              set_ao_led();
+  25   2              if (ir_receive_complete)
+  26   2              {
+  27   3                  digit = IR_GetDigit();
+  28   3                  if (digit <= 4) // 仅处理1-4的数字按键
+  29   3                  {
+  30   4                      toggle_relay(digit); // 切换对应继电器状态
+  31   4                      UART_SendString((uint8_t *)"Toggled Relay ");
+  32   4                      cmd_flag = ir_key_code_map_to_channel(digit);
+  33   4                      if (cmd_flag != 0)
+  34   4                          UART_SendString((uint8_t *)"Unknown Command\n");
+  35   4      
+  36   4                      UART_SendByte('0' + digit); // 发送继电器编号
+  37   4                      UART_SendByte('\n');
+  38   4                  }
+  39   3                  else
+  40   3                  {
+  41   4                      UART_SendString((uint8_t *)"Received Non-Digit Key\n");
+  42   4                  }
+  43   3              }
+  44   2          }
+  45   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
@@ -60,10 +62,10 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----       2
    IDATA SIZE       =   ----    ----
+C51 COMPILER V9.59.0.0   MAIN                                                              04/26/2026 15:17:06 PAGE 2   
+
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
-
-C51 COMPILER V9.59.0.0   MAIN                                                              04/25/2026 22:14:18 PAGE 2   
 
 
 C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
