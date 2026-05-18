@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   RELAY                                                             04/26/2026 15:19:49 PAGE 1   
+C51 COMPILER V9.59.0.0   RELAY                                                             05/18/2026 08:19:49 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE RELAY
@@ -62,7 +62,7 @@ line level    source
   52   2          }
   53   1      }
   54          
-C51 COMPILER V9.59.0.0   RELAY                                                             04/26/2026 15:19:49 PAGE 2   
+C51 COMPILER V9.59.0.0   RELAY                                                             05/18/2026 08:19:49 PAGE 2   
 
   55          void turn_off_all_relays()
   56          {
@@ -126,7 +126,7 @@ line level    source
  114          uint8_t ir_key_code_map_to_channel(uint8_t key_code){
  115   1          switch (key_code)
  116   1          {
-C51 COMPILER V9.59.0.0   RELAY                                                             04/26/2026 15:19:49 PAGE 3   
+C51 COMPILER V9.59.0.0   RELAY                                                             05/18/2026 08:19:49 PAGE 3   
 
  117   2          case 0:
  118   2              set_relay_state(1, !CH1_RELAY);
