@@ -1,0 +1,3 @@
+".\Objects\main.obj" 
+TO ".\Objects\18650bsmb" 
+PRINT(".\Listings\18650bsmb.m51") RAMSIZE(256) 
