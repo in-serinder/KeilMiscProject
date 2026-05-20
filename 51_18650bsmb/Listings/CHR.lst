@@ -1,0 +1,59 @@
+C51 COMPILER V9.59.0.0   CHR                                                               05/20/2026 13:50:22 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE CHR
+OBJECT MODULE PLACED IN .\Objects\CHR.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE DRIVER\CHR.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\DRIVER;..\51_18650bsmb) D
+                    -EBUG OBJECTEXTEND PRINT(.\Listings\CHR.lst) TABS(2) OBJECT(.\Objects\CHR.obj)
+
+line level    source
+
+   1          #include "CHR.h"
+   2          
+   3          #define CHR_CH1 P14
+   4          #define CHR_CH2 P15
+   5          #define CHR_CH3 P54
+   6          #define CHR_CH4 P55
+   7          
+   8          // TP4056 CE低电平启用充电 默认不启用
+   9          void CHR_Init(void)
+  10          {
+  11   1          CHR_CH1 = 1;
+  12   1          CHR_CH2 = 1;
+  13   1          CHR_CH3 = 1;
+  14   1          CHR_CH4 = 1;
+  15   1      }
+  16          
+  17          void CHR_Set_CH1(uint8_t state)
+  18          {
+  19   1          CHR_CH1 = state;
+  20   1      }
+  21          
+  22          void CHR_Set_CH2(uint8_t state)
+  23          {
+  24   1          CHR_CH2 = state;
+  25   1      }
+  26          
+  27          void CHR_Set_CH3(uint8_t state)
+  28          {
+  29   1          CHR_CH3 = state;
+  30   1      }
+  31          
+  32          void CHR_Set_CH4(uint8_t state)
+  33          {
+  34   1          CHR_CH4 = state;
+  35   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     33    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

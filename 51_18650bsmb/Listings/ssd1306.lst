@@ -1,0 +1,27 @@
+C51 COMPILER V9.59.0.0   SSD1306                                                           05/20/2026 13:50:22 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE SSD1306
+OBJECT MODULE PLACED IN .\Objects\ssd1306.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE DRIVER\ssd1306.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\DRIVER;..\51_18650bsm
+                    -b) DEBUG OBJECTEXTEND PRINT(.\Listings\ssd1306.lst) TABS(2) OBJECT(.\Objects\ssd1306.obj)
+
+line level    source
+
+   1          #include "ssd1306.h"
+   2          
+   3          void SSD1306_Init(void) {}
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =      1    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

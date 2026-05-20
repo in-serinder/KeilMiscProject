@@ -12,11 +12,11 @@ void KEY_Init(void);
 /**
  * @brief 外部中断0服务函数(THRESHOLD_SUB按键)
  */
-void EXTI0_IRQHandler(void) interrupt 0;
+//void EXTI0_IRQHandler(void) interrupt 0;
 
 /**
  * @brief 外部中断1服务函数(THRESHOLD_ADD按键)
  */
-void EXTI1_IRQHandler(void) interrupt 2;
+//void EXTI1_IRQHandler(void) interrupt 2;
 
 #endif

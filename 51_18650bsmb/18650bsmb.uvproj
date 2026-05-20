@@ -233,7 +233,7 @@
               <RCB>
                 <Type>0</Type>
                 <StartAddress>0x0</StartAddress>
-                <Size>0x0</Size>
+                <Size>0x10000</Size>
               </RCB>
               <RXB>
                 <Type>0</Type>
@@ -324,7 +324,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath></IncludePath>
+              <IncludePath>.\DRIVER;..\51_18650bsmb</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -385,6 +385,51 @@
               <FileName>stc15w.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\stc15w.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>DRIVER</GroupName>
+          <Files>
+            <File>
+              <FileName>BAT.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\DRIVER\BAT.c</FilePath>
+            </File>
+            <File>
+              <FileName>BAT.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\DRIVER\BAT.h</FilePath>
+            </File>
+            <File>
+              <FileName>CHR.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\DRIVER\CHR.c</FilePath>
+            </File>
+            <File>
+              <FileName>CHR.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\DRIVER\CHR.h</FilePath>
+            </File>
+            <File>
+              <FileName>key.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\DRIVER\key.c</FilePath>
+            </File>
+            <File>
+              <FileName>key.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\DRIVER\key.h</FilePath>
+            </File>
+            <File>
+              <FileName>ssd1306.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\DRIVER\ssd1306.c</FilePath>
+            </File>
+            <File>
+              <FileName>ssd1306.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\DRIVER\ssd1306.h</FilePath>
             </File>
           </Files>
         </Group>

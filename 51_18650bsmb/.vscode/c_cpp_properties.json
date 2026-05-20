@@ -38,7 +38,9 @@
         {
             "name": "Target 1",
             "includePath": [
-                "/home/serinder/GitWorkBranch/KeilMiscProject/51_18650bsmb"
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_18650bsmb\\DRIVER",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_18650bsmb",
+                "D:\\Keil_v5\\C51\\INC"
             ],
             "defines": [
                 "__C51__",
