@@ -233,7 +233,7 @@
               <RCB>
                 <Type>0</Type>
                 <StartAddress>0x0</StartAddress>
-                <Size>0x10000</Size>
+                <Size>0xffff</Size>
               </RCB>
               <RXB>
                 <Type>0</Type>
@@ -324,7 +324,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\DRIVER;..\51_18650bsmb</IncludePath>
+              <IncludePath>.\DRIVER;..\51_18650bsmb;.\SYS</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -430,6 +430,21 @@
               <FileName>ssd1306.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\DRIVER\ssd1306.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>SYS</GroupName>
+          <Files>
+            <File>
+              <FileName>Delay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\SYS\Delay.c</FilePath>
+            </File>
+            <File>
+              <FileName>Delay.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\SYS\Delay.h</FilePath>
             </File>
           </Files>
         </Group>

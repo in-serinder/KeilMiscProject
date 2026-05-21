@@ -40,6 +40,7 @@
             "includePath": [
                 "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_18650bsmb\\DRIVER",
                 "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_18650bsmb",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_18650bsmb\\SYS",
                 "D:\\Keil_v5\\C51\\INC"
             ],
             "defines": [

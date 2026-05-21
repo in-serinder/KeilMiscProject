@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   CHR                                                               05/20/2026 13:50:22 PAGE 1   
+C51 COMPILER V9.59.0.0   CHR                                                               05/20/2026 13:53:16 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE CHR
@@ -16,33 +16,20 @@ line level    source
    6          #define CHR_CH4 P55
    7          
    8          // TP4056 CE低电平启用充电 默认不启用
-   9          void CHR_Init(void)
-  10          {
-  11   1          CHR_CH1 = 1;
-  12   1          CHR_CH2 = 1;
-  13   1          CHR_CH3 = 1;
-  14   1          CHR_CH4 = 1;
-  15   1      }
-  16          
-  17          void CHR_Set_CH1(uint8_t state)
-  18          {
-  19   1          CHR_CH1 = state;
-  20   1      }
+   9          void CHR_Init(void) {
+  10   1        CHR_CH1 = 1;
+  11   1        CHR_CH2 = 1;
+  12   1        CHR_CH3 = 1;
+  13   1        CHR_CH4 = 1;
+  14   1      }
+  15          
+  16          void CHR_Set_CH1(uint8_t state) { CHR_CH1 = state; }
+  17          
+  18          void CHR_Set_CH2(uint8_t state) { CHR_CH2 = state; }
+  19          
+  20          void CHR_Set_CH3(uint8_t state) { CHR_CH3 = state; }
   21          
-  22          void CHR_Set_CH2(uint8_t state)
-  23          {
-  24   1          CHR_CH2 = state;
-  25   1      }
-  26          
-  27          void CHR_Set_CH3(uint8_t state)
-  28          {
-  29   1          CHR_CH3 = state;
-  30   1      }
-  31          
-  32          void CHR_Set_CH4(uint8_t state)
-  33          {
-  34   1          CHR_CH4 = state;
-  35   1      }
+  22          void CHR_Set_CH4(uint8_t state) { CHR_CH4 = state; }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
