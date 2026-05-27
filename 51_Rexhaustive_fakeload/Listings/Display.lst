@@ -1,0 +1,106 @@
+C51 COMPILER V9.59.0.0   DISPLAY                                                           12/28/2025 11:14:16 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE DISPLAY
+OBJECT MODULE PLACED IN .\Objects\Display.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Display\Display.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Display;.\FakeLoad;.
+                    -\Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\Display.lst) TABS(2) OBJECT(.\Objects\Display.obj)
+
+line level    source
+
+   1          #include "Display.h"
+   2          #include "LCD1602.h"
+   3          #include <stdint.h>
+*** WARNING C318 IN LINE 3 OF Display\Display.c: can't open file 'stdint.h'
+   4          
+   5          static char buffer[16];
+   6          
+   7          void Display_Init(void)
+   8          {
+   9   1          // Initialization code for the display
+  10   1          LCD_Init();
+  11   1      }
+  12          
+  13          void Display_BootMessage(void)
+  14          {
+  15   1          LCD_ShowString(1, 1, "FakeLoad Boot");
+  16   1          LCD_ShowString(2, 1, "Initializing...");
+  17   1      }
+  18          
+  19          void Display_FakeLoadList(unsigned char *loadList)
+  20          {
+  21   1          uint8_t i;
+*** ERROR C202 IN LINE 21 OF Display\Display.c: 'uint8_t': undefined identifier
+*** ERROR C141 IN LINE 21 OF Display\Display.c: syntax error near 'i', expected ';'
+  22   1          for (i = 0; i < 3; i++)
+*** ERROR C202 IN LINE 22 OF Display\Display.c: 'i': undefined identifier
+  23   1          {
+  24   2              LCD_ShowString(1,1 + (i * 5), 1, loadList[i]);
+*** ERROR C202 IN LINE 24 OF Display\Display.c: 'i': undefined identifier
+  25   2          }
+  26   1      
+  27   1          LCD_ShowChar(1, 16, 'W');
+  28   1      }
+  29          
+  30          void Display_TimerSetupMessage(uint16_t set_seconds)
+*** ERROR C141 IN LINE 30 OF Display\Display.c: syntax error near 'set_seconds', expected ')'
+  31          {
+  32   1          buffer[0] = '\0';
+  33   1          uint8_t minutes = set_seconds / 60;
+*** ERROR C202 IN LINE 33 OF Display\Display.c: 'uint8_t': undefined identifier
+*** ERROR C141 IN LINE 33 OF Display\Display.c: syntax error near 'minutes', expected ';'
+  34   1          uint8_t seconds = set_seconds % 60;
+*** ERROR C202 IN LINE 34 OF Display\Display.c: 'uint8_t': undefined identifier
+*** ERROR C141 IN LINE 34 OF Display\Display.c: syntax error near 'seconds', expected ';'
+  35   1          // Convert seconds to string
+  36   1          sprintf(buffer, "Timer:%02u:%02u", minutes, seconds);
+  37   1          LCD_ShowString(2, 1, buffer);
+  38   1      }
+  39          
+  40          void Display_RunningMessage(uint16_t elapsed_seconds, uint8_t *loadEff, uint8_t *voltage)
+  41          {
+  42   1          buffer[0] = '\0';
+  43   1          uint8_t minutes = elapsed_seconds / 60;
+  44   1          uint8_t seconds = elapsed_seconds % 60;
+C51 COMPILER V9.59.0.0   DISPLAY                                                           12/28/2025 11:14:16 PAGE 2   
+
+  45   1          // Convert seconds to string
+  46   1          sprintf(buffer, "%02u:%02u", minutes, seconds);
+  47   1          LCD_ShowString(1, 1, loadEff); // 四位负载效率显示
+  48   1          LCD_ShowString(1, 6, voltage); // 四位电压显示
+  49   1          LCD_ShowString(1, 10, "Running");
+  50   1          LCD_ShowString(2, 1, buffer);
+  51   1      }
+  52          
+  53          void Display_IdleMessage(void)
+  54          {
+  55   1          LCD_ShowString(1, 1, "System Idle");
+  56   1          LCD_ShowString(2, 1, "Set Timer");
+  57   1      }
+  58          
+  59          void Display_ErrorMessage(char *message)
+  60          {
+  61   1          LCD_ShowString(1, 1, "Error:");
+  62   1          LCD_ShowString(2, 1, message);
+  63   1      }
+  64          
+  65          void Display_Clear(void)
+  66          {
+  67   1          LCD_ShowString(1, 1, "                "); // Clear line 1
+  68   1          LCD_ShowString(2, 1, "                "); // Clear line 2
+  69   1      }
+  70          
+  71          void Display_LoadingMessage(void)
+  72          {
+  73   1          LCD_ShowString(1, 1, "Loading...");
+  74   1      }
+  75          
+  76          void Display_CalcLoadEfficiency(float efficiency)
+  77          {
+  78   1          buffer[0] = '\0';
+  79   1          // Convert efficiency to string with 2 decimal places
+  80   1          sprintf(buffer, "Eff: %.2f%%", efficiency);
+  81   1          LCD_ShowString(2, 1, buffer);
+  82   1      }
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  9 ERROR(S)

@@ -1,0 +1,68 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: ¦ÌVision V5.25.3.0
+Copyright (C) 2018 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: data jyag, dara, LIC=UJ5FJ-U798J-C7MR1-CI8Y6-89HMI-25G5S
+ 
+Tool Versions:
+Toolchain:       PK51 Prof. Developers Kit  Version: 9.59.0.0
+Toolchain Path:  D:\Keil_v5\C51\BIN
+C Compiler:      C51.exe V9.59.0.0
+Assembler:       A51.exe V8.2.7.0
+Linker/Locator:  BL51.exe V6.22.2.0
+Library Manager: LIB51.exe V4.30.1.0
+Hex Converter:   OH51.exe V2.7.0.0
+CPU DLL:         S8051.DLL V3.122.0.0
+Dialog DLL:      DP51.DLL V2.66.0.0 
+<h2>Project:</h2>
+F:\SYSFILE\DeskTop\Misc.Git\fakeloader_51\fakeload.uvproj
+Project File Date:  12/28/2025
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling main.c...
+.\Key\key.h(4): error C231: 'uint8_t': redefinition
+.\Key\key.h(5): error C141: syntax error near 'uint16_t', expected 'hdata'
+.\Key\peripheral.h(6): error C231: 'uint8_t': redefinition
+.\Key\peripheral.h(7): error C141: syntax error near 'uint16_t', expected 'hdata'
+compiling Status.c...
+System\Status.c(2): warning C318: can't open file 'stdint.h'
+System\Status.c(5): error C129: missing ';' before 'effic'
+compiling Timer.c...
+System\Timer.c(6): error C202: 'TMOD': undefined identifier
+System\Timer.c(8): error C202: 'TH0': undefined identifier
+System\Timer.c(9): error C202: 'TL0': undefined identifier
+System\Timer.c(10): error C202: 'ET0': undefined identifier
+System\Timer.c(11): error C202: 'EA': undefined identifier
+System\Timer.c(12): error C202: 'TR0': undefined identifier
+compiling key.c...
+Key\key.c(5): error C231: 'XICON': redefinition
+Key\key.c(36): error C141: syntax error near '=', expected ';'
+Key\key.c(37): error C141: syntax error near '=', expected ';'
+Key\key.c(44): error C141: syntax error near '=', expected ';'
+Key\key.c(45): error C141: syntax error near '=', expected ';'
+compiling Display.c...
+Display\Display.c(3): warning C318: can't open file 'stdint.h'
+Display\Display.c(21): error C202: 'uint8_t': undefined identifier
+Display\Display.c(21): error C141: syntax error near 'i', expected ';'
+Display\Display.c(22): error C202: 'i': undefined identifier
+Display\Display.c(24): error C202: 'i': undefined identifier
+Display\Display.c(30): error C141: syntax error near 'set_seconds', expected ')'
+Display\Display.c(33): error C202: 'uint8_t': undefined identifier
+Display\Display.c(33): error C141: syntax error near 'minutes', expected ';'
+Display\Display.c(34): error C202: 'uint8_t': undefined identifier
+Display\Display.c(34): error C141: syntax error near 'seconds', expected ';'
+compiling fakeload_iic.c...
+FakeLoad\fakeload_iic.c(38): warning C280: 'ack': unreferenced local variable
+FakeLoad\fakeload_iic.c(124): error C218: void-type in controlling expression
+compiling Efficiency.c...
+Utility\Efficiency.c(9): error C141: syntax error near '.', expected 'sizeof'
+Utility\Efficiency.c(18): error C141: syntax error near '.', expected 'sizeof'
+Target not created.
+Build Time Elapsed:  00:00:01
+</pre>
+</body>
+</html>

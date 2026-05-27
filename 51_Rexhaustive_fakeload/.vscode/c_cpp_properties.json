@@ -1,0 +1,55 @@
+{
+    "configurations": [
+        {
+            "name": "linux-gcc-x64",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "${default}",
+            "cppStandard": "${default}",
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerArgs": [
+                ""
+            ]
+        },
+        {
+            "name": "Target 1",
+            "includePath": [
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\Display",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\FakeLoad",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\Key",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\System",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\Utility",
+                "D:\\Keil_v5\\C51\\INC",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload"
+            ],
+            "defines": [
+                "__C51__",
+                "__VSCODE_C51__",
+                "reentrant=",
+                "compact=",
+                "small=",
+                "large=",
+                "data=",
+                "idata=",
+                "pdata=",
+                "bdata=",
+                "xdata=",
+                "code=",
+                "bit=char",
+                "sbit=char",
+                "sfr=char",
+                "sfr16=int",
+                "sfr32=int",
+                "interrupt=",
+                "using=",
+                "_at_=",
+                "_priority_=",
+                "_task_="
+            ],
+            "intelliSenseMode": "${default}"
+        }
+    ],
+    "version": 4
+}

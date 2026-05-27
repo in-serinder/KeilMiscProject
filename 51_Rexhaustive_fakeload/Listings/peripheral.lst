@@ -1,0 +1,107 @@
+C51 COMPILER V9.59.0.0   PERIPHERAL                                                        12/28/2025 11:12:08 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE PERIPHERAL
+OBJECT MODULE PLACED IN .\Objects\peripheral.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Key\peripheral.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Display;.\FakeLoad;.\
+                    -Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\peripheral.lst) TABS(2) OBJECT(.\Objects\peripheral.obj)
+
+line level    source
+
+   1          #include "peripheral.h"
+   2          #include "Delay.h"
+   3          #include "Timer.h"
+   4          
+   5          
+   6          uint16_t PWMPeriod = 100;  // PWM周期，单位为中断次数
+   7          uint16_t pwmCounter = 0;  // PWM计数器
+   8          uint8_t dutyCycle = 50;   // 占空比
+   9          
+  10          sbit Buzzer = P3^6;
+  11          sbit ShellFAN = P2^5;
+  12          sbit EXTFAN = P2^4;
+  13          sbit HEARTFAN = P3^4;
+  14          sbit RUNSTATE_LED = P3^5;
+  15          
+  16          
+  17          /*功能函数*/
+  18          
+  19          void Timer0_ISR(void) interrupt 1 {
+  20   1          // 无操作，仅用于产生定时中断
+  21   1          TH0 = 0xFC;   
+  22   1          TL0 = 0x66;  
+  23   1      
+  24   1          // PWM控制逻辑
+  25   1          pwmCounter++;
+  26   1          if (pwmCounter >= PWMPeriod) {
+  27   2              pwmCounter = 0;
+  28   2          }
+  29   1      
+  30   1      
+  31   1          if (pwmCounter < dutyCycle)
+  32   1          {
+  33   2              Buzzer = 1;
+  34   2          }else{
+  35   2              Buzzer = 0;
+  36   2          }
+  37   1          
+  38   1      }
+  39          
+  40          void setBuzzerDutyCycle(uint8_t duty) {
+  41   1          if (duty > 100) {
+  42   2              duty = 100; // 限制最大占空比为100%
+  43   2          }
+  44   1          dutyCycle = duty;
+  45   1      }
+  46          
+  47          
+  48          /*外设函数*/
+  49          
+  50          void BuzzerPWM(uint8_t freq) {
+  51   1         Timer0_Init();
+  52   1      
+  53   1         if (freq == 0)
+  54   1         {
+C51 COMPILER V9.59.0.0   PERIPHERAL                                                        12/28/2025 11:12:08 PAGE 2   
+
+  55   2          PWMPeriod = 0; // 关闭蜂鸣器
+  56   2         }
+  57   1         else
+  58   1         {
+  59   2          PWMPeriod = 1000000 / (freq * 10); // 根据频率计算PWM周期
+  60   2          PWMPeriod = (PWMPeriod>200)?200:(PWMPeriod<1)?1:PWMPeriod; // 限制PWM周期范围在1到200之间
+  61   2         }
+  62   1         
+  63   1      
+  64   1      }
+  65          
+  66          
+  67          void shellFAN(bit state){
+  68   1          ShellFAN = state;
+  69   1      }
+  70          
+  71          void extFAN(bit state){
+  72   1          EXTFAN = state;
+  73   1      }
+  74          
+  75          void heartFAN(bit state){
+  76   1          HEARTFAN = state;
+  77   1      }
+  78          
+  79          void runStateLED(bit state){
+  80   1          RUNSTATE_LED = state;
+  81   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    175    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      5       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       4
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

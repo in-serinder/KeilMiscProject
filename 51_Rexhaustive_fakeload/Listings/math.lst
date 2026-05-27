@@ -1,0 +1,59 @@
+C51 COMPILER V9.59.0.0   MATH                                                              12/28/2025 11:12:07 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MATH
+OBJECT MODULE PLACED IN .\Objects\math.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE System\math.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Display;.\FakeLoad;.\Key
+                    -;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\math.lst) TABS(2) OBJECT(.\Objects\math.obj)
+
+line level    source
+
+   1          #include "math.h"
+   2          
+   3          /* 分数运算 */
+   4          fraction add_fractions(fraction a, fraction b) {
+   5   1          fraction result;
+   6   1          result.numerator = a.numerator * b.denominator + b.numerator * a.denominator;
+   7   1          result.denominator = a.denominator * b.denominator;
+   8   1          return result;
+   9   1      }
+  10          
+  11          fraction subtract_fractions(fraction a, fraction b) {
+  12   1          fraction result;
+  13   1          result.numerator = a.numerator * b.denominator - b.numerator * a.denominator;
+  14   1          result.denominator = a.denominator * b.denominator;
+  15   1          return result;
+  16   1      }
+  17          
+  18          fraction multiply_fractions(fraction a, fraction b) {
+  19   1          fraction result;
+  20   1          result.numerator = a.numerator * b.numerator;
+  21   1          result.denominator = a.denominator * b.denominator;
+  22   1          return result;
+  23   1      }
+  24          
+  25          fraction reciprocal_fraction(fraction a) {
+  26   1          fraction result;
+  27   1          result.numerator = a.denominator;
+  28   1          result.denominator = a.numerator;
+  29   1          return result;  
+  30   1      }
+  31          
+  32          /*平方*/
+  33          float square(float x) {
+  34   1          return x * x;
+  35   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    301    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      88
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

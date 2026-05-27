@@ -1,0 +1,40 @@
+C51 COMPILER V9.59.0.0   EFFICIENCY                                                        12/28/2025 11:14:16 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE EFFICIENCY
+OBJECT MODULE PLACED IN .\Objects\Efficiency.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Utility\Efficiency.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Display;.\FakeLoa
+                    -d;.\Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\Efficiency.lst) TABS(2) OBJECT(.\Objects\Efficiency.obj)
+
+line level    source
+
+   1          #include "Efficiency.h"
+   2          #include "math.h"
+   3          
+   4          /*计算功耗等效电阻*/
+   5          float eqResistance(float arrResistances[], uint8_t count) {
+   6   1        uint8_t i;
+   7   1        
+   8   1        
+   9   1          fraction result = { .numerator = 1.0f, .denominator = 0.0f };
+*** ERROR C141 IN LINE 9 OF Utility\Efficiency.c: syntax error near '.', expected 'sizeof'
+  10   1      
+  11   1          if (arrResistances[0]==0&&count==1)
+  12   1          {
+  13   2              return 0.0f;
+  14   2          }
+  15   1          
+  16   1      
+  17   1          for ( i = 0; i < count; i++) {
+  18   2              fraction fR = { .numerator = 1.0f, .denominator = arrResistances[i] };
+*** ERROR C141 IN LINE 18 OF Utility\Efficiency.c: syntax error near '.', expected 'sizeof'
+  19   2              result = add_fractions(result, fR);
+  20   2          }
+  21   1          return reciprocal_fraction(result).numerator / reciprocal_fraction(result).denominator;
+  22   1      }
+  23          
+  24          float rEfficency(float eqRes, float voltage) {
+  25   1          return square(voltage) / eqRes;
+  26   1      }
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  2 ERROR(S)

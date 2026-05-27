@@ -1,0 +1,132 @@
+C51 COMPILER V9.59.0.0   KEY                                                               12/28/2025 11:14:15 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE KEY
+OBJECT MODULE PLACED IN .\Objects\key.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Key\key.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Display;.\FakeLoad;.\Key;.\S
+                    -ystem;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\key.lst) TABS(2) OBJECT(.\Objects\key.obj)
+
+line level    source
+
+   1          #include "stc89c52.h"
+   2          #include "key.h"
+   3          #include "Delay.h"
+   4          
+   5          sfr XICON = 0xC0;     // INT2/INT3控制寄存器（必须添加）
+*** ERROR C231 IN LINE 5 OF Key\key.c: 'XICON': redefinition
+   6          #define IT2 XICON ^ 0 // INT2触发方式位（0=低电平，1=下降沿）
+   7          #define EX2 XICON ^ 2 // INT2使能位（替代错误的#define EX2 5）
+   8          #define IT3 XICON ^ 4 // INT3触发方式位
+   9          #define EX3 XICON ^ 6 // INT3使能位（替代错误的#define EX3 6）
+  10          
+  11          sbit EC11_A = P3 ^ 2;
+  12          sbit EC11_B = P3 ^ 3;
+  13          sbit EC11_KEY = P3 ^ 0;
+  14          sbit KEY_RUN = P4 ^ 2;
+  15          
+  16          // 电路定义是低电平有效 但这里用了外部中断
+  17          bit AB_DIR; // 0: A->B  1: B->A>
+  18          bit A_STATE = 0;
+  19          bit B_STATE = 0;
+  20          bit DIRLOCK = 0;
+  21          uint8_t AB_COUNT = 0;
+  22          
+  23          void initEC11(void)
+  24          {
+  25   1          EC11_A = 1;
+  26   1          EC11_B = 1;
+  27   1          EC11_KEY = 1;
+  28   1          KEY_RUN = 1;
+  29   1      
+  30   1          IT0 = 0; // 0: 低电平触发 1: 边沿触发
+  31   1          EX0 = 1; // 使能外部中断0
+  32   1      
+  33   1          IT1 = 0;
+  34   1          EX1 = 1;
+  35   1      
+  36   1          IT2 = 0;
+*** ERROR C141 IN LINE 36 OF Key\key.c: syntax error near '=', expected ';'
+  37   1          EX2 = 1;
+*** ERROR C141 IN LINE 37 OF Key\key.c: syntax error near '=', expected ';'
+  38   1      
+  39   1          EA = 1; // 开启总中断
+  40   1      }
+  41          
+  42          void initKeys(void)
+  43          {
+  44   1          IT3 = 0;
+*** ERROR C141 IN LINE 44 OF Key\key.c: syntax error near '=', expected ';'
+  45   1          EX3 = 1;
+*** ERROR C141 IN LINE 45 OF Key\key.c: syntax error near '=', expected ';'
+  46   1      
+  47   1          EA = 1; // 开启总中断
+  48   1      }
+  49          
+C51 COMPILER V9.59.0.0   KEY                                                               12/28/2025 11:14:15 PAGE 2   
+
+  50          void EC11_A_Triggered(void) interrupt 0
+  51          {
+  52   1          Delay(2);
+  53   1      
+  54   1          if (A_STATE == 1 || DIRLOCK == 1)
+  55   1              return;
+  56   1      
+  57   1          A_STATE = 1;
+  58   1          AB_COUNT++;
+  59   1      
+  60   1          if (A_STATE == 1 && B_STATE == 0)
+  61   1          {
+  62   2              AB_DIR = 0;
+  63   2              DIRLOCK = 1;
+  64   2              checkDirection();
+  65   2              return;
+  66   2          }
+  67   1      }
+  68          
+  69          void EC11_B_Triggered(void) interrupt 1
+  70          {
+  71   1          Delay(2);
+  72   1      
+  73   1          if (B_STATE == 1 || DIRLOCK == 1)
+  74   1              return;
+  75   1      
+  76   1          B_STATE = 1;
+  77   1          AB_COUNT++;
+  78   1      
+  79   1          if (A_STATE == 0 && B_STATE == 1)
+  80   1          {
+  81   2              AB_DIR = 1;
+  82   2              DIRLOCK = 1;
+  83   2              checkDirection();
+  84   2              return;
+  85   2          }
+  86   1      }
+  87          
+  88          void EC11_KEY_Triggered(void) interrupt 12
+  89          {
+  90   1          Delay(2);
+  91   1      }
+  92          
+  93          void KEY_Running_Triggered(void) interrupt 19
+  94          {
+  95   1          Delay(2);
+  96   1      }
+  97          
+  98          void checkDirection(void)
+  99          {
+ 100   1          if (AB_COUNT >= 2)
+ 101   1          {
+ 102   2              AB_COUNT = 0;
+ 103   2              A_STATE = 0;
+ 104   2              B_STATE = 0;
+ 105   2      
+ 106   2              EC11_A = 1;
+ 107   2              EC11_B = 1;
+ 108   2      
+ 109   2              DIRLOCK = 0;
+ 110   2          }
+ 111   1      }
+C51 COMPILER V9.59.0.0   KEY                                                               12/28/2025 11:14:15 PAGE 3   
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  5 ERROR(S)
