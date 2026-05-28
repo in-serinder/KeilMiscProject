@@ -14,6 +14,7 @@ void Display_BootMessage(void) {
   LCD_ShowString(2, 1, "Initializing...");
 }
 
+// 显示假负载功率列表
 void Display_FakeLoadList(unsigned char *loadList) {
   uint8_t i;
   for (i = 0; i < 3; i++) {
