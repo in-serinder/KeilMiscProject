@@ -15,15 +15,28 @@ void Display_BootMessage(void) {
 }
 
 // 显示假负载功率列表
+// 20w 40w 60w
 void Display_FakeLoadList(unsigned char *loadList) {
-  uint8_t i;
-  for (i = 0; i < 3; i++) {
-    LCD_ShowString(1, 1 + (i * 5), 1, loadList[i]);
-  }
+  uint8_t i, longbit = 0, offset = 0;
+  uint16_t idata temp;
 
-  LCD_ShowChar(1, 16, 'W');
+  for (i = 0; i < 3; i++) {
+    temp = loadList[i] * 100;
+    while (temp) {
+      temp /= 10;
+      longbit++;
+    }
+    // 5.24 还原为 524 /10 -> 52 /10 ->5 /10 ->0
+    // 25.45 还原为 2545
+
+    LCD_ShowString(1, offset, loadList[i] + '0');
+    LCD_ShowChar(1, offset + longbit + 1, 'W');
+    // 上次位置 加符号加空格
+    offset += longbit + 2;
+  }
 }
 
+// Timer: 分钟:秒
 void Display_TimerSetupMessage(uint16_t set_seconds) {
   buffer[0] = '\0';
   uint8_t minutes = set_seconds / 60;
