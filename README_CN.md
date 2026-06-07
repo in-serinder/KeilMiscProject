@@ -34,6 +34,7 @@ git clone  https://github.com/in-serinder/KeilMiscProject.git
 - [51 24C64 EEPROM 驱动](./51_Driver_24c64_EEPROM/)
 - [51 SSD13xx OLED 显示屏驱动 适用于Ssd1306 ssd1315 OLED显示屏 可自定义屏幕纵横](./51_Driver_SSD13xx/)
 - [51 PCF8574 I2C 接口扩展器 驱动](./51_Driver_PCF8574/)
+- [51 TLCx543(TLC1543/TLC2543) 10-12位ADC 驱动](./51_Driver_TLCx543_10-12bitADC/)
 
 - [STM32 DHT11 温湿度传感器 驱动](./STM32_Driver_DHT11/)
 

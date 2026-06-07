@@ -34,6 +34,7 @@ MCU_Platform_[Driver_specifies_hardware_driver_function]_Project_Name
 - [51 24C64 EEPROM Driver](./51_Driver_24c64_EEPROM/)
 - [51 SSD13xx OLED Display Driver for Ssd1306/ssd1315 OLED displays, customizable screen aspect ratio](./51_Driver_SSD13xx/)
 - [51 PCF8574 I2C Expander Driver](./51_Driver_PCF8574/)
+- [51 TLCx543(TLC1543/TLC2543) 10-12 bit ADC Driver](./51_Driver_TLCx543_10-12bitADC/)
 
 - [STM32 DHT11 Temperature and Humidity Sensor Driver](./STM32_Driver_DHT11/)
 
@@ -46,4 +47,5 @@ MCU_Platform_[Driver_specifies_hardware_driver_function]_Project_Name
 - [51 Relay LED Wifi Clock](./51_esp8266RelayOclock_LCD/)
 - [51 LCD1602 Clock Project](./51_LCD1602OClock/)
 - [51 4-8 Digit LED Display Project](./51_digital_4-8tube/)
+- [51 Resistor Exhaustive Combination Fake Load](./51_Rexhaustive_fakeload/)
 - [STM32 Project Template](./STM32_Project/)
