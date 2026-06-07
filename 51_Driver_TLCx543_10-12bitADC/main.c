@@ -27,6 +27,11 @@ void main(void) {
     UART_SendString("\r\n--- Sample --\r\n");
 
     for (channel = 0; channel < 11; channel++) {
+      TLCx543_ReadADC(channel);
+      Delay_ms(20);
+      TLCx543_ReadADC(channel);
+      Delay_ms(20);
+
       voltage = TLCx543_ReadVoltageV(channel);
 
       UART_SendString("A");
@@ -39,4 +44,19 @@ void main(void) {
     }
     Delay_ms(500);
   }
+  // 有个问题 数据是通过发送地址之后芯片存入片内单片机主动读取的
+  // 期间转换完成后EOC产生一次越变 但是这回在多通道场景表现为读取通道数值混乱
+  // 所以读取通道时最好对那个通道空读两次
+
+  // TLCx543_ReadADC(1);
+  // Delay_ms(20);
+  // TLCx543_ReadADC(1);
+  // Delay_ms(20);
+  // voltage = TLCx543_ReadVoltageV(1);
+  // UART_SendString("A");
+  // UART_SendInt(1);
+  // UART_SendString(": ");
+  // UART_SendFloat(voltage, 4);
+  // UART_SendString("V\r\n");
+  // Delay_ms(100);
 }
