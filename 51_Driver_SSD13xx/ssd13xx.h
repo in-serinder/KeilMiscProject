@@ -3,6 +3,11 @@
 
 #include "stc89c52.h" // 根据实际头文件路径修改
 #include <string.h>
+
+// I2C引脚定义
+#define SDA P07
+#define SCL P06
+
 // OLED屏幕参数
 #define SSD13XX_WIDTH 128
 #define SSD13XX_HEIGHT 64

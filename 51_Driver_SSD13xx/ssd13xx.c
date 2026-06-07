@@ -1,10 +1,6 @@
 #include "ssd13xx.h"
 #include <intrins.h>
 
-// I2C引脚定义
-#define SDA P07
-#define SCL P06
-
 // 单页缓冲区（仅128字节）
 unsigned char xdata SSD13XX_PageBuffer[SSD13XX_PAGE_WIDTH];
 
