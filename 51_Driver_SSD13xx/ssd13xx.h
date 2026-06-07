@@ -1,11 +1,8 @@
-
-
-#include "stc89c52.c"
-#include "string.h"
-
 #ifndef __SSD13XX_H__
 #define __SSD13XX_H__
 
+#include "stc89c52.h" // 根据实际头文件路径修改
+#include <string.h>
 // OLED屏幕参数
 #define SSD13XX_WIDTH 128
 #define SSD13XX_HEIGHT 64
@@ -94,20 +91,6 @@ void Draw_ProgressBar_Double(unsigned char x, unsigned char y,
                              char *title_right, char *label,
                              unsigned char percent);
 
-// 为兼容旧代码提供别名
-#define SSD13XX_WriteCommand SSD13XX_WriteCommand
-#define SSD13XX_WriteData SSD13XX_WriteData
-#define SSD13XX_Init SSD13XX_Init
-#define SSD13XX_SetCursor SSD13XX_SetCursor
-#define SSD13XX_Clear SSD13XX_Clear
-#define SSD13XX_ClearPage SSD13XX_ClearPage
-#define SSD13XX_Update SSD13XX_Update
-#define SSD13XX_DrawPixel SSD13XX_DrawPixel
-#define SSD13XX_DrawLine SSD13XX_DrawLine
-#define SSD13XX_DrawRectangle SSD13XX_DrawRectangle
-#define SSD13XX_DrawCircle SSD13XX_DrawCircle
-#define SSD13XX_DrawBitmap SSD13XX_DrawBitmap
-#define SSD13XX_WriteChar SSD13XX_WriteChar
-#define SSD13XX_WriteString SSD13XX_WriteString
+// 删除无效的自引用别名定义
 
 #endif

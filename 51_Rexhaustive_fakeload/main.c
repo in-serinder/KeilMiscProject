@@ -10,6 +10,7 @@
 // 编码器旋转只去变动一个功耗索引数值
 uint8_t loadIndex = 0;
 uint16_t duration_time_seconds = 0;
+float idata voltage = 0.0f;
 
 // 调整值
 bit is_adjusting_duration_time = 0;
@@ -26,6 +27,8 @@ void main(void) {
   shellFAN(1);
   extFAN(1);
   ADC_Init();
+
+  Display_IdleMessage();
 
   while (1) {
     if (is_running) {

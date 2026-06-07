@@ -107,7 +107,7 @@ const unsigned char code SSD13xx_Font8x8[95][8] = {
 };
 
 // 16x16 ASCII字体库 (仅包含常用字符) - 放在CODE段
-const unsigned char code SSD13xx_Font16x16[96][16] = {
+const unsigned char xdata SSD13xx_Font16x16[96][16] = {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00}, // 空格
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -311,14 +311,6 @@ void I2C_Delay(void) {
     ;
 }
 
-/***************************************************************************************************
- * 函数名: I2C_Start
- * 描述: 产生I2C总线启动信号
- * 输入: 无
- * 输出: 无
- * 返回: 无
- * 注意: 按照I2C协议产生启动时序
- **************************************************************************************************/
 void I2C_Start(void) {
   SDA = 1;
   SCL = 1;
@@ -328,14 +320,6 @@ void I2C_Start(void) {
   SCL = 0;
 }
 
-/***************************************************************************************************
- * 函数名: I2C_Stop
- * 描述: 产生I2C总线停止信号
- * 输入: 无
- * 输出: 无
- * 返回: 无
- * 注意: 按照I2C协议产生停止时序
- **************************************************************************************************/
 void I2C_Stop(void) {
   SDA = 0;
   SCL = 1;
@@ -344,16 +328,8 @@ void I2C_Stop(void) {
   I2C_Delay();
 }
 
-/***************************************************************************************************
- * 函数名: I2C_SendByte
- * 描述: 向I2C总线发送一个字节
- * 输入: byte - 要发送的字节
- * 输出: 无
- * 返回: 无
- * 注意: 逐位发送，包括等待从机应答
- **************************************************************************************************/
 void I2C_SendByte(unsigned char byte) {
-  unsigned char i;
+  unsigned char xdata i;
   for (i = 0; i < 8; i++) {
     SDA = (byte & 0x80) >> 7;
     byte <<= 1;
@@ -362,11 +338,8 @@ void I2C_SendByte(unsigned char byte) {
     SCL = 0;
     I2C_Delay();
   }
-  // 等待ACK
   SDA = 1;
-  SCL = 1;
   I2C_Delay();
-  SCL = 0;
 }
 
 bit I2C_WaitAck(void) {
@@ -381,7 +354,7 @@ bit I2C_WaitAck(void) {
   return ack;
 }
 
-// ==================== SSD13XX 基本命令/数据 ====================
+//================ SSD13XX 基本命令/数据 ====================
 /***************************************************************************************************
  * 函数名: SSD13XX_WriteCommand
  * 描述: 向SSD13XX发送命令
@@ -430,7 +403,7 @@ void SSD13XX_WriteData(unsigned char dat) {
  * 注意: 将xdata区域的缓冲区内容发送到OLED显示屏的指定页
  **************************************************************************************************/
 void SSD13XX_FlushPage(unsigned char page) {
-  unsigned char col;
+  unsigned char xdata col;
   SSD13XX_WriteCommand(0xB0 | page);
   SSD13XX_WriteCommand(0x00);
   SSD13XX_WriteCommand(0x10);
@@ -448,7 +421,7 @@ void SSD13XX_FlushPage(unsigned char page) {
  * 注意: 将缓冲区清零后刷新到指定页面
  **************************************************************************************************/
 void SSD13XX_ClearPage(unsigned char page) {
-  unsigned char i;
+  unsigned char xdata i;
   for (i = 0; i < SSD13XX_PAGE_WIDTH; i++)
     SSD13XX_PageBuffer[i] = 0x00;
   SSD13XX_FlushPage(page);
@@ -463,7 +436,7 @@ void SSD13XX_ClearPage(unsigned char page) {
  * 注意: 依次清空所有8个页面
  **************************************************************************************************/
 void SSD13XX_Clear(void) {
-  unsigned char page;
+  unsigned char xdata page;
   for (page = 0; page < SSD13XX_PAGE_NUM; page++) {
     SSD13XX_ClearPage(page);
   }
@@ -483,7 +456,7 @@ void SSD13XX_Clear(void) {
 static void _DrawPixelOnPage(unsigned char x, unsigned char y_in_page,
                              unsigned char color) {
   unsigned char mask;
-  if (x >= SSD13XX_PAGE_WIDTH || y_in_page >= 8)
+  if (x >= SSD13XX_WIDTH || y_in_page >= 8)
     return;
   mask = 1 << y_in_page;
   if (color)
@@ -504,7 +477,7 @@ static void _DrawPixelOnPage(unsigned char x, unsigned char y_in_page,
  * 注意: 自动计算像素所属页面并刷新该页面
  **************************************************************************************************/
 void SSD13XX_DrawPixel(unsigned char x, unsigned char y, unsigned char color) {
-  unsigned char page, row, i;
+  unsigned char xdata page, row, i;
   page = y / 8;
   row = y % 8;
   for (i = 0; i < SSD13XX_PAGE_WIDTH; i++)
@@ -525,8 +498,8 @@ void SSD13XX_DrawPixel(unsigned char x, unsigned char y, unsigned char color) {
  **************************************************************************************************/
 void SSD13XX_DrawLine(unsigned char x1, unsigned char y1, unsigned char x2,
                       unsigned char y2, unsigned char color) {
-  int dx, dy, stepX, stepY, err, x, y;
-  unsigned char currentPage, row, page, i;
+  int idata dx, dy, stepX, stepY, err, x, y;
+  unsigned char idata currentPage, row, page, i;
   dx = (x2 > x1) ? (x2 - x1) : (x1 - x2);
   dy = (y2 > y1) ? (y2 - y1) : (y1 - y2);
   stepX = (x2 >= x1) ? 1 : -1;
@@ -592,7 +565,7 @@ void SSD13XX_DrawRectangle(unsigned char x1, unsigned char y1, unsigned char x2,
  **************************************************************************************************/
 void SSD13XX_DrawCircle(unsigned char x0, unsigned char y0, unsigned char r,
                         unsigned char color) {
-  int x = 0, y = r, d = 3 - 2 * r;
+  int idata x = 0, y = r, d = 3 - 2 * r;
   while (x <= y) {
     SSD13XX_DrawPixel(x0 + x, y0 + y, color);
     SSD13XX_DrawPixel(x0 + x, y0 - y, color);
@@ -630,7 +603,7 @@ void SSD13XX_DrawBitmap(unsigned char x, unsigned char y,
   unsigned int offset = 0;
   for (page = 0; page < (height + 7) / 8; page++) {
     for (col = 0; col < width; col++) {
-      if (x + col >= SSD13XX_PAGE_WIDTH || y + page * 8 >= SSD13XX_HEIGHT) {
+      if (x + col >= SSD13XX_WIDTH || y + page * 8 >= SSD13XX_HEIGHT) {
         offset++;
         continue;
       }
@@ -756,7 +729,7 @@ void SSD13XX_WriteString(unsigned char x, unsigned char y, char *str,
     return; // 简化：要求起始坐标页对齐
 
   while (*str) {
-    if (cx + char_width > SSD13XX_PAGE_WIDTH) {
+    if (cx + char_width > SSD13XX_WIDTH) {
       cx = 0;
       cy += char_height;
       if (cy + char_height > SSD13XX_HEIGHT)
