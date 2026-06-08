@@ -8,17 +8,17 @@
 #define TLC2543 12
 
 // 引脚定义
-#define TLC1542_SCLK P36 // 时钟
-#define TLC1542_DIN P35  // 地址输入
-#define TLC1542_DOUT P34 // 数据输出
-#define TLC1542_CS P33   // 片选
-#define TLC1542_EOC P37  // 转换结束
+#define TLCx543_SCLK P36 // 时钟
+#define TLCx543_DIN P35  // 地址输入
+#define TLCx543_DOUT P34 // 数据输出
+#define TLCx543_CS P33   // 片选
+#define TLCx543_EOC P37  // 转换结束
 
 #define TLC_REF_VOLTAGE 5.0f
 /*********************************************************************
-TLC1543 https://www.ti.com/cn/lit/ds/symlink/tlc1542.pdf?ts=1780782401107
+TLC1543 https://www.ti.com/cn/lit/ds/symlink/tlcx543.pdf?ts=1780782401107
 TLC2543 https://www.ti.com/cn/lit/ds/symlink/tlc2543.pdf
- *  TLC1542 / TLC1543  10位ADC 串行通信协议说明
+ *  TLCx543 / TLC1543  10位ADC 串行通信协议说明
  *  通信引脚：CS、I/O_CLOCK、ADDRESS、DATA_OUT、EOC
  *  通信模式：采用 Mode1(工程常用)
  *      10个时钟脉冲、CS在两次转换之间置高，时序最简单稳定
@@ -108,7 +108,7 @@ TLC2543 https://www.ti.com/cn/lit/ds/symlink/tlc2543.pdf
 
 /**
  * @brief  初始化TLCx543芯片
- * @param  CHIP: 芯片类型 (TLC1542=10 或 TLC2543=12)
+ * @param  CHIP: 芯片类型 (TLCx543=10 或 TLC2543=12)
  * @retval 无
  */
 void TLCx543_Init(uint8_t CHIP);

@@ -13,131 +13,181 @@ void TLCx543_Init(uint8_t CHIP) {
   uint8_t i;
   TLC_CHIP_TYPE = CHIP;
 
-  TLC1542_SCLK = 0;
-  TLC1542_DIN = 0;
-  TLC1542_CS = 1;   // 高电平禁用
-  TLC1542_DOUT = 1; // 输入模式
-  TLC1542_EOC = 1;  // 输入模式
+  TLCx543_SCLK = 0;
+  TLCx543_DIN = 0;
+  TLCx543_CS = 1;   // 高电平禁用
+  TLCx543_DOUT = 1; // 输入模式
+  TLCx543_EOC = 1;  // 输入模式
 
-  // 首次转换，丢弃结果（TLCx543第一次读取的是不确定值）
+  // 首次转换：发送通道0地址，启动第一次转换
+  // 此时读取的数据是不确定的，将在下次读取时丢弃
   if (TLC_CHIP_TYPE == TLC1543) {
-    TLC1542_CS = 0;
-    for (i = 0; i < 10; i++) {
-      TLC1542_SCLK = 1;
+    TLCx543_CS = 0;
+    for (i = 0; i < 4; i++)
       SPI_Delay();
-      TLC1542_SCLK = 0;
+    for (i = 0; i < 10; i++) {
+      TLCx543_DIN = (i < 4) ? ((0 >> (3 - i)) & 0x01) : 0;
+      TLCx543_SCLK = 1;
+      SPI_Delay();
+      TLCx543_SCLK = 0;
       SPI_Delay();
     }
-    TLC1542_CS = 1;
-    while (!TLC1542_EOC)
+    TLCx543_CS = 1;
+    while (!TLCx543_EOC)
       ;
   } else {
-    TLC1542_CS = 0;
-    for (i = 0; i < 12; i++) {
-      TLC1542_SCLK = 1;
+    TLCx543_CS = 0;
+    for (i = 0; i < 4; i++)
       SPI_Delay();
-      TLC1542_SCLK = 0;
+    for (i = 0; i < 12; i++) {
+      TLCx543_DIN = (i < 4) ? ((0 >> (3 - i)) & 0x01) : 0;
+      TLCx543_SCLK = 1;
+      SPI_Delay();
+      TLCx543_SCLK = 0;
       SPI_Delay();
     }
-    TLC1542_CS = 1;
-    while (!TLC1542_EOC)
+    TLCx543_CS = 1;
+    while (!TLCx543_EOC)
       ;
   }
 }
 
-// ====================== TLC1542 10bit 读取 ======================
-static uint16_t TLC1542_Read_10bit(uint8_t channel) {
+static uint16_t TLC1543_Read(uint8_t channel) {
   uint16_t adc = 0;
   uint8_t i;
 
   // 拉低 CS，等待建立时间
-  TLC1542_CS = 0;
+  TLCx543_CS = 0;
   for (i = 0; i < 4; i++)
     SPI_Delay();
 
-  // 10个时钟：前4个发地址，同时读取上次转换结果
-  for (i = 0; i < 10; i++) {
-    // 前4个时钟发送地址(MSB优先)
+  // 10个时钟：发送新地址，同时读取上次转换结果
+  for (i = 0; i < TLC_CHIP_TYPE; i++) {
+    // 前4个时钟发送新通道地址(MSB优先)
     if (i < 4) {
-      TLC1542_DIN = (channel >> (3 - i)) & 0x01;
+      TLCx543_DIN = (channel >> (3 - i)) & 0x01;
     } else {
-      TLC1542_DIN = 0;
+      TLCx543_DIN = 0;
     }
 
     // 上升沿锁存地址
-    TLC1542_SCLK = 1;
+    TLCx543_SCLK = 1;
     SPI_Delay();
 
-    // 下降沿读取数据
-    TLC1542_SCLK = 0;
+    // 下降沿读取数据（这是上次转换的结果）
+    TLCx543_SCLK = 0;
     SPI_Delay();
 
     // 读取数据位
     adc <<= 1;
-    if (TLC1542_DOUT)
+    if (TLCx543_DOUT)
       adc |= 1;
   }
 
   // 拉高 CS
-  TLC1542_CS = 1;
+  TLCx543_CS = 1;
 
-  // 等待转换完成
-  while (!TLC1542_EOC)
+  // 等待本次转换完成（对应刚才发送的通道地址）
+  while (!TLCx543_EOC)
     ;
 
   return adc;
 }
 
-// ====================== TLC2543 12bit 读取 ======================
-static uint16_t TLC2543_Read_12bit(uint8_t channel) {
-  uint16_t adc = 0;
-  uint8_t i;
+// ====================== TLC1543 10bit 读取 ======================
+// static uint16_t TLC1543_Read_10bit(uint8_t channel) {
+//   uint16_t adc = 0;
+//   uint8_t i;
 
-  // 拉低 CS，等待建立时间
-  TLC1542_CS = 0;
-  for (i = 0; i < 4; i++)
-    SPI_Delay();
+//   // 拉低 CS，等待建立时间
+//   TLCx543_CS = 0;
+//   for (i = 0; i < 4; i++)
+//     SPI_Delay();
 
-  // 12个时钟：前4个发地址，同时读取上次转换结果
-  for (i = 0; i < 12; i++) {
-    // 前4个时钟发送地址(MSB优先)
-    if (i < 4) {
-      TLC1542_DIN = (channel >> (3 - i)) & 0x01;
-    } else {
-      TLC1542_DIN = 0;
-    }
+//   // 10个时钟：发送新地址，同时读取上次转换结果
+//   for (i = 0; i < 10; i++) {
+//     // 前4个时钟发送新通道地址(MSB优先)
+//     if (i < 4) {
+//       TLCx543_DIN = (channel >> (3 - i)) & 0x01;
+//     } else {
+//       TLCx543_DIN = 0;
+//     }
 
-    // 上升沿锁存地址
-    TLC1542_SCLK = 1;
-    SPI_Delay();
+//     // 上升沿锁存地址
+//     TLCx543_SCLK = 1;
+//     SPI_Delay();
 
-    // 下降沿读取数据
-    TLC1542_SCLK = 0;
-    SPI_Delay();
+//     // 下降沿读取数据（这是上次转换的结果）
+//     TLCx543_SCLK = 0;
+//     SPI_Delay();
 
-    // 读取数据位
-    adc <<= 1;
-    if (TLC1542_DOUT)
-      adc |= 1;
-  }
+//     // 读取数据位
+//     adc <<= 1;
+//     if (TLCx543_DOUT)
+//       adc |= 1;
+//   }
 
-  // 拉高 CS
-  TLC1542_CS = 1;
+//   // 拉高 CS
+//   TLCx543_CS = 1;
 
-  // 等待转换完成
-  while (!TLC1542_EOC)
-    ;
+//   // 等待本次转换完成（对应刚才发送的通道地址）
+//   while (!TLCx543_EOC)
+//     ;
 
-  return adc;
-}
+//   return adc;
+// }
+
+// // ====================== TLC2543 12bit 读取 ======================
+// static uint16_t TLC2543_Read_12bit(uint8_t channel) {
+//   uint16_t adc = 0;
+//   uint8_t i;
+
+//   // 拉低 CS，等待建立时间
+//   TLCx543_CS = 0;
+//   for (i = 0; i < 4; i++)
+//     SPI_Delay();
+
+//   // 12个时钟：发送新地址，同时读取上次转换结果
+//   for (i = 0; i < 12; i++) {
+//     // 前4个时钟发送新通道地址(MSB优先)
+//     if (i < 4) {
+//       TLCx543_DIN = (channel >> (3 - i)) & 0x01;
+//     } else {
+//       TLCx543_DIN = 0;
+//     }
+
+//     // 上升沿锁存地址
+//     TLCx543_SCLK = 1;
+//     SPI_Delay();
+
+//     // 下降沿读取数据（这是上次转换的结果）
+//     TLCx543_SCLK = 0;
+//     SPI_Delay();
+
+//     // 读取数据位
+//     adc <<= 1;
+//     if (TLCx543_DOUT)
+//       adc |= 1;
+//   }
+
+//   // 拉高 CS
+//   TLCx543_CS = 1;
+
+//   // 等待本次转换完成（对应刚才发送的通道地址）
+//   while (!TLCx543_EOC)
+//     ;
+
+//   return adc;
+// }
 
 // ====================== 通用读取 ======================
 uint16_t TLCx543_ReadADC(uint8_t channel) {
-  if (TLC_CHIP_TYPE == TLC1543) {
-    return TLC1542_Read_10bit(channel);
-  } else {
-    return TLC2543_Read_12bit(channel);
-  }
+  //   if (TLC_CHIP_TYPE == TLC1543) {
+  //     return TLC1543_Read_10bit(channel);
+  //   } else {
+  //     return TLC2543_Read_12bit(channel);
+  //   }
+  TLC1543_Read(channel);
 }
 
 // ====================== 电压计算 ======================
