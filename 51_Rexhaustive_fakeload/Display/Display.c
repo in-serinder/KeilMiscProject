@@ -16,24 +16,30 @@ void Display_BootMessage(void) {
 
 // 显示假负载功率列表
 // 20w 40w 60w
-void Display_FakeLoadList(unsigned char *loadList) {
-  uint8_t i, longbit = 0, offset = 0;
-  uint16_t idata temp;
+// void Display_FakeLoadList(unsigned char *loadList) {
+//   uint8_t i, longbit = 0, offset = 0;
+//   uint16_t idata temp;
 
-  for (i = 0; i < 3; i++) {
-    temp = loadList[i] * 100;
-    while (temp) {
-      temp /= 10;
-      longbit++;
-    }
-    // 5.24 还原为 524 /10 -> 52 /10 ->5 /10 ->0
-    // 25.45 还原为 2545
+//   for (i = 0; i < 3; i++) {
+//     temp = loadList[i] * 100;
+//     while (temp) {
+//       temp /= 10;
+//       longbit++;
+//     }
+//     // 5.24 还原为 524 /10 -> 52 /10 ->5 /10 ->0
+//     // 25.45 还原为 2545
 
-    LCD_ShowString(1, offset, loadList[i] + '0');
-    LCD_ShowChar(1, offset + longbit + 1, 'W');
-    // 上次位置 加符号加空格
-    offset += longbit + 2;
-  }
+//     LCD_ShowString(1, offset, loadList[i] + '0');
+//     LCD_ShowChar(1, offset + longbit + 1, 'W');
+//     // 上次位置 加符号加空格
+//     offset += longbit + 2;
+//   }
+// }
+
+void Display_FakeLoad(float power) {
+  buffer[0] = '\0';
+  sprintf(buffer, "Power: %.2fW", power);
+  LCD_ShowString(1, 1, buffer);
 }
 
 // Timer: 分钟:秒
@@ -46,16 +52,24 @@ void Display_TimerSetupMessage(uint16_t set_seconds) {
   LCD_ShowString(2, 1, buffer);
 }
 
-void Display_RunningMessage(uint16_t elapsed_seconds, uint8_t *loadEff,
-                            uint8_t *voltage) {
+void Display_RunningMessage(uint16_t elapsed_seconds, float loadEff,
+                            float voltage) {
   buffer[0] = '\0';
   uint8_t minutes = elapsed_seconds / 60;
   uint8_t seconds = elapsed_seconds % 60;
   // Convert seconds to string
   sprintf(buffer, "%02u:%02u", minutes, seconds);
-  LCD_ShowString(1, 1, loadEff); // 四位负载效率显示
-  LCD_ShowString(1, 6, voltage); // 四位电压显示
-  LCD_ShowString(1, 10, "Running");
+
+  // 显示负载效率
+  char eff_buffer[16];
+  sprintf(eff_buffer, "Eff:%.1f", loadEff);
+  LCD_ShowString(1, 1, eff_buffer);
+
+  // 显示电压
+  char volt_buffer[16];
+  sprintf(volt_buffer, "V:%.2f", voltage);
+  LCD_ShowString(1, 8, volt_buffer);
+
   LCD_ShowString(2, 1, buffer);
 }
 

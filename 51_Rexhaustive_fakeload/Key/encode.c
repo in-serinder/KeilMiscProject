@@ -1,14 +1,11 @@
 #include "encode.h"
-#include "Delay.h"
-#include "main.c"
-#include "stc89c52.h"
+#include "main.c" //回调使用
 
-sbit EC11_A = P32;
-sbit EC11_B = P33;
-sbit EC11_KEY = P30;
-sbit KEY_RUN = P42;
+#define EC11_A P32
+#define EC11_B P33
+#define EC11_KEY P30
 
-// 电路定义是低电平有效 但这里用了外部中断
+// 高电平有效
 bit AB_DIR; // 0: A->B  1: B->A>
 
 // AB都在中断上
@@ -16,19 +13,17 @@ void EC11_Init(void) {
   EC11_A = 1;
   EC11_B = 1;
   EC11_KEY = 1;
-  KEY_RUN = 1;
 
-  IT0 = 1; // INT0(P3.2)下降沿中断
+  IT0 = 1; // INT0(P3.2)低电平触发
   EX0 = 1; // 使能INT0中断
 
-  IT1 = 1; // INT1(P3.3)下降沿中断
+  IT1 = 1; // INT1(P3.3)低电平触发
   EX1 = 1; // 使能INT1中断
 
-  INTCLKO |= 0x10; // 使能INT2中断
-}
+  IT2 = 1; // INT2(P3.4)低电平触发
+  EX2 = 1; // 使能INT2中断
 
-void Key_Init(void) {
-  INTCLKO |= 0x20; // 使能INT3中断
+  EA = 1; // 使能全局中断
 }
 
 void disableAint(void) { EX0 = 0; }
@@ -39,21 +34,26 @@ void enableBint(void) { EX1 = 1; }
 
 void EC11_A_Triggered(void) interrupt 0 {
   disableBint();
+  P1 = 0xFF;
+
   if (EC11_B == 0)
     AB_DIR = 0;
-  // 回调到main
-  encode_CallBack(AB_DIR, 1);
+
+  // 回调到main - state=0表示旋转
+  encode_CallBack(AB_DIR, 0);
+  enableBint();
 }
 
 void EC11_B_Triggered(void) interrupt 1 {
   disableAint();
   if (EC11_A == 0)
     AB_DIR = 1;
-  encode_CallBack(AB_DIR, 1);
+  encode_CallBack(AB_DIR, 0);
+  enableAint();
 }
 
-void EC11_KEY_Triggered(void) interrupt 10 { encode_CallBack(AB_DIR, 1); }
+void EC11_KEY_Triggered(void) interrupt 10 {
+  encode_CallBack(AB_DIR, 1); // state=1表示按键
+}
 
-void KEY_Running_Triggered(void) interrupt 11 { key_CallBack(0); }
-
-void checkDirection(void) { return AB_DIR; }
+bit checkDirection(void) { return AB_DIR; }
