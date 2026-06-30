@@ -1,12 +1,11 @@
 #include "pcf8574.h"
 
 // 保存当前端口状态
-static unsigned char pcf8574_port_data = 0xFF;
-
+uint8_t xdata pcf8574_port_data = 0xFF;
+static uint8_t idata i;
 // 延时函数
 void I2C_Delay(void) {
-  unsigned char i =
-      100; // 低于100延时在解码中会出现多1字符解码问题（逻辑分析仪显示FF）
+  i = 100; // 低于100延时在解码中会出现多1字符解码问题（逻辑分析仪显示FF）
   while (i--)
     ;
 }
@@ -38,7 +37,6 @@ void I2C_Stop(void) {
 
 // 发送一个字节
 void I2C_SendByte(unsigned char byte) {
-  unsigned char i;
   for (i = 0; i < 8; i++) {
     SDA = byte & 0x80;
     byte <<= 1;
@@ -51,7 +49,7 @@ void I2C_SendByte(unsigned char byte) {
 
 // 接收一个字节
 unsigned char I2C_ReceiveByte(void) {
-  unsigned char i, byte = 0;
+  unsigned char xdata byte = 0;
   SDA = 1;
   for (i = 0; i < 8; i++) {
     byte <<= 1;

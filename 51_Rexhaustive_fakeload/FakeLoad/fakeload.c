@@ -1,9 +1,7 @@
 #include "fakeload.h"
-#include <cmath>
 #include <math.h>
 #include <stdint.h>
 
-#define RESISTANCE_LIST_SIZE 64
 /*
 20ohm - 20w
 10ohm - 10w
@@ -77,21 +75,60 @@
                     'P0: 10Ω,', '']
 */
 
-float idata resistance_list[RESISTANCE_LIST_SIZE] = {
-    3.23f, 4.76f,  3.85f, 6.25f,  3.85f, 6.25f,  4.76f, 9.09f,  3.85f, 6.25f,
-    4.76f, 9.09f,  4.76f, 9.09f,  6.25f, 16.67f, 3.85f, 6.25f,  4.76f, 9.09f,
-    4.76f, 9.09f,  6.25f, 16.67f, 4.76f, 9.09f,  6.25f, 16.67f, 6.25f, 16.67f,
-    9.09f, 100.0f, 3.33f, 5.0f,   4.0f,  6.67f,  4.0f,  6.67f,  5.0f,  10.0f,
-    4.0f,  6.67f,  5.0f,  10.0f,  5.0f,  10.0f,  6.67f, 20.0f,  4.0f,  6.67f,
-    5.0f,  10.0f,  5.0f,  10.0f,  6.67f, 20.0f,  5.0f,  10.0f,  6.67f, 20.0f,
-    6.67f, 20.0f,  10.0f, 0.0f};
-uint8_t idata resistance_list_hex_list[RESISTANCE_LIST_SIZE] = {
-    0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB,
-    0xCC, 0xCD, 0xCE, 0xCF, 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7,
-    0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF, 0xD8, 0xD9, 0xDA, 0xDB,
-    0xDC, 0xDD, 0xDE, 0xDF, 0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7,
-    0xE8, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE, 0xEF, 0xF0, 0xF1, 0xF2, 0xF3,
-    0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF};
+// float idata resistance_list[RESISTANCE_LIST_SIZE] = {
+//     3.23f, 4.76f,  3.85f, 6.25f,  3.85f, 6.25f,  4.76f, 9.09f,  3.85f, 6.25f,
+//     4.76f, 9.09f,  4.76f, 9.09f,  6.25f, 16.67f, 3.85f, 6.25f,  4.76f, 9.09f,
+//     4.76f, 9.09f,  6.25f, 16.67f, 4.76f, 9.09f,  6.25f, 16.67f, 6.25f, 16.67f,
+//     9.09f, 100.0f, 3.33f, 5.0f,   4.0f,  6.67f,  4.0f,  6.67f,  5.0f,  10.0f,
+//     4.0f,  6.67f,  5.0f,  10.0f,  5.0f,  10.0f,  6.67f, 20.0f,  4.0f,  6.67f,
+//     5.0f,  10.0f,  5.0f,  10.0f,  6.67f, 20.0f,  5.0f,  10.0f,  6.67f, 20.0f,
+//     6.67f, 20.0f,  10.0f, 0.0f};
+// uint8_t idata resistance_list_hex_list[RESISTANCE_LIST_SIZE] = {
+//     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB,
+//     0xCC, 0xCD, 0xCE, 0xCF, 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7,
+//     0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF, 0x33, 0x34, 0x35, 0x36,
+//     0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42,
+//     0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E,
+//     0x4F, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56};
+
+/*修正*/
+// float idata resistance_list[RESISTANCE_LIST_SIZE] = {
+//     3.23f, 4.76f,  3.85f,  6.25f,  3.85f, 6.25f,  4.76f, 9.09f,  3.85f, 6.25f,
+//     4.76f, 9.09f,  4.76f,  9.09f,  6.25f, 16.67f, 3.85f, 6.25f,  4.76f, 9.09f,
+//     4.76f, 9.09f,  6.25f,  16.67f, 4.76f, 9.09f,  6.25f, 16.67f, 6.25f, 16.67f,
+//     9.09f,
+//     100.0f, 3.33f,  5.00f,  4.00f, 6.67f,  4.00f, 6.67f,  5.00f, 10.00f,
+//     4.00f, 6.67f,  5.00f,  10.00f, 5.00f, 10.00f, 6.67f, 20.00f, 4.00f, 6.67f,
+//     5.00f, 10.00f, 5.00f,  10.00f, 6.67f, 20.00f, 5.00f, 10.00f, 6.67f, 20.00f,
+//     6.67f, 20.00f, 10.00f, 1e9f};
+// uint8_t idata resistance_list_hex_list[RESISTANCE_LIST_SIZE] = {
+//     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA,
+//     0xCB, 0xCC, 0xCD, 0xCE, 0xCF, 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5,
+//     0xD6, 0xD7, 0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF, 0xE0,
+//     0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7, 0xE8, 0xE9, 0xEA, 0xEB,
+//     0xEC, 0xED, 0xEE, 0xEF, 0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6,
+//     0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF};
+
+/* 安全阈值简化后 */
+
+float code resistance_list[RESISTANCE_LIST_SIZE] = {
+    3.23f, 3.33f, 3.85f,  4.00f,  4.76f,  5.00f, 6.25f,
+    6.67f, 9.09f, 10.00f, 16.67f, 20.00f, 100.0f};
+uint8_t code resistance_list_hex_list[RESISTANCE_LIST_SIZE] = {
+    0xC0, // 3.23
+    0xE0, // 3.33
+    0xC2, // 3.85
+    0xE2, // 4.00
+    0xC1, // 4.76
+    0xE1, // 5.00
+    0xC3, // 6.25
+    0xE3, // 6.67
+    0xC7, // 9.09
+    0xE7, // 10.00
+    0xCF, // 16.67
+    0xEF, // 20.00
+    0xDF  // 100.0
+};
 
 // 初始化假负载
 void FakeLoad_Init(void) {
@@ -105,13 +142,14 @@ void FakeLoad_Init(void) {
   PCF8574_SetPort(R100, 0);  // 100R 关闭
 }
 
+
 // 由指定目标功率计算并设置电阻负载状态 返回索引
 uint8_t FakeLoad_SetPower(float power, float voltage) {
-  float target_r;
-  float min_diff = 999.0f;
-  uint8_t best_index = 0;
-  uint8_t i;
-  float diff;
+  float  target_r;
+  float  min_diff = 999.0f;
+  uint8_t  best_index = 0;
+  uint8_t  i;
+  float  diff;
 
   if (power == 0) {
     PCF8574_Write(0xC0);
@@ -132,8 +170,7 @@ uint8_t FakeLoad_SetPower(float power, float voltage) {
 
   return best_index;
 }
-
-float_t FakeLoad_getPower(uint8_t resistance_index, float voltage) {
+float FakeLoad_getPower(uint8_t resistance_index, float voltage) {
   // 计算功率 P = V^2 / R
   if (resistance_list[resistance_index] == 0.0f) {
     return 0.0f;

@@ -11,11 +11,13 @@
 #define R20_4 PCF8574_P4
 #define R100 PCF8574_P5
 // #define R10KR PCF8574_P6 | PCF8574_P7
+// #define RESISTANCE_LIST_SIZE 64
+#define RESISTANCE_LIST_SIZE 13 // 安全阈值简化后
 
 void FakeLoad_Init(void);
-uint8_t FakeLoad_SetPower(float power, float voltage);
+// uint8_t FakeLoad_SetPower(float power, float voltage);
 void FakeLoad_SetResistance(uint8_t resistance_index);
 void FakeLoad_Reset(void);
 void FakeLoad_Set(uint8_t port, uint8_t value);
-float_t FakeLoad_getPower(uint8_t resistance_index, float voltage);
+float FakeLoad_getPower(uint8_t resistance_index, float voltage);
 #endif
