@@ -35,8 +35,8 @@ void main(void) {
   Display_BootMessage();
   FakeLoad_Init();
   EC11_Init();
+  Timer0_Init();
   Key_Init();
-  Display_Init();
   TLCx543_Init(TLC1543);
   FakeLoad_Reset();
   FakeLoadTest();
@@ -95,29 +95,31 @@ void main(void) {
     } else {
       BuzzerPWM(0); // 关闭蜂鸣
     }
+    // 编码器扫描 扫描后走回调
+    EC11_ScanKey();
 
     Delay_ms(10);
   }
 }
 // 编码器方向/按键状态回调函数
 void encode_CallBack(bit dir, bit keystate) {
-  // 先决定反转状态
-  if (keystate == 0) {
+  // keystate=1：编码器按键按下，切换调节模式
+  if (keystate == 1) {
     is_adjusting_duration_time = !is_adjusting_duration_time;
   }
 
   if (is_adjusting_duration_time) {
-    // 调整持续时间
     if (dir == 0) {
-      duration_time_seconds++;
+      if (duration_time_seconds < 7200) // 上限7200秒 2小时
+        duration_time_seconds++;
     } else {
-      duration_time_seconds--;
+      if (duration_time_seconds > 0) // 禁止负数
+        duration_time_seconds--;
     }
     Display_TimerSetupMessage(duration_time_seconds);
   } else {
     // 调整功率负载
     voltage = TLCx543_ReadVoltageV(0);
-    /* 索引范围检查 */
     if (dir == 0) {
       if (loadIndex < RESISTANCE_LIST_SIZE - 1) {
         loadIndex++;
@@ -129,7 +131,6 @@ void encode_CallBack(bit dir, bit keystate) {
     }
     power = FakeLoad_getPower(loadIndex, voltage);
     Display_FakeLoad(power, FakeLoad_getResistance(loadIndex), voltage);
-    // FakeLoad_SetPower(loadIndex);
   }
 }
 

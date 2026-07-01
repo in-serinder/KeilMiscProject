@@ -1,5 +1,5 @@
 #include "fakeload.h"
-//#include <cmath>
+// #include <cmath>
 #include <math.h>
 // #include <stdint.h>
 
@@ -171,13 +171,13 @@ uint8_t FakeLoad_SetPower(float power, float voltage) {
   return best_index;
 }
 
-// float FakeLoad_getPower(uint8_t resistance_index, float voltage) {
-//   // 计算功率 P = V^2 / R
-//   if (resistance_list[resistance_index] == 0.0f) {
-//     return 0.0f;
-//   }
-//   return voltage * voltage / resistance_list[resistance_index];
-// }
+float FakeLoad_getPower(uint8_t resistance_index, float voltage) {
+  // 计算功率 P = V^2 / R
+  if (resistance_list[resistance_index] == 0.0f) {
+    return 0.0f;
+  }
+  return voltage * voltage / resistance_list[resistance_index];
+}
 
 void FakeLoad_SetResistance(uint8_t resistance_index) {
   PCF8574_Write(resistance_list_hex_list[resistance_index]);

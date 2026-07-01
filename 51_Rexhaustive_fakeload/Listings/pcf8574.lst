@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   PCF8574                                                           07/01/2026 14:31:56 PAGE 1   
+C51 COMPILER V9.59.0.0   PCF8574                                                           07/01/2026 15:24:55 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE PCF8574
@@ -62,7 +62,7 @@ line level    source
   52   1        unsigned char xdata byte = 0;
   53   1        SDA = 1;
   54   1        for (i = 0; i < 8; i++) {
-C51 COMPILER V9.59.0.0   PCF8574                                                           07/01/2026 14:31:56 PAGE 2   
+C51 COMPILER V9.59.0.0   PCF8574                                                           07/01/2026 15:24:55 PAGE 2   
 
   55   2          byte <<= 1;
   56   2          SCL = 1;
@@ -126,7 +126,7 @@ line level    source
  114   1        I2C_Start();
  115   1        I2C_SendByte(PCF8574_R_ADDR);
  116   1        if (I2C_WaitAck())
-C51 COMPILER V9.59.0.0   PCF8574                                                           07/01/2026 14:31:56 PAGE 3   
+C51 COMPILER V9.59.0.0   PCF8574                                                           07/01/2026 15:24:55 PAGE 3   
 
  117   1          return pcf8574_port_data; // 读取失败，返回上次保存的值
  118   1      
@@ -190,7 +190,7 @@ line level    source
  176           * @retval 0: 端口为低电平或参数错误
  177           * @retval 1: 端口为高电平
  178           * @warning port参数超出0~7范围时返回0
-C51 COMPILER V9.59.0.0   PCF8574                                                           07/01/2026 14:31:56 PAGE 4   
+C51 COMPILER V9.59.0.0   PCF8574                                                           07/01/2026 15:24:55 PAGE 4   
 
  179           */
  180          bit PCF8574_GetPort(unsigned char port) {

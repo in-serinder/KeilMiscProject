@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/01/2026 14:31:56 PAGE 1   
+C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/01/2026 15:24:55 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE FAKELOAD
@@ -9,7 +9,7 @@ COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE FakeLoad\fakeload.c LARGE OPTIMI
 line level    source
 
    1          #include "fakeload.h"
-   2          //#include <cmath>
+   2          // #include <cmath>
    3          #include <math.h>
    4          // #include <stdint.h>
    5          
@@ -62,7 +62,7 @@ line level    source
   52                        'P0: 10Ω,P3: 20Ω,P4: 20Ω,',
   53                        'P3: 20Ω,P4: 20Ω,',
   54                         'P0: 10Ω,P1: 20Ω,P2: 20Ω,P4: 20Ω,',
-C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/01/2026 14:31:56 PAGE 2   
+C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/01/2026 15:24:55 PAGE 2   
 
   55                         'P1: 20Ω,P2: 20Ω,P4: 20Ω,',
   56                         'P0: 10Ω,P2: 20Ω,P4: 20Ω,',
@@ -126,7 +126,7 @@ line level    source
  114          
  115          float code resistance_list[RESISTANCE_LIST_SIZE] = {
  116              3.23f, 3.33f, 3.85f,  4.00f,  4.76f,  5.00f, 6.25f,
-C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/01/2026 14:31:56 PAGE 3   
+C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/01/2026 15:24:55 PAGE 3   
 
  117              6.67f, 9.09f, 10.00f, 16.67f, 20.00f, 100.0f};
  118          uint8_t code resistance_list_hex_list[RESISTANCE_LIST_SIZE] = {
@@ -185,15 +185,15 @@ line level    source
  171   1        return best_index;
  172   1      }
  173          
- 174          // float FakeLoad_getPower(uint8_t resistance_index, float voltage) {
- 175          //   // 计算功率 P = V^2 / R
- 176          //   if (resistance_list[resistance_index] == 0.0f) {
- 177          //     return 0.0f;
- 178          //   }
-C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/01/2026 14:31:56 PAGE 4   
+ 174          float FakeLoad_getPower(uint8_t resistance_index, float voltage) {
+ 175   1        // 计算功率 P = V^2 / R
+ 176   1        if (resistance_list[resistance_index] == 0.0f) {
+ 177   2          return 0.0f;
+ 178   2        }
+C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/01/2026 15:24:55 PAGE 4   
 
- 179          //   return voltage * voltage / resistance_list[resistance_index];
- 180          // }
+ 179   1        return voltage * voltage / resistance_list[resistance_index];
+ 180   1      }
  181          
  182          void FakeLoad_SetResistance(uint8_t resistance_index) {
  183   1        PCF8574_Write(resistance_list_hex_list[resistance_index]);
@@ -207,9 +207,9 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    277    ----
+   CODE SIZE        =    354    ----
    CONSTANT SIZE    =     65    ----
-   XDATA SIZE       =   ----      22
+   XDATA SIZE       =   ----      27
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----

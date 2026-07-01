@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   PERIPHERAL                                                        07/01/2026 14:31:56 PAGE 1   
+C51 COMPILER V9.59.0.0   PERIPHERAL                                                        07/01/2026 15:24:55 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE PERIPHERAL
@@ -62,7 +62,7 @@ line level    source
   51   1        // PWM周期计算
   52   1        PWMPeriod = TICK_PER_SEC / freq;
   53   1      
-C51 COMPILER V9.59.0.0   PERIPHERAL                                                        07/01/2026 14:31:56 PAGE 2   
+C51 COMPILER V9.59.0.0   PERIPHERAL                                                        07/01/2026 15:24:55 PAGE 2   
 
   54   1        // 限制周期范围 1~200
   55   1        if (PWMPeriod < 1)
