@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   KEY                                                               05/20/2026 13:53:16 PAGE 1   
+C51 COMPILER V9.59.0.0   KEY                                                               07/01/2026 19:09:59 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE KEY
 OBJECT MODULE PLACED IN .\Objects\key.obj
-COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE DRIVER\key.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\DRIVER;..\51_18650bsmb) D
-                    -EBUG OBJECTEXTEND PRINT(.\Listings\key.lst) TABS(2) OBJECT(.\Objects\key.obj)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE DRIVER\key.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\DRIVER;..\51_18650bsmb;.\
+                    -SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\key.lst) TABS(2) OBJECT(.\Objects\key.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   50   2              // 阈值增加按键处理
   51   2          }
   52   1      }
-C51 COMPILER V9.59.0.0   KEY                                                               05/20/2026 13:53:16 PAGE 2   
+C51 COMPILER V9.59.0.0   KEY                                                               07/01/2026 19:09:59 PAGE 2   
 
 
 C51 COMPILATION COMPLETE.  1 WARNING(S),  1 ERROR(S)

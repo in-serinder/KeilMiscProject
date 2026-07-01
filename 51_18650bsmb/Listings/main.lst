@@ -1,24 +1,23 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              05/20/2026 13:48:03 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2026 19:09:58 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
 OBJECT MODULE PLACED IN .\Objects\main.obj
-COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\DRIVER;..\51_18650bsmb) DEBUG O
-                    -BJECTEXTEND PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\DRIVER;..\51_18650bsmb;.\SYS) D
+                    -EBUG OBJECTEXTEND PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
 
 line level    source
 
+   1          #include "delay.h"
+   2          #include "CHR.h"
+   3          #include "ssd1306.h"
+   4          #include "BAT.h"
+   5          #include "key.h"
+   6          
+   7          #define 
+*** ERROR C301 IN LINE 7 OF main.c: identifier expected
+   8          
+   9          
+  10          
 
-
-MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   ----    ----
-   CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----    ----
-   PDATA SIZE       =   ----    ----
-   DATA SIZE        =   ----    ----
-   IDATA SIZE       =   ----    ----
-   BIT SIZE         =   ----    ----
-END OF MODULE INFORMATION.
-
-
-C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
+C51 COMPILATION COMPLETE.  0 WARNING(S),  1 ERROR(S)

@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   BAT                                                               05/20/2026 13:50:22 PAGE 1   
+C51 COMPILER V9.59.0.0   BAT                                                               07/01/2026 19:09:58 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE BAT
 OBJECT MODULE PLACED IN .\Objects\BAT.obj
-COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE DRIVER\BAT.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\DRIVER;..\51_18650bsmb) D
-                    -EBUG OBJECTEXTEND PRINT(.\Listings\BAT.lst) TABS(2) OBJECT(.\Objects\BAT.obj)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE DRIVER\BAT.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\DRIVER;..\51_18650bsmb;.\
+                    -SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\BAT.lst) TABS(2) OBJECT(.\Objects\BAT.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   52   1          // 读取ADC结果
   53   1          adc_value = (uint16_t)ADC_RES << 2;
   54   1          adc_value |= (ADC_RESL & 0x03);
-C51 COMPILER V9.59.0.0   BAT                                                               05/20/2026 13:50:22 PAGE 2   
+C51 COMPILER V9.59.0.0   BAT                                                               07/01/2026 19:09:58 PAGE 2   
 
   55   1          
   56   1          // 清除转换完成标志

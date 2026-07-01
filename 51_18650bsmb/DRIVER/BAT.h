@@ -7,10 +7,10 @@
  * @brief ADC通道枚举
  */
 typedef enum {
-    BAT_CH1 = 0,  // P10 - ADC0
-    BAT_CH2 = 1,  // P11 - ADC1
-    BAT_CH3 = 2,  // P12 - ADC2
-    BAT_CH4 = 3   // P13 - ADC3
+  BAT_CH1 = 0, // P10 - ADC0
+  BAT_CH2 = 1, // P11 - ADC1
+  BAT_CH3 = 2, // P12 - ADC2
+  BAT_CH4 = 3  // P13 - ADC3
 } BAT_Channel;
 
 /**
@@ -32,5 +32,7 @@ uint16_t BAT_ADC_Read(BAT_Channel ch);
  * @return 电压值，单位为伏特(V)
  */
 float BAT_ADC_ReadVoltage(BAT_Channel ch);
+
+float VoltageToSOC(float ocv);
 
 #endif
