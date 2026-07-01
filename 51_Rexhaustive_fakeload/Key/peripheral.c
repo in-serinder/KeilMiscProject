@@ -59,7 +59,6 @@ void BuzzerPWM(uint8_t freq) {
   if (PWMPeriod > 200)
     PWMPeriod = 200;
 }
-}
 
 void shellFAN(bit state) { ShellFAN = state; }
 
