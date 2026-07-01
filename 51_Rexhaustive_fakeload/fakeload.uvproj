@@ -177,7 +177,7 @@
           </Flash1>
           <bUseTDR>0</bUseTDR>
           <Flash2></Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -186,7 +186,7 @@
         </Utilities>
         <Target51>
           <Target51Misc>
-            <MemoryModel>0</MemoryModel>
+            <MemoryModel>2</MemoryModel>
             <RTOS>0</RTOS>
             <RomSize>2</RomSize>
             <DataHold>0</DataHold>
@@ -232,8 +232,8 @@
             <OnChipMemories>
               <RCB>
                 <Type>0</Type>
-                <StartAddress>0x0</StartAddress>
-                <Size>0x10000</Size>
+                <StartAddress>0xb</StartAddress>
+                <Size>0xd</Size>
               </RCB>
               <RXB>
                 <Type>0</Type>
@@ -316,7 +316,7 @@
             <Fuzzy>3</Fuzzy>
             <Optimize>8</Optimize>
             <WarningLevel>2</WarningLevel>
-            <SizeSpeed>1</SizeSpeed>
+            <SizeSpeed>0</SizeSpeed>
             <ObjectExtend>1</ObjectExtend>
             <ACallAJmp>0</ACallAJmp>
             <InterruptVectorAddress>0</InterruptVectorAddress>
@@ -397,26 +397,6 @@
               <FilePath>.\System\Delay.h</FilePath>
             </File>
             <File>
-              <FileName>math.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\System\math.c</FilePath>
-            </File>
-            <File>
-              <FileName>math.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\System\math.h</FilePath>
-            </File>
-            <File>
-              <FileName>Status.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\System\Status.c</FilePath>
-            </File>
-            <File>
-              <FileName>Status.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\System\Status.h</FilePath>
-            </File>
-            <File>
               <FileName>stc89c52.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\System\stc89c52.h</FilePath>
@@ -430,6 +410,16 @@
               <FileName>Timer.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\System\Timer.h</FilePath>
+            </File>
+            <File>
+              <FileName>TLCx543.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\System\TLCx543.c</FilePath>
+            </File>
+            <File>
+              <FileName>TLCx543.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\System\TLCx543.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -455,6 +445,11 @@
               <FileName>peripheral.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Key\peripheral.h</FilePath>
+            </File>
+            <File>
+              <FileName>encode.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Key\encode.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -487,29 +482,24 @@
           <GroupName>FakeLoad</GroupName>
           <Files>
             <File>
-              <FileName>fakeload_iic.c</FileName>
+              <FileName>fakeload.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\FakeLoad\fakeload_iic.c</FilePath>
+              <FilePath>.\FakeLoad\fakeload.c</FilePath>
             </File>
             <File>
-              <FileName>fakeload_iic.h</FileName>
+              <FileName>fakeload.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\FakeLoad\fakeload_iic.h</FilePath>
+              <FilePath>.\FakeLoad\fakeload.h</FilePath>
             </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Utility</GroupName>
-          <Files>
             <File>
-              <FileName>Efficiency.c</FileName>
+              <FileName>pcf8574.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Utility\Efficiency.c</FilePath>
+              <FilePath>.\FakeLoad\pcf8574.c</FilePath>
             </File>
             <File>
-              <FileName>Efficiency.h</FileName>
+              <FileName>pcf8574.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Utility\Efficiency.h</FilePath>
+              <FilePath>.\FakeLoad\pcf8574.h</FilePath>
             </File>
           </Files>
         </Group>

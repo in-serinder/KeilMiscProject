@@ -1,15 +1,21 @@
 #include "Display.h"
 #include "LCD1602.h"
-#include <stdint.h>
+// Keil C51 does not support stdint.h, using native types
 
-static char idata buffer[16];
+char idata buffer[16];
 
 void Display_Init(void) {
   // Initialization code for the display
+  // 1602模拟显示效果:
+  // [                ]
+  // [                ]
   LCD_Init();
 }
 
 void Display_BootMessage(void) {
+  // 1602模拟显示效果:
+  // [FakeLoad Boot   ]
+  // [Initializing... ]
   LCD_ShowString(1, 1, "FakeLoad Boot");
   LCD_ShowString(2, 1, "Initializing...");
 }
@@ -37,6 +43,9 @@ void Display_BootMessage(void) {
 // }
 
 void Display_FakeLoad(float power) {
+  // 1602模拟显示效果 (示例 power=15.50):
+  // [Power: 15.50W   ]
+  // [                ]
   buffer[0] = '\0';
   sprintf(buffer, "Power: %.2fW", power);
   LCD_ShowString(1, 1, buffer);
@@ -44,9 +53,13 @@ void Display_FakeLoad(float power) {
 
 // Timer: 分钟:秒
 void Display_TimerSetupMessage(uint16_t set_seconds) {
+  // 1602模拟显示效果 (示例 set_seconds=125 -> 2分05秒):
+  // [                ]
+  // [Timer:02:05     ]
+  uint8_t xdata minutes = set_seconds / 60;
+  uint8_t xdata seconds = set_seconds % 60;
   buffer[0] = '\0';
-  uint8_t minutes = set_seconds / 60;
-  uint8_t seconds = set_seconds % 60;
+
   // Convert seconds to string
   sprintf(buffer, "Timer:%02u:%02u", minutes, seconds);
   LCD_ShowString(2, 1, buffer);
@@ -54,19 +67,26 @@ void Display_TimerSetupMessage(uint16_t set_seconds) {
 
 void Display_RunningMessage(uint16_t elapsed_seconds, float loadEff,
                             float voltage) {
+  // 1602模拟显示效果 (示例 elapsed=45, eff=85.5, voltage=12.34):
+  // [Eff:85.5 V:12.34]
+  // [00:45           ]
+
+  uint8_t xdata minutes = elapsed_seconds / 60;
+  uint8_t xdata seconds = elapsed_seconds % 60;
+  char xdata eff_buffer[16];
+  char xdata volt_buffer[16];
+
   buffer[0] = '\0';
-  uint8_t minutes = elapsed_seconds / 60;
-  uint8_t seconds = elapsed_seconds % 60;
+
   // Convert seconds to string
   sprintf(buffer, "%02u:%02u", minutes, seconds);
 
   // 显示负载效率
-  char eff_buffer[16];
+
   sprintf(eff_buffer, "Eff:%.1f", loadEff);
   LCD_ShowString(1, 1, eff_buffer);
 
   // 显示电压
-  char volt_buffer[16];
   sprintf(volt_buffer, "V:%.2f", voltage);
   LCD_ShowString(1, 8, volt_buffer);
 
@@ -74,23 +94,40 @@ void Display_RunningMessage(uint16_t elapsed_seconds, float loadEff,
 }
 
 void Display_IdleMessage(void) {
+  // 1602模拟显示效果:
+  // [System Idle     ]
+  // [Set Timer       ]
   LCD_ShowString(1, 1, "System Idle");
   LCD_ShowString(2, 1, "Set Timer");
 }
 
 void Display_ErrorMessage(char *message) {
+  // 1602模拟显示效果 (示例 message="Overload"):
+  // [Error:          ]
+  // [Overload        ]
   LCD_ShowString(1, 1, "Error:");
   LCD_ShowString(2, 1, message);
 }
 
 void Display_Clear(void) {
+  // 1602模拟显示效果:
+  // [                ]
+  // [                ]
   LCD_ShowString(1, 1, "                "); // Clear line 1
   LCD_ShowString(2, 1, "                "); // Clear line 2
 }
 
-void Display_LoadingMessage(void) { LCD_ShowString(1, 1, "Loading..."); }
+void Display_LoadingMessage(void) {
+  // 1602模拟显示效果:
+  // [Loading...      ]
+  // [                ]
+  LCD_ShowString(1, 1, "Loading...");
+}
 
 void Display_CalcLoadEfficiency(float efficiency) {
+  // 1602模拟显示效果 (示例 efficiency=95.67):
+  // [                ]
+  // [Eff: 95.67%     ]
   buffer[0] = '\0';
   // Convert efficiency to string with 2 decimal places
   sprintf(buffer, "Eff: %.2f%%", efficiency);

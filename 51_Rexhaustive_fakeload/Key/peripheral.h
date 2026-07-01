@@ -3,8 +3,7 @@
 
 #include "stc89c52.h"
 
-typedef unsigned char uint8_t;
-typedef unsigned int uint16_t;
+
 
 
 void setBuzzerDutyCycle(uint8_t duty);

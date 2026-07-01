@@ -1,0 +1,216 @@
+C51 COMPILER V9.59.0.0   FAKELOAD                                                          06/30/2026 19:18:46 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE FAKELOAD
+OBJECT MODULE PLACED IN .\Objects\fakeload.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE FakeLoad\fakeload.c LARGE OPTIMIZE(8,SIZE) BROWSE INCDIR(.\Display;.\Fak
+                    -eLoad;.\Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\fakeload.lst) TABS(2) OBJECT(.\Objects\fakeload.obj)
+
+line level    source
+
+   1          #include "fakeload.h"
+   2          #include <math.h>
+   3          //#include <stdint.h>
+   4          
+   5          /*
+   6          20ohm - 20w
+   7          10ohm - 10w
+   8          100ohm - 5w
+   9          */
+  10          
+  11          /*
+  12          并联电阻组合数组
+  13          ['P0: 10Ω,P1: 20Ω,P2: 20Ω,P3: 20Ω,P4: 20Ω,P5: 100Ω,',
+  14           'P1: 20Ω,P2: 20Ω,P3: 20Ω,P4: 20Ω,P5: 100Ω,',
+  15            'P0: 10Ω,P2: 20Ω,P3: 20Ω,P4: 20Ω,P5: 100Ω,',
+  16             'P2: 20Ω,P3: 20Ω,P4: 20Ω,P5: 100Ω,',
+  17             'P0: 10Ω,P1: 20Ω,P3: 20Ω,P4: 20Ω,P5: 100Ω,',
+  18              'P1: 20Ω,P3: 20Ω,P4: 20Ω,P5: 100Ω,',
+  19              'P0: 10Ω,P3: 20Ω,P4: 20Ω,P5: 100Ω,',
+  20              'P3: 20Ω,P4: 20Ω,P5: 100Ω,',
+  21               'P0: 10Ω,P1: 20Ω,P2: 20Ω,P4: 20Ω,P5: 100Ω,',
+  22               'P1: 20Ω,P2: 20Ω,P4: 20Ω,P5: 100Ω,',
+  23                'P0: 10Ω,P2: 20Ω,P4: 20Ω,P5: 100Ω,',
+  24                'P2: 20Ω,P4: 20Ω,P5: 100Ω,',
+  25                 'P0: 10Ω,P1: 20Ω,P4: 20Ω,P5: 100Ω,',
+  26                  'P1: 20Ω,P4: 20Ω,P5: 100Ω,',
+  27                  'P0: 10Ω,P4: 20Ω,P5: 100Ω,',
+  28                  'P4: 20Ω,P5: 100Ω,',
+  29                  'P0: 10Ω,P1: 20Ω,P2: 20Ω,P3: 20Ω,P5: 100Ω,',
+  30                   'P1: 20Ω,P2: 20Ω,P3: 20Ω,P5: 100Ω,',
+  31                    'P0: 10Ω,P2: 20Ω,P3: 20Ω,P5: 100Ω,',
+  32                    'P2: 20Ω,P3: 20Ω,P5: 100Ω,',
+  33                    'P0: 10Ω,P1: 20Ω,P3: 20Ω,P5: 100Ω,',
+  34                    'P1: 20Ω,P3: 20Ω,P5: 100Ω,',
+  35                    'P0: 10Ω,P3: 20Ω,P5: 100Ω,',
+  36                    'P3: 20Ω,P5: 100Ω,',
+  37                    'P0: 10Ω,P1: 20Ω,P2: 20Ω,P5: 100Ω,',
+  38                     'P1: 20Ω,P2: 20Ω,P5: 100Ω,',
+  39                     'P0: 10Ω,P2: 20Ω,P5: 100Ω,',
+  40                     'P2: 20Ω,P5: 100Ω,',
+  41                      'P0: 10Ω,P1: 20Ω,P5: 100Ω,',
+  42                      'P1: 20Ω,P5: 100Ω,',
+  43                      'P0: 10Ω,P5: 100Ω,',
+  44                      'P5: 100Ω,',
+  45                      'P0: 10Ω,P1: 20Ω,P2: 20Ω,P3: 20Ω,P4: 20Ω,',
+  46                      'P1: 20Ω,P2: 20Ω,P3: 20Ω,P4: 20Ω,',
+  47                       'P0: 10Ω,P2: 20Ω,P3: 20Ω,P4: 20Ω,',
+  48                       'P2: 20Ω,P3: 20Ω,P4: 20Ω,',
+  49                       'P0: 10Ω,P1: 20Ω,P3: 20Ω,P4: 20Ω,',
+  50                       'P1: 20Ω,P3: 20Ω,P4: 20Ω,',
+  51                        'P0: 10Ω,P3: 20Ω,P4: 20Ω,',
+  52                        'P3: 20Ω,P4: 20Ω,',
+  53                         'P0: 10Ω,P1: 20Ω,P2: 20Ω,P4: 20Ω,',
+  54                         'P1: 20Ω,P2: 20Ω,P4: 20Ω,',
+C51 COMPILER V9.59.0.0   FAKELOAD                                                          06/30/2026 19:18:46 PAGE 2   
+
+  55                         'P0: 10Ω,P2: 20Ω,P4: 20Ω,',
+  56                         'P2: 20Ω,P4: 20Ω,',
+  57                         'P0: 10Ω,P1: 20Ω,P4: 20Ω,',
+  58                         'P1: 20Ω,P4: 20Ω,',
+  59                          'P0: 10Ω,P4: 20Ω,',
+  60                          'P4: 20Ω,',
+  61                          'P0: 10Ω,P1: 20Ω,P2: 20Ω,P3: 20Ω,',
+  62                           'P1: 20Ω,P2: 20Ω,P3: 20Ω,',
+  63                            'P0: 10Ω,P2: 20Ω,P3: 20Ω,',
+  64                            'P2: 20Ω,P3: 20Ω,',
+  65                             'P0: 10Ω,P1: 20Ω,P3: 20Ω,',
+  66                             'P1: 20Ω,P3: 20Ω,',
+  67                             'P0: 10Ω,P3: 20Ω,',
+  68                             'P3: 20Ω,',
+  69                             'P0: 10Ω,P1: 20Ω,P2: 20Ω,',
+  70                             'P1: 20Ω,P2: 20Ω,',
+  71                             'P0: 10Ω,P2: 20Ω,',
+  72                             'P2: 20Ω,',
+  73                             'P0: 10Ω,P1: 20Ω,',
+  74                             'P1: 20Ω,',
+  75                              'P0: 10Ω,', '']
+  76          */
+  77          
+  78          // float idata resistance_list[RESISTANCE_LIST_SIZE] = {
+  79          //     3.23f, 4.76f,  3.85f, 6.25f,  3.85f, 6.25f,  4.76f, 9.09f,  3.85f, 6.25f,
+  80          //     4.76f, 9.09f,  4.76f, 9.09f,  6.25f, 16.67f, 3.85f, 6.25f,  4.76f, 9.09f,
+  81          //     4.76f, 9.09f,  6.25f, 16.67f, 4.76f, 9.09f,  6.25f, 16.67f, 6.25f, 16.67f,
+  82          //     9.09f, 100.0f, 3.33f, 5.0f,   4.0f,  6.67f,  4.0f,  6.67f,  5.0f,  10.0f,
+  83          //     4.0f,  6.67f,  5.0f,  10.0f,  5.0f,  10.0f,  6.67f, 20.0f,  4.0f,  6.67f,
+  84          //     5.0f,  10.0f,  5.0f,  10.0f,  6.67f, 20.0f,  5.0f,  10.0f,  6.67f, 20.0f,
+  85          //     6.67f, 20.0f,  10.0f, 0.0f};
+  86          // uint8_t idata resistance_list_hex_list[RESISTANCE_LIST_SIZE] = {
+  87          //     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB,
+  88          //     0xCC, 0xCD, 0xCE, 0xCF, 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7,
+  89          //     0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF, 0x33, 0x34, 0x35, 0x36,
+  90          //     0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42,
+  91          //     0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E,
+  92          //     0x4F, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56};
+  93          
+  94          /*修正*/
+  95          // float idata resistance_list[RESISTANCE_LIST_SIZE] = {
+  96          //     3.23f, 4.76f,  3.85f,  6.25f,  3.85f, 6.25f,  4.76f, 9.09f,  3.85f, 6.25f,
+  97          //     4.76f, 9.09f,  4.76f,  9.09f,  6.25f, 16.67f, 3.85f, 6.25f,  4.76f, 9.09f,
+  98          //     4.76f, 9.09f,  6.25f,  16.67f, 4.76f, 9.09f,  6.25f, 16.67f, 6.25f, 16.67f,
+  99          //     9.09f,
+ 100          //     100.0f, 3.33f,  5.00f,  4.00f, 6.67f,  4.00f, 6.67f,  5.00f, 10.00f,
+ 101          //     4.00f, 6.67f,  5.00f,  10.00f, 5.00f, 10.00f, 6.67f, 20.00f, 4.00f, 6.67f,
+ 102          //     5.00f, 10.00f, 5.00f,  10.00f, 6.67f, 20.00f, 5.00f, 10.00f, 6.67f, 20.00f,
+ 103          //     6.67f, 20.00f, 10.00f, 1e9f};
+ 104          // uint8_t idata resistance_list_hex_list[RESISTANCE_LIST_SIZE] = {
+ 105          //     0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA,
+ 106          //     0xCB, 0xCC, 0xCD, 0xCE, 0xCF, 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5,
+ 107          //     0xD6, 0xD7, 0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF, 0xE0,
+ 108          //     0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7, 0xE8, 0xE9, 0xEA, 0xEB,
+ 109          //     0xEC, 0xED, 0xEE, 0xEF, 0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6,
+ 110          //     0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF};
+ 111          
+ 112          /* 安全阈值简化后 */
+ 113          
+ 114          float code resistance_list[RESISTANCE_LIST_SIZE] = {
+ 115              3.23f, 3.33f, 3.85f,  4.00f,  4.76f,  5.00f, 6.25f,
+ 116              6.67f, 9.09f, 10.00f, 16.67f, 20.00f, 100.0f};
+C51 COMPILER V9.59.0.0   FAKELOAD                                                          06/30/2026 19:18:46 PAGE 3   
+
+ 117          uint8_t code resistance_list_hex_list[RESISTANCE_LIST_SIZE] = {
+ 118              0xC0, // 3.23
+ 119              0xE0, // 3.33
+ 120              0xC2, // 3.85
+ 121              0xE2, // 4.00
+ 122              0xC1, // 4.76
+ 123              0xE1, // 5.00
+ 124              0xC3, // 6.25
+ 125              0xE3, // 6.67
+ 126              0xC7, // 9.09
+ 127              0xE7, // 10.00
+ 128              0xCF, // 16.67
+ 129              0xEF, // 20.00
+ 130              0xDF  // 100.0
+ 131          };
+ 132          
+ 133          // 初始化假负载
+ 134          void FakeLoad_Init(void) {
+ 135   1        PCF8574_Init();
+ 136   1        // 初始化所有电阻继电器关闭
+ 137   1        PCF8574_SetPort(R10, 0);   // 10R 关闭
+ 138   1        PCF8574_SetPort(R20_1, 0); // 20R_1 关闭
+ 139   1        PCF8574_SetPort(R20_2, 0); // 20R_2 关闭
+ 140   1        PCF8574_SetPort(R20_3, 0); // 20R_3 关闭
+ 141   1        PCF8574_SetPort(R20_4, 0); // 20R_4 关闭
+ 142   1        PCF8574_SetPort(R100, 0);  // 100R 关闭
+ 143   1      }
+ 144          
+ 145          // 由指定目标功率计算并设置电阻负载状态 返回索引
+ 146          uint8_t FakeLoad_SetPower(float power, float voltage) {
+ 147   1        float xdata target_r;
+ 148   1        float xdata min_diff = 999.0f;
+ 149   1        uint8_t xdata best_index = 0;
+ 150   1        uint8_t xdata i;
+ 151   1        float xdata diff;
+ 152   1      
+ 153   1        if (power == 0) {
+ 154   2          PCF8574_Write(0xC0);
+ 155   2          return 0;
+ 156   2        }
+ 157   1        target_r = (voltage * voltage) / power;
+ 158   1      
+ 159   1        for (i = 0; i < RESISTANCE_LIST_SIZE; i++) {
+ 160   2          diff = fabs(resistance_list[i] - target_r);
+ 161   2      
+ 162   2          if (diff < min_diff) {
+ 163   3            min_diff = diff;
+ 164   3            best_index = i;
+ 165   3          }
+ 166   2        }
+ 167   1      
+ 168   1        PCF8574_Write(resistance_list_hex_list[best_index]);
+ 169   1      
+ 170   1        return best_index;
+ 171   1      }
+ 172          
+ 173          // float FakeLoad_getPower(uint8_t resistance_index, float voltage) {
+ 174          //   // 计算功率 P = V^2 / R
+ 175          //   if (resistance_list[resistance_index] == 0.0f) {
+ 176          //     return 0.0f;
+ 177          //   }
+ 178          //   return voltage * voltage / resistance_list[resistance_index];
+C51 COMPILER V9.59.0.0   FAKELOAD                                                          06/30/2026 19:18:46 PAGE 4   
+
+ 179          // }
+ 180          
+ 181          void FakeLoad_SetResistance(uint8_t resistance_index) {
+ 182   1        PCF8574_Write(resistance_list_hex_list[resistance_index]);
+ 183   1      }
+ 184          
+ 185          void FakeLoad_Reset(void) { PCF8574_Write(0x00); }
+ 186          void FakeLoad_Set(uint8_t port, uint8_t value) { PCF8574_SetPort(port, value); }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    260    ----
+   CONSTANT SIZE    =     65    ----
+   XDATA SIZE       =   ----      22
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

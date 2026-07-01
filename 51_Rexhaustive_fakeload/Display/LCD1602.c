@@ -1,10 +1,12 @@
 #include "stc89c52.h"
 
 // 引脚配置：
-sbit LCD_RS = P15;
-sbit LCD_RW = P16;
-sbit LCD_EN = P17;
+#define LCD_RS P15
+#define LCD_RW P16
+#define LCD_EN P17
 #define LCD_DataPort P0
+
+static unsigned char xdata i, j;
 
 // 函数定义：
 /**
@@ -13,7 +15,7 @@ sbit LCD_EN = P17;
  * @retval 无
  */
 void LCD_Delay() {
-  unsigned char i, j;
+  
 
   i = 2;
   j = 239;
@@ -99,7 +101,6 @@ void LCD_ShowChar(unsigned char Line, unsigned char Column, char Char) {
  * @retval 无
  */
 void LCD_ShowString(unsigned char Line, unsigned char Column, char *String) {
-  unsigned char i;
   LCD_SetCursor(Line, Column);
   for (i = 0; String[i] != '\0'; i++) {
     LCD_WriteData(String[i]);
@@ -110,8 +111,7 @@ void LCD_ShowString(unsigned char Line, unsigned char Column, char *String) {
  * @brief  返回值=X的Y次方
  */
 int LCD_Pow(int X, int Y) {
-  unsigned char i;
-  int Result = 1;
+  int xdata Result = 1;
   for (i = 0; i < Y; i++) {
     Result *= X;
   }
@@ -128,7 +128,6 @@ int LCD_Pow(int X, int Y) {
  */
 void LCD_ShowNum(unsigned char Line, unsigned char Column, unsigned int Number,
                  unsigned char Length) {
-  unsigned char i;
   LCD_SetCursor(Line, Column);
   for (i = Length; i > 0; i--) {
     LCD_WriteData(Number / LCD_Pow(10, i - 1) % 10 + '0');
@@ -143,44 +142,44 @@ void LCD_ShowNum(unsigned char Line, unsigned char Column, unsigned int Number,
  * @param  Length 要显示数字的长度，范围：1~5
  * @retval 无
  */
-void LCD_ShowSignedNum(unsigned char Line, unsigned char Column, int Number,
-                       unsigned char Length) {
-  unsigned char i;
-  unsigned int Number1;
-  LCD_SetCursor(Line, Column);
-  if (Number >= 0) {
-    LCD_WriteData('+');
-    Number1 = Number;
-  } else {
-    LCD_WriteData('-');
-    Number1 = -Number;
-  }
-  for (i = Length; i > 0; i--) {
-    LCD_WriteData(Number1 / LCD_Pow(10, i - 1) % 10 + '0');
-  }
-}
+// void LCD_ShowSignedNum(unsigned char Line, unsigned char Column, int Number,
+//                        unsigned char Length) {
+//   unsigned char i;
+//   unsigned int Number1;
+//   LCD_SetCursor(Line, Column);
+//   if (Number >= 0) {
+//     LCD_WriteData('+');
+//     Number1 = Number;
+//   } else {
+//     LCD_WriteData('-');
+//     Number1 = -Number;
+//   }
+//   for (i = Length; i > 0; i--) {
+//     LCD_WriteData(Number1 / LCD_Pow(10, i - 1) % 10 + '0');
+//   }
+// }
 
-/**
- * @brief  在LCD1602指定位置开始以十六进制显示所给数字
- * @param  Line 起始行位置，范围：1~2
- * @param  Column 起始列位置，范围：1~16
- * @param  Number 要显示的数字，范围：0~0xFFFF
- * @param  Length 要显示数字的长度，范围：1~4
- * @retval 无
- */
-void LCD_ShowHexNum(unsigned char Line, unsigned char Column,
-                    unsigned int Number, unsigned char Length) {
-  unsigned char i, SingleNumber;
-  LCD_SetCursor(Line, Column);
-  for (i = Length; i > 0; i--) {
-    SingleNumber = Number / LCD_Pow(16, i - 1) % 16;
-    if (SingleNumber < 10) {
-      LCD_WriteData(SingleNumber + '0');
-    } else {
-      LCD_WriteData(SingleNumber - 10 + 'A');
-    }
-  }
-}
+// /**
+//  * @brief  在LCD1602指定位置开始以十六进制显示所给数字
+//  * @param  Line 起始行位置，范围：1~2
+//  * @param  Column 起始列位置，范围：1~16
+//  * @param  Number 要显示的数字，范围：0~0xFFFF
+//  * @param  Length 要显示数字的长度，范围：1~4
+//  * @retval 无
+//  */
+// void LCD_ShowHexNum(unsigned char Line, unsigned char Column,
+//                     unsigned int Number, unsigned char Length) {
+//   unsigned char i, SingleNumber;
+//   LCD_SetCursor(Line, Column);
+//   for (i = Length; i > 0; i--) {
+//     SingleNumber = Number / LCD_Pow(16, i - 1) % 16;
+//     if (SingleNumber < 10) {
+//       LCD_WriteData(SingleNumber + '0');
+//     } else {
+//       LCD_WriteData(SingleNumber - 10 + 'A');
+//     }
+//   }
+// }
 
 /**
  * @brief  在LCD1602指定位置开始以二进制显示所给数字
@@ -190,11 +189,11 @@ void LCD_ShowHexNum(unsigned char Line, unsigned char Column,
  * @param  Length 要显示数字的长度，范围：1~16
  * @retval 无
  */
-void LCD_ShowBinNum(unsigned char Line, unsigned char Column,
-                    unsigned int Number, unsigned char Length) {
-  unsigned char i;
-  LCD_SetCursor(Line, Column);
-  for (i = Length; i > 0; i--) {
-    LCD_WriteData(Number / LCD_Pow(2, i - 1) % 2 + '0');
-  }
-}
+// void LCD_ShowBinNum(unsigned char Line, unsigned char Column,
+//                     unsigned int Number, unsigned char Length) {
+//   unsigned char i;
+//   LCD_SetCursor(Line, Column);
+//   for (i = Length; i > 0; i--) {
+//     LCD_WriteData(Number / LCD_Pow(2, i - 1) % 2 + '0');
+//   }
+// }

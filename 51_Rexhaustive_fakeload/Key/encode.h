@@ -1,3 +1,4 @@
+// #include "main.c" //回调使用
 #include "stc89c52.h"
 
 #ifndef _ENCODE_H_

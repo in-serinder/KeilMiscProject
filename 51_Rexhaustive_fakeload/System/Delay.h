@@ -1,8 +1,10 @@
 #ifndef __DELAY_H__
 #define __DELAY_H__
+#include "stc89c52.h"
 
 void Delay(unsigned int xms);
-void Delay10us();
-void Delay1ms();
+void Delay10us(void);
+void Delay1ms(void);
+void Delay_ms(uint16_t ms);
 
 #endif

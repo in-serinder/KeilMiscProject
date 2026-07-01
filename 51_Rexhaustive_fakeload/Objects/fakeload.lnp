@@ -1,0 +1,13 @@
+".\Objects\main.obj",
+".\Objects\Delay.obj",
+".\Objects\Timer.obj",
+".\Objects\TLCx543.obj",
+".\Objects\key.obj",
+".\Objects\peripheral.obj",
+".\Objects\encode.obj",
+".\Objects\Display.obj",
+".\Objects\LCD1602.obj",
+".\Objects\fakeload.obj",
+".\Objects\pcf8574.obj" 
+TO ".\Objects\fakeload" 
+PRINT(".\Listings\fakeload.m51") RAMSIZE(256) 

@@ -2,15 +2,15 @@
 #include "Delay.h"
 #include "Timer.h"
 
-uint16_t PWMPeriod = 100; // PWM周期，单位为中断次数
-uint16_t pwmCounter = 0;  // PWM计数器
-uint8_t dutyCycle = 50;   // 占空比
+uint16_t xdata PWMPeriod = 100; // PWM周期，单位为中断次数
+uint16_t xdata pwmCounter = 0;  // PWM计数器
+uint8_t xdata dutyCycle = 50;   // 占空比
 
-sbit Buzzer = P36;
-sbit ShellFAN = P25;
-sbit EXTFAN = P24;
-sbit HEARTFAN = P34;
-sbit RUNSTATE_LED = P35;
+#define Buzzer P36
+#define ShellFAN P25
+#define EXTFAN P24
+#define HEARTFAN P34
+#define RUNSTATE_LED P35
 
 /*功能函数*/
 

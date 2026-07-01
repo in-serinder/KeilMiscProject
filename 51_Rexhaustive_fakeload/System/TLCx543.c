@@ -1,16 +1,18 @@
 #include "TLCx543.h"
 #include <intrins.h>
 
-uint8_t idata TLC_CHIP_TYPE = TLC1543; // 默认10位ADC
-
+uint8_t xdata TLC_CHIP_TYPE = TLC1543; // 默认10位ADC
+static uint8_t xdata   i;
+uint16_t xdata adc;
 void SPI_Delay(void) {
   _nop_();
+  _nop_();
+	  _nop_();
   _nop_();
 }
 
 // ====================== 初始化 ======================
 void TLCx543_Init(uint8_t CHIP) {
-  uint8_t i;
   TLC_CHIP_TYPE = CHIP;
 
   TLCx543_SCLK = 0;
@@ -53,8 +55,8 @@ void TLCx543_Init(uint8_t CHIP) {
 }
 
 static uint16_t TLC1543_Read(uint8_t channel) {
-  uint16_t adc = 0;
-  uint8_t i;
+   adc = 0;
+  
 
   // 拉低 CS，等待建立时间
   TLCx543_CS = 0;
@@ -95,18 +97,11 @@ static uint16_t TLC1543_Read(uint8_t channel) {
 }
 
 // ====================== 通用读取 ======================
-uint16_t TLCx543_ReadADC(uint8_t channel) {
-  //   if (TLC_CHIP_TYPE == TLC1543) {
-  //     return TLC1543_Read_10bit(channel);
-  //   } else {
-  //     return TLC2543_Read_12bit(channel);
-  //   }
-  TLC1543_Read(channel);
-}
+uint16_t TLCx543_ReadADC(uint8_t channel) { return TLC1543_Read(channel); }
 
 // ====================== 电压计算 ======================
 float TLCx543_ReadVoltageV(uint8_t channel) {
-  uint16_t adc = TLCx543_ReadADC(channel);
+   adc = TLCx543_ReadADC(channel);
   if (TLC_CHIP_TYPE == TLC1543) {
     return (float)adc * TLC_REF_VOLTAGE / 1023.0f;
   } else {
@@ -115,7 +110,7 @@ float TLCx543_ReadVoltageV(uint8_t channel) {
 }
 
 float TLCx543_ReadVoltageMV(uint8_t channel) {
-  uint16_t adc = TLCx543_ReadADC(channel);
+   adc = TLCx543_ReadADC(channel);
   if (TLC_CHIP_TYPE == TLC1543) {
     return (float)adc * TLC_REF_VOLTAGE * 1000.0f / 1023.0f;
   } else {

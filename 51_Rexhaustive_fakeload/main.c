@@ -1,15 +1,24 @@
 #include "Delay.h"
+#include "Display.h"
 #include "LCD1602.h"
 #include "TLCx543.h"
+#include "encode.h"
 #include "fakeload.h"
 #include "key.h"
 #include "peripheral.h"
 #include "stc89c52.h"
-#include <stdint.h>
+// Keil C51 does not support stdint.h, using native types
+// void vector_lock(void) code_at 0x0000 {
+// goto main;             // 0000 复位
+// goto EC11_A_Triggered; // 0003 INT0
+// goto Timer0_ISR;       // 000B T0 关键保护区域
+//  ;                      // 填充剩余字节
+//}
 
+void FakeLoadTest(void);
 // 编码器旋转只去变动一个功耗索引数值
-uint8_t loadIndex = 0;
-uint16_t duration_time_seconds = 0;
+uint8_t xdata loadIndex = 0;
+uint16_t xdata duration_time_seconds = 0;
 float idata voltage = 0.0f;
 float idata power = 0.0f;
 
@@ -26,8 +35,9 @@ void main(void) {
   EC11_Init();
   Key_Init();
   Display_Init();
-  TLCx543_Init();
+  TLCx543_Init(TLC1543);
   FakeLoad_Reset();
+  FakeLoadTest();
   // 预采集修复
   voltage = TLCx543_ReadVoltageV(0);
 
@@ -40,7 +50,17 @@ void main(void) {
 
   while (1) {
     if (is_running) {
+      heartFAN(1);
+      FakeLoad_SetResistance(loadIndex);
+    } else {
+      heartFAN(0);
+      FakeLoad_Reset();
     }
+
+    if (Key_Scan() == 0) {
+      is_running = !is_running;
+    }
+    Delay_ms(10);
   }
 }
 // 编码器方向/按键状态回调函数
@@ -74,6 +94,18 @@ void encode_CallBack(bit dir, bit keystate) {
     power = FakeLoad_getPower(loadIndex, voltage);
     Display_FakeLoad(power);
     // FakeLoad_SetPower(loadIndex);
-    FakeLoad_SetResistance(loadIndex);
+  }
+}
+
+void FakeLoadTest(void) {
+  uint8_t test_index = 0;
+
+  for (test_index = 0; test_index < 7; test_index++) {
+    FakeLoad_Set(test_index, 1);
+    Delay_ms(500);
+  }
+  for (test_index = 0; test_index < 7; test_index++) {
+    FakeLoad_Set(test_index, 0);
+    Delay_ms(500);
   }
 }

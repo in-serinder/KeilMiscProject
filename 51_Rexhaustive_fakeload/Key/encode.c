@@ -1,12 +1,11 @@
 #include "encode.h"
-#include "main.c" //回调使用
 
 #define EC11_A P32
 #define EC11_B P33
 #define EC11_KEY P30
 
 // 高电平有效
-bit AB_DIR; // 0: A->B  1: B->A>
+bit  AB_DIR; // 0: A->B  1: B->A>
 
 // AB都在中断上
 void EC11_Init(void) {

@@ -1,6 +1,6 @@
 #include "fakeload.h"
 #include <math.h>
-#include <stdint.h>
+// #include <stdint.h>
 
 /*
 20ohm - 20w
@@ -142,14 +142,13 @@ void FakeLoad_Init(void) {
   PCF8574_SetPort(R100, 0);  // 100R 关闭
 }
 
-
 // 由指定目标功率计算并设置电阻负载状态 返回索引
 uint8_t FakeLoad_SetPower(float power, float voltage) {
-  float  target_r;
-  float  min_diff = 999.0f;
-  uint8_t  best_index = 0;
-  uint8_t  i;
-  float  diff;
+  float xdata target_r;
+  float xdata min_diff = 999.0f;
+  uint8_t xdata best_index = 0;
+  uint8_t xdata i;
+  float xdata diff;
 
   if (power == 0) {
     PCF8574_Write(0xC0);
@@ -170,13 +169,14 @@ uint8_t FakeLoad_SetPower(float power, float voltage) {
 
   return best_index;
 }
-float FakeLoad_getPower(uint8_t resistance_index, float voltage) {
-  // 计算功率 P = V^2 / R
-  if (resistance_list[resistance_index] == 0.0f) {
-    return 0.0f;
-  }
-  return voltage * voltage / resistance_list[resistance_index];
-}
+
+// float FakeLoad_getPower(uint8_t resistance_index, float voltage) {
+//   // 计算功率 P = V^2 / R
+//   if (resistance_list[resistance_index] == 0.0f) {
+//     return 0.0f;
+//   }
+//   return voltage * voltage / resistance_list[resistance_index];
+// }
 
 void FakeLoad_SetResistance(uint8_t resistance_index) {
   PCF8574_Write(resistance_list_hex_list[resistance_index]);

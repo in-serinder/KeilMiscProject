@@ -18,51 +18,118 @@ Hex Converter:   OH51.exe V2.7.0.0
 CPU DLL:         S8051.DLL V3.122.0.0
 Dialog DLL:      DP51.DLL V2.66.0.0 
 <h2>Project:</h2>
-F:\SYSFILE\DeskTop\Misc.Git\fakeloader_51\fakeload.uvproj
-Project File Date:  12/28/2025
+F:\SYSFILE\DeskTop\Misc.Git\KeilMiscProject\51_Rexhaustive_fakeload\fakeload.uvproj
+Project File Date:  06/30/2026
 
 <h2>Output:</h2>
-Build target 'Target 1'
+Rebuild target 'Target 1'
 compiling main.c...
-.\Key\key.h(4): error C231: 'uint8_t': redefinition
-.\Key\key.h(5): error C141: syntax error near 'uint16_t', expected 'hdata'
-.\Key\peripheral.h(6): error C231: 'uint8_t': redefinition
-.\Key\peripheral.h(7): error C141: syntax error near 'uint16_t', expected 'hdata'
-compiling Status.c...
-System\Status.c(2): warning C318: can't open file 'stdint.h'
-System\Status.c(5): error C129: missing ';' before 'effic'
+compiling Delay.c...
 compiling Timer.c...
-System\Timer.c(6): error C202: 'TMOD': undefined identifier
-System\Timer.c(8): error C202: 'TH0': undefined identifier
-System\Timer.c(9): error C202: 'TL0': undefined identifier
-System\Timer.c(10): error C202: 'ET0': undefined identifier
-System\Timer.c(11): error C202: 'EA': undefined identifier
-System\Timer.c(12): error C202: 'TR0': undefined identifier
+compiling TLCx543.c...
 compiling key.c...
-Key\key.c(5): error C231: 'XICON': redefinition
-Key\key.c(36): error C141: syntax error near '=', expected ';'
-Key\key.c(37): error C141: syntax error near '=', expected ';'
-Key\key.c(44): error C141: syntax error near '=', expected ';'
-Key\key.c(45): error C141: syntax error near '=', expected ';'
+compiling peripheral.c...
+compiling encode.c...
 compiling Display.c...
-Display\Display.c(3): warning C318: can't open file 'stdint.h'
-Display\Display.c(21): error C202: 'uint8_t': undefined identifier
-Display\Display.c(21): error C141: syntax error near 'i', expected ';'
-Display\Display.c(22): error C202: 'i': undefined identifier
-Display\Display.c(24): error C202: 'i': undefined identifier
-Display\Display.c(30): error C141: syntax error near 'set_seconds', expected ')'
-Display\Display.c(33): error C202: 'uint8_t': undefined identifier
-Display\Display.c(33): error C141: syntax error near 'minutes', expected ';'
-Display\Display.c(34): error C202: 'uint8_t': undefined identifier
-Display\Display.c(34): error C141: syntax error near 'seconds', expected ';'
-compiling fakeload_iic.c...
-FakeLoad\fakeload_iic.c(38): warning C280: 'ack': unreferenced local variable
-FakeLoad\fakeload_iic.c(124): error C218: void-type in controlling expression
-compiling Efficiency.c...
-Utility\Efficiency.c(9): error C141: syntax error near '.', expected 'sizeof'
-Utility\Efficiency.c(18): error C141: syntax error near '.', expected 'sizeof'
-Target not created.
-Build Time Elapsed:  00:00:01
+compiling LCD1602.c...
+compiling fakeload.c...
+compiling pcf8574.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAY?DELAY
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?DELAY10US?DELAY
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_TLCX543_READVOLTAGEMV?TLCX543
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_TLCX543_CALCHIGHVOLTAGE?TLCX543
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_SETBUZZERDUTYCYCLE?PERIPHERAL
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_BUZZERPWM?PERIPHERAL
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?HEARTFAN?PERIPHERAL
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?RUNSTATELED?PERIPHERAL
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?CHECKDIRECTION?ENCODE
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DISPLAY_RUNNINGMESSAGE?DISPLAY
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DISPLAY_ERRORMESSAGE?DISPLAY
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?DISPLAY_CLEAR?DISPLAY
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?DISPLAY_LOADINGMESSAGE?DISPLAY
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DISPLAY_CALCLOADEFFICIENCY?DISPLAY
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_SHOWCHAR?LCD1602
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD_SHOWNUM?LCD1602
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_FAKELOAD_SETPOWER?FAKELOAD
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_FAKELOAD_SET?FAKELOAD
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_PCF8574_GETPORT?PCF8574
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?ENCODE_CALLBACK?MAIN
+    CALLER1: ?PR?EC11_A_TRIGGERED?ENCODE
+    CALLER2: ?PR?EC11_B_TRIGGERED?ENCODE
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?_DISPLAY_TIMERSETUPMESSAGE?DISPLAY
+    CALLER1: ?PR?EC11_A_TRIGGERED?ENCODE
+    CALLER2: ?PR?EC11_B_TRIGGERED?ENCODE
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?PRINTF?PRINTF
+    CALLER1: ?PR?EC11_A_TRIGGERED?ENCODE
+    CALLER2: ?PR?EC11_B_TRIGGERED?ENCODE
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?_LCD_SHOWSTRING?LCD1602
+    CALLER1: ?PR?EC11_A_TRIGGERED?ENCODE
+    CALLER2: ?PR?EC11_B_TRIGGERED?ENCODE
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?ENCODE_CALLBACK?MAIN
+    CALLER1: ?PR?EC11_B_TRIGGERED?ENCODE
+    CALLER2: ?PR?EC11_KEY_TRIGGERED?ENCODE
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?_DISPLAY_TIMERSETUPMESSAGE?DISPLAY
+    CALLER1: ?PR?EC11_B_TRIGGERED?ENCODE
+    CALLER2: ?PR?EC11_KEY_TRIGGERED?ENCODE
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?PRINTF?PRINTF
+    CALLER1: ?PR?EC11_B_TRIGGERED?ENCODE
+    CALLER2: ?PR?EC11_KEY_TRIGGERED?ENCODE
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?_LCD_SHOWSTRING?LCD1602
+    CALLER1: ?PR?EC11_B_TRIGGERED?ENCODE
+    CALLER2: ?PR?EC11_KEY_TRIGGERED?ENCODE
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?_LCD_SHOWSTRING?LCD1602
+    CALLER1: ?PR?EC11_KEY_TRIGGERED?ENCODE
+    CALLER2: ?C_C51STARTUP
+*** WARNING L5: CODE SPACE MEMORY OVERLAP
+    FROM:    000BH
+    TO:      000DH
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  _FAKELOAD_GETPOWER
+    MODULE:  .\Objects\main.obj (MAIN)
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  ?_FAKELOAD_GETPOWER?BYTE
+    MODULE:  .\Objects\main.obj (MAIN)
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  ?_FAKELOAD_GETPOWER?BYTE
+    MODULE:  .\Objects\main.obj (MAIN)
+    ADDRESS: 10FEH
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  _FAKELOAD_GETPOWER
+    MODULE:  .\Objects\main.obj (MAIN)
+    ADDRESS: 1109H
+Program Size: data=54.1 xdata=253 code=6482
+creating hex file from ".\Objects\fakeload"...
+".\Objects\fakeload" - 0 Error(s), 33 Warning(s).
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>

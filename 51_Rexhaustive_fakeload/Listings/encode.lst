@@ -1,0 +1,84 @@
+C51 COMPILER V9.59.0.0   ENCODE                                                            06/30/2026 19:18:46 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE ENCODE
+OBJECT MODULE PLACED IN .\Objects\encode.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Key\encode.c LARGE OPTIMIZE(8,SIZE) BROWSE INCDIR(.\Display;.\FakeLoad;.
+                    -\Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\encode.lst) TABS(2) OBJECT(.\Objects\encode.obj)
+
+line level    source
+
+   1          #include "encode.h"
+   2          
+   3          #define EC11_A P32
+   4          #define EC11_B P33
+   5          #define EC11_KEY P30
+   6          
+   7          // 高电平有效
+   8          bit  AB_DIR; // 0: A->B  1: B->A>
+   9          
+  10          // AB都在中断上
+  11          void EC11_Init(void) {
+  12   1        EC11_A = 1;
+  13   1        EC11_B = 1;
+  14   1        EC11_KEY = 1;
+  15   1      
+  16   1        IT0 = 1; // INT0(P3.2)低电平触发
+  17   1        EX0 = 1; // 使能INT0中断
+  18   1      
+  19   1        IT1 = 1; // INT1(P3.3)低电平触发
+  20   1        EX1 = 1; // 使能INT1中断
+  21   1      
+  22   1        IT2 = 1; // INT2(P3.4)低电平触发
+  23   1        EX2 = 1; // 使能INT2中断
+  24   1      
+  25   1        EA = 1; // 使能全局中断
+  26   1      }
+  27          
+  28          void disableAint(void) { EX0 = 0; }
+  29          void enableAint(void) { EX0 = 1; }
+  30          
+  31          void disableBint(void) { EX1 = 0; }
+  32          void enableBint(void) { EX1 = 1; }
+  33          
+  34          void EC11_A_Triggered(void) interrupt 0 {
+  35   1        disableBint();
+  36   1        P1 = 0xFF;
+  37   1      
+  38   1        if (EC11_B == 0)
+  39   1          AB_DIR = 0;
+  40   1      
+  41   1        // 回调到main - state=0表示旋转
+  42   1        encode_CallBack(AB_DIR, 0);
+  43   1        enableBint();
+  44   1      }
+  45          
+  46          void EC11_B_Triggered(void) interrupt 1 {
+  47   1        disableAint();
+  48   1        if (EC11_A == 0)
+  49   1          AB_DIR = 1;
+  50   1        encode_CallBack(AB_DIR, 0);
+  51   1        enableAint();
+  52   1      }
+  53          
+  54          void EC11_KEY_Triggered(void) interrupt 10 {
+C51 COMPILER V9.59.0.0   ENCODE                                                            06/30/2026 19:18:46 PAGE 2   
+
+  55   1        encode_CallBack(AB_DIR, 1); // state=1表示按键
+  56   1      }
+  57          
+  58          bit checkDirection(void) { return AB_DIR; }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    256    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
