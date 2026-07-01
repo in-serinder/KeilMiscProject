@@ -96,7 +96,7 @@ void main(void) {
       BuzzerPWM(0); // 关闭蜂鸣
     }
     // 编码器扫描 扫描后走回调
-    EC11_ScanKey();
+    // EC11_ScanKey();
 
     Delay_ms(10);
   }
@@ -145,4 +145,9 @@ void FakeLoadTest(void) {
     FakeLoad_Set(test_index, 0);
     Delay_ms(500);
   }
+}
+
+// idk EC11设置功能切换中断
+void INT1_Isr(void) interrupt 2 {
+  is_adjusting_duration_time = !is_adjusting_duration_time;
 }

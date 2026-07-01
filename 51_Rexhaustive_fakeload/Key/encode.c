@@ -2,7 +2,7 @@
 
 #define EC11_A P32
 #define EC11_B P12
-#define EC11_KEY P43
+#define EC11_KEY P33
 
 // 高电平有效
 bit AB_DIR; // 0: A->B  1: B->A>
@@ -67,6 +67,9 @@ void EC11_Init(void) {
   IT0 = 1; // 下降沿触发（编码器标准）
   EX0 = 1; // 使能INT0
   EX1 = 0; // 关闭INT1外部中断，留给定时器0
+
+  IT1 = 0; // INT1(P3.3)上升沿+下降沿中断
+  EX1 = 1; // 使能INT1中断
 
   EA = 1; // 全局中断开
 }

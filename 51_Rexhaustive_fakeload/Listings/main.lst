@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2026 15:24:54 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2026 15:29:34 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -45,124 +45,126 @@ line level    source
   35   1        Display_BootMessage();
   36   1        FakeLoad_Init();
   37   1        EC11_Init();
-  38   1        Key_Init();
-  39   1        TLCx543_Init(TLC1543);
-  40   1        FakeLoad_Reset();
-  41   1        FakeLoadTest();
-  42   1        // 预采集修复
-  43   1        voltage = TLCx543_ReadVoltageV(6);
-  44   1      
-  45   1        // 启用风扇
-  46   1        shellFAN(1);
-  47   1        extFAN(1);
-  48   1      
-  49   1        // 显示空闲
-  50   1        Display_IdleMessage();
-  51   1      
-  52   1        while (1) {
-  53   2          // 10ms基础节拍必执行
-  54   2          voltage = (TLCx543_ReadADC(6) * 5.0f / 1024.0f) * 34700.0f / 4700.0f;
-C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2026 15:24:54 PAGE 2   
+  38   1        Timer0_Init();
+*** WARNING C206 IN LINE 38 OF main.c: 'Timer0_Init': missing function-prototype
+  39   1        Key_Init();
+  40   1        TLCx543_Init(TLC1543);
+  41   1        FakeLoad_Reset();
+  42   1        FakeLoadTest();
+  43   1        // 预采集修复
+  44   1        voltage = TLCx543_ReadVoltageV(6);
+  45   1      
+  46   1        // 启用风扇
+  47   1        shellFAN(1);
+  48   1        extFAN(1);
+  49   1      
+  50   1        // 显示空闲
+  51   1        Display_IdleMessage();
+  52   1      
+  53   1        while (1) {
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2026 15:29:34 PAGE 2   
 
-  55   2      
-  56   2          // 按键防抖扫描
-  57   2          if (Key_Scan() == 0) {
-  58   3            Delay_ms(20);
-  59   3            while (Key_Scan() == 0)
-  60   3              ;
-  61   3            is_running = !is_running;
-  62   3            buzzer_tick = 0; // 按键启停直接关闭结束蜂鸣
-  63   3          }
-  64   2      
-  65   2          if (is_running) {
-  66   3            heartFAN(1);
-  67   3            FakeLoad_SetResistance(loadIndex);
-  68   3            power = FakeLoad_getPower(loadIndex, voltage);
-  69   3      
-  70   3            if (tick >= 100) // 1秒周期刷新
-  71   3            {
-  72   4              Display_RunningMessage(duration_time_seconds, power, voltage);
-  73   4              if (duration_time_seconds > 0) {
-  74   5                duration_time_seconds--;
-  75   5                // 计时归零触发蜂鸣
-  76   5                if (duration_time_seconds == 0) {
-  77   6                  buzzer_tick = BEEP_SEC * 100; // 3s = 300个10ms节拍
-  78   6                }
-  79   5              }
-  80   4              tick = 0;
-  81   4            }
-  82   3            tick++;
-  83   3          } else {
-  84   3            heartFAN(0);
-  85   3            FakeLoad_Reset();
-  86   3            tick = 0;
-  87   3            buzzer_tick = 0; // 停止负载直接关蜂鸣
-  88   3          }
-  89   2      
-  90   2          // 蜂鸣器逻辑
-  91   2          if (buzzer_tick > 0) {
-  92   3            BuzzerPWM(200); // 鸣叫频率200，可自行调整音调
-  93   3            buzzer_tick--;
-  94   3          } else {
-  95   3            BuzzerPWM(0); // 关闭蜂鸣
-  96   3          }
-  97   2          // 编码器扫描 扫描后走回调
-  98   2          EC11_ScanKey();
-  99   2      
- 100   2          Delay_ms(10);
- 101   2        }
- 102   1      }
- 103          // 编码器方向/按键状态回调函数
- 104          void encode_CallBack(bit dir, bit keystate) {
- 105   1        // keystate=1：编码器按键按下，切换调节模式
- 106   1        if (keystate == 1) {
- 107   2          is_adjusting_duration_time = !is_adjusting_duration_time;
- 108   2        }
- 109   1      
- 110   1        if (is_adjusting_duration_time) {
- 111   2          if (dir == 0) {
- 112   3            if (duration_time_seconds < 7200) // 上限7200秒 2小时
- 113   3              duration_time_seconds++;
- 114   3          } else {
- 115   3            if (duration_time_seconds > 0) // 禁止负数
- 116   3              duration_time_seconds--;
-C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2026 15:24:54 PAGE 3   
+  54   2          // 10ms基础节拍必执行
+  55   2          voltage = (TLCx543_ReadADC(6) * 5.0f / 1024.0f) * 34700.0f / 4700.0f;
+  56   2      
+  57   2          // 按键防抖扫描
+  58   2          if (Key_Scan() == 0) {
+  59   3            Delay_ms(20);
+  60   3            while (Key_Scan() == 0)
+  61   3              ;
+  62   3            is_running = !is_running;
+  63   3            buzzer_tick = 0; // 按键启停直接关闭结束蜂鸣
+  64   3          }
+  65   2      
+  66   2          if (is_running) {
+  67   3            heartFAN(1);
+  68   3            FakeLoad_SetResistance(loadIndex);
+  69   3            power = FakeLoad_getPower(loadIndex, voltage);
+  70   3      
+  71   3            if (tick >= 100) // 1秒周期刷新
+  72   3            {
+  73   4              Display_RunningMessage(duration_time_seconds, power, voltage);
+  74   4              if (duration_time_seconds > 0) {
+  75   5                duration_time_seconds--;
+  76   5                // 计时归零触发蜂鸣
+  77   5                if (duration_time_seconds == 0) {
+  78   6                  buzzer_tick = BEEP_SEC * 100; // 3s = 300个10ms节拍
+  79   6                }
+  80   5              }
+  81   4              tick = 0;
+  82   4            }
+  83   3            tick++;
+  84   3          } else {
+  85   3            heartFAN(0);
+  86   3            FakeLoad_Reset();
+  87   3            tick = 0;
+  88   3            buzzer_tick = 0; // 停止负载直接关蜂鸣
+  89   3          }
+  90   2      
+  91   2          // 蜂鸣器逻辑
+  92   2          if (buzzer_tick > 0) {
+  93   3            BuzzerPWM(200); // 鸣叫频率200，可自行调整音调
+  94   3            buzzer_tick--;
+  95   3          } else {
+  96   3            BuzzerPWM(0); // 关闭蜂鸣
+  97   3          }
+  98   2          // 编码器扫描 扫描后走回调
+  99   2          EC11_ScanKey();
+ 100   2      
+ 101   2          Delay_ms(10);
+ 102   2        }
+ 103   1      }
+ 104          // 编码器方向/按键状态回调函数
+ 105          void encode_CallBack(bit dir, bit keystate) {
+ 106   1        // keystate=1：编码器按键按下，切换调节模式
+ 107   1        if (keystate == 1) {
+ 108   2          is_adjusting_duration_time = !is_adjusting_duration_time;
+ 109   2        }
+ 110   1      
+ 111   1        if (is_adjusting_duration_time) {
+ 112   2          if (dir == 0) {
+ 113   3            if (duration_time_seconds < 7200) // 上限7200秒 2小时
+ 114   3              duration_time_seconds++;
+ 115   3          } else {
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2026 15:29:34 PAGE 3   
 
- 117   3          }
- 118   2          Display_TimerSetupMessage(duration_time_seconds);
- 119   2        } else {
- 120   2          // 调整功率负载
- 121   2          voltage = TLCx543_ReadVoltageV(0);
- 122   2          if (dir == 0) {
- 123   3            if (loadIndex < RESISTANCE_LIST_SIZE - 1) {
- 124   4              loadIndex++;
- 125   4            }
- 126   3          } else {
- 127   3            if (loadIndex > 0) {
- 128   4              loadIndex--;
- 129   4            }
- 130   3          }
- 131   2          power = FakeLoad_getPower(loadIndex, voltage);
- 132   2          Display_FakeLoad(power, FakeLoad_getResistance(loadIndex), voltage);
- 133   2        }
- 134   1      }
- 135          
- 136          void FakeLoadTest(void) {
- 137   1        uint8_t test_index = 0;
- 138   1      
- 139   1        for (test_index = 0; test_index < 7; test_index++) {
- 140   2          FakeLoad_Set(test_index, 1);
- 141   2          Delay_ms(500);
- 142   2        }
- 143   1        for (test_index = 0; test_index < 7; test_index++) {
- 144   2          FakeLoad_Set(test_index, 0);
- 145   2          Delay_ms(500);
- 146   2        }
- 147   1      }
+ 116   3            if (duration_time_seconds > 0) // 禁止负数
+ 117   3              duration_time_seconds--;
+ 118   3          }
+ 119   2          Display_TimerSetupMessage(duration_time_seconds);
+ 120   2        } else {
+ 121   2          // 调整功率负载
+ 122   2          voltage = TLCx543_ReadVoltageV(0);
+ 123   2          if (dir == 0) {
+ 124   3            if (loadIndex < RESISTANCE_LIST_SIZE - 1) {
+ 125   4              loadIndex++;
+ 126   4            }
+ 127   3          } else {
+ 128   3            if (loadIndex > 0) {
+ 129   4              loadIndex--;
+ 130   4            }
+ 131   3          }
+ 132   2          power = FakeLoad_getPower(loadIndex, voltage);
+ 133   2          Display_FakeLoad(power, FakeLoad_getResistance(loadIndex), voltage);
+ 134   2        }
+ 135   1      }
+ 136          
+ 137          void FakeLoadTest(void) {
+ 138   1        uint8_t test_index = 0;
+ 139   1      
+ 140   1        for (test_index = 0; test_index < 7; test_index++) {
+ 141   2          FakeLoad_Set(test_index, 1);
+ 142   2          Delay_ms(500);
+ 143   2        }
+ 144   1        for (test_index = 0; test_index < 7; test_index++) {
+ 145   2          FakeLoad_Set(test_index, 0);
+ 146   2          Delay_ms(500);
+ 147   2        }
+ 148   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    580    ----
+   CODE SIZE        =    583    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =      1       1
    PDATA SIZE       =   ----    ----
@@ -172,4 +174,4 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
 END OF MODULE INFORMATION.
 
 
-C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

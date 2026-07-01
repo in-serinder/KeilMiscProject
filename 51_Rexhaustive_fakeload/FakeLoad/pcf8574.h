@@ -22,8 +22,8 @@
 #define PCF8574_LOW 0
 #define PCF8574_HIGH 1
 
-#define SCL P20
-#define SDA P21
+#define SCL P13
+#define SDA P14
 
 // 初始化PCF8574
 void PCF8574_Init(void);
