@@ -20,4 +20,5 @@ void FakeLoad_SetResistance(uint8_t resistance_index);
 void FakeLoad_Reset(void);
 void FakeLoad_Set(uint8_t port, uint8_t value);
 float FakeLoad_getPower(uint8_t resistance_index, float voltage);
+float FakeLoad_getResistance(uint8_t resistance_index);
 #endif

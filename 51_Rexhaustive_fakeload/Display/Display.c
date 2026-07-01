@@ -112,27 +112,27 @@ void Display_ErrorMessage(char *message) {
   LCD_ShowString(2, 1, message);
 }
 
-void Display_Clear(void) {
-  // 1602模拟显示效果:
-  // [                ]
-  // [                ]
-  LCD_ShowString(1, 1, "                "); // Clear line 1
-  LCD_ShowString(2, 1, "                "); // Clear line 2
-}
+// void Display_Clear(void) {
+//   // 1602模拟显示效果:
+//   // [                ]
+//   // [                ]
+//   LCD_ShowString(1, 1, "                "); // Clear line 1
+//   LCD_ShowString(2, 1, "                "); // Clear line 2
+// }
 
-void Display_LoadingMessage(void) {
-  // 1602模拟显示效果:
-  // [Loading...      ]
-  // [                ]
-  LCD_ShowString(1, 1, "Loading...");
-}
+// void Display_LoadingMessage(void) {
+//   // 1602模拟显示效果:
+//   // [Loading...      ]
+//   // [                ]
+//   LCD_ShowString(1, 1, "Loading...");
+// }
 
-void Display_CalcLoadEfficiency(float efficiency) {
-  // 1602模拟显示效果 (示例 efficiency=95.67):
-  // [                ]
-  // [Eff: 95.67%     ]
-  buffer[0] = '\0';
-  // Convert efficiency to string with 2 decimal places
-  sprintf(buffer, "Eff: %.2f%%", efficiency);
-  LCD_ShowString(2, 1, buffer);
-}
+// void Display_CalcLoadEfficiency(float efficiency) {
+//   // 1602模拟显示效果 (示例 efficiency=95.67):
+//   // [                ]
+//   // [Eff: 95.67%     ]
+//   buffer[0] = '\0';
+//   // Convert efficiency to string with 2 decimal places
+//   sprintf(buffer, "Eff: %.2f%%", efficiency);
+//   LCD_ShowString(2, 1, buffer);
+// }

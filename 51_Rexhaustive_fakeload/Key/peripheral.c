@@ -2,9 +2,12 @@
 #include "Delay.h"
 #include "Timer.h"
 
-uint16_t xdata PWMPeriod = 100; // PWM周期，单位为中断次数
-uint16_t xdata pwmCounter = 0;  // PWM计数器
-uint8_t xdata dutyCycle = 50;   // 占空比
+uint16_t PWMPeriod = 0;
+uint16_t pwmCounter = 0;
+uint8_t dutyCycle = 0;
+bit buzzer_en = 0;       // 蜂鸣总开关
+#define BUZZER_VOLUME 50 // 默认音量50%占空比
+#define TICK_PER_SEC 250 // 全局宏，解决未定义报错
 
 #define Buzzer P36
 #define ShellFAN P25
@@ -13,7 +16,6 @@ uint8_t xdata dutyCycle = 50;   // 占空比
 #define RUNSTATE_LED P35
 
 /*功能函数*/
-
 void Timer0_ISR(void) interrupt 1 {
   TH0 = 0xFC;
   TL0 = 0x66;
@@ -30,13 +32,12 @@ void Timer0_ISR(void) interrupt 1 {
 
   Buzzer = (pwmCounter < dutyCycle) ? 1 : 0;
 }
+
 void setBuzzerDutyCycle(uint8_t duty) { dutyCycle = (duty > 100) ? 100 : duty; }
 
 /*外设函数*/
-
 // freq=0 关闭蜂鸣；freq>0 开启对应频率发声
 void BuzzerPWM(uint8_t freq) {
-  // 删掉Timer0_Init(); 只在main初始化一次定时器
   if (freq == 0) {
     buzzer_en = 0;
     PWMPeriod = 0;
@@ -47,11 +48,8 @@ void BuzzerPWM(uint8_t freq) {
   buzzer_en = 1;
   setBuzzerDutyCycle(BUZZER_VOLUME); // 开启默认音量
 
-  // 根据4ms中断时基重新计算周期，替换错误公式
-  // 单次中断4057us≈4ms，1秒中断次数 ≈ 1000/4 = 250次
-  // PWM周期值 = 每秒中断次数 / 目标蜂鸣频率
-  uint16_t tick_per_sec = 250;
-  PWMPeriod = tick_per_sec / freq;
+  // PWM周期计算
+  PWMPeriod = TICK_PER_SEC / freq;
 
   // 限制周期范围 1~200
   if (PWMPeriod < 1)

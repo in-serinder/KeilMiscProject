@@ -1,4 +1,5 @@
 #include "fakeload.h"
+//#include <cmath>
 #include <math.h>
 // #include <stdint.h>
 
@@ -182,5 +183,8 @@ void FakeLoad_SetResistance(uint8_t resistance_index) {
   PCF8574_Write(resistance_list_hex_list[resistance_index]);
 }
 
+float FakeLoad_getResistance(uint8_t resistance_index) {
+  return resistance_list[resistance_index];
+}
 void FakeLoad_Reset(void) { PCF8574_Write(0x00); }
 void FakeLoad_Set(uint8_t port, uint8_t value) { PCF8574_SetPort(port, value); }

@@ -14,12 +14,13 @@
 // goto Timer0_ISR;       // 000B T0 关键保护区域
 //  ;                      // 填充剩余字节
 //}
-
+#define BEEP_SEC 3U
 void FakeLoadTest(void);
 // 编码器旋转只去变动一个功耗索引数值
-uint8_t xdata loadIndex = 0;
-uint16_t tick = 0;
-uint16_t xdata duration_time_seconds = 0;
+uint8_t loadIndex = 0;
+uint16_t idata tick = 0; // 10ms -》 1tick
+uint16_t idata buzzer_tick = 0;
+uint16_t idata duration_time_seconds = 0;
 float idata voltage = 0.0f;
 float idata power = 0.0f;
 
@@ -127,7 +128,7 @@ void encode_CallBack(bit dir, bit keystate) {
       }
     }
     power = FakeLoad_getPower(loadIndex, voltage);
-    Display_FakeLoad(power, RESISTANCE_LIST[loadIndex], voltage);
+    Display_FakeLoad(power, FakeLoad_getResistance(loadIndex), voltage);
     // FakeLoad_SetPower(loadIndex);
   }
 }
