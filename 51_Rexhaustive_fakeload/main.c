@@ -18,6 +18,7 @@
 void FakeLoadTest(void);
 // 编码器旋转只去变动一个功耗索引数值
 uint8_t xdata loadIndex = 0;
+uint16_t tick = 0;
 uint16_t xdata duration_time_seconds = 0;
 float idata voltage = 0.0f;
 float idata power = 0.0f;
@@ -39,7 +40,7 @@ void main(void) {
   FakeLoad_Reset();
   FakeLoadTest();
   // 预采集修复
-  voltage = TLCx543_ReadVoltageV(0);
+  voltage = TLCx543_ReadVoltageV(6);
 
   // 启用风扇
   shellFAN(1);
@@ -49,17 +50,51 @@ void main(void) {
   Display_IdleMessage();
 
   while (1) {
+    // 10ms基础节拍必执行
+    voltage = (TLCx543_ReadADC(6) * 5.0f / 1024.0f) * 34700.0f / 4700.0f;
+
+    // 按键防抖扫描
+    if (Key_Scan() == 0) {
+      Delay_ms(20);
+      while (Key_Scan() == 0)
+        ;
+      is_running = !is_running;
+      buzzer_tick = 0; // 按键启停直接关闭结束蜂鸣
+    }
+
     if (is_running) {
       heartFAN(1);
       FakeLoad_SetResistance(loadIndex);
+      power = FakeLoad_getPower(loadIndex, voltage);
+
+      if (tick >= 100) // 1秒周期刷新
+      {
+        Display_RunningMessage(duration_time_seconds, power, voltage);
+        if (duration_time_seconds > 0) {
+          duration_time_seconds--;
+          // 计时归零触发蜂鸣
+          if (duration_time_seconds == 0) {
+            buzzer_tick = BEEP_SEC * 100; // 3s = 300个10ms节拍
+          }
+        }
+        tick = 0;
+      }
+      tick++;
     } else {
       heartFAN(0);
       FakeLoad_Reset();
+      tick = 0;
+      buzzer_tick = 0; // 停止负载直接关蜂鸣
     }
 
-    if (Key_Scan() == 0) {
-      is_running = !is_running;
+    // 蜂鸣器逻辑
+    if (buzzer_tick > 0) {
+      BuzzerPWM(200); // 鸣叫频率200，可自行调整音调
+      buzzer_tick--;
+    } else {
+      BuzzerPWM(0); // 关闭蜂鸣
     }
+
     Delay_ms(10);
   }
 }
@@ -92,7 +127,7 @@ void encode_CallBack(bit dir, bit keystate) {
       }
     }
     power = FakeLoad_getPower(loadIndex, voltage);
-    Display_FakeLoad(power);
+    Display_FakeLoad(power, RESISTANCE_LIST[loadIndex], voltage);
     // FakeLoad_SetPower(loadIndex);
   }
 }

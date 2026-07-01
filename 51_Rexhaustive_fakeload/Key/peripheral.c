@@ -15,43 +15,50 @@ uint8_t xdata dutyCycle = 50;   // 占空比
 /*功能函数*/
 
 void Timer0_ISR(void) interrupt 1 {
-  // 无操作，仅用于产生定时中断
   TH0 = 0xFC;
   TL0 = 0x66;
 
-  // PWM控制逻辑
+  if (!buzzer_en) {
+    Buzzer = 0;
+    return;
+  }
+
   pwmCounter++;
   if (pwmCounter >= PWMPeriod) {
     pwmCounter = 0;
   }
 
-  if (pwmCounter < dutyCycle) {
-    Buzzer = 1;
-  } else {
-    Buzzer = 0;
-  }
+  Buzzer = (pwmCounter < dutyCycle) ? 1 : 0;
 }
-
-void setBuzzerDutyCycle(uint8_t duty) {
-  if (duty > 100) {
-    duty = 100; // 限制最大占空比为100%
-  }
-  dutyCycle = duty;
-}
+void setBuzzerDutyCycle(uint8_t duty) { dutyCycle = (duty > 100) ? 100 : duty; }
 
 /*外设函数*/
 
+// freq=0 关闭蜂鸣；freq>0 开启对应频率发声
 void BuzzerPWM(uint8_t freq) {
-  Timer0_Init();
-
+  // 删掉Timer0_Init(); 只在main初始化一次定时器
   if (freq == 0) {
-    PWMPeriod = 0; // 关闭蜂鸣器
-  } else {
-    PWMPeriod = 1000000 / (freq * 10); // 根据频率计算PWM周期
-    PWMPeriod = (PWMPeriod > 200) ? 200
-                : (PWMPeriod < 1) ? 1
-                                  : PWMPeriod; // 限制PWM周期范围在1到200之间
+    buzzer_en = 0;
+    PWMPeriod = 0;
+    Buzzer = 0;
+    return;
   }
+
+  buzzer_en = 1;
+  setBuzzerDutyCycle(BUZZER_VOLUME); // 开启默认音量
+
+  // 根据4ms中断时基重新计算周期，替换错误公式
+  // 单次中断4057us≈4ms，1秒中断次数 ≈ 1000/4 = 250次
+  // PWM周期值 = 每秒中断次数 / 目标蜂鸣频率
+  uint16_t tick_per_sec = 250;
+  PWMPeriod = tick_per_sec / freq;
+
+  // 限制周期范围 1~200
+  if (PWMPeriod < 1)
+    PWMPeriod = 1;
+  if (PWMPeriod > 200)
+    PWMPeriod = 200;
+}
 }
 
 void shellFAN(bit state) { ShellFAN = state; }

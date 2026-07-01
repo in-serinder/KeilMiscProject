@@ -42,13 +42,16 @@ void Display_BootMessage(void) {
 //   }
 // }
 
-void Display_FakeLoad(float power) {
-  // 1602模拟显示效果 (示例 power=15.50):
+void Display_FakeLoad(float power, float resistance, float voltage) {
+  // 1602模拟显示效果 (示例 power=15.50, resistance=10.00, voltage=12.00):
   // [Power: 15.50W   ]
-  // [                ]
+  // [R:10.00Ohm V:12.0]
   buffer[0] = '\0';
   sprintf(buffer, "Power: %.2fW", power);
   LCD_ShowString(1, 1, buffer);
+  // 下方显示电阻和电压（缩短格式以适应16字符限制）
+  sprintf(buffer, "R:%.2fOhm V:%.1f", resistance, voltage);
+  LCD_ShowString(2, 1, buffer);
 }
 
 // Timer: 分钟:秒
@@ -68,8 +71,8 @@ void Display_TimerSetupMessage(uint16_t set_seconds) {
 void Display_RunningMessage(uint16_t elapsed_seconds, float loadEff,
                             float voltage) {
   // 1602模拟显示效果 (示例 elapsed=45, eff=85.5, voltage=12.34):
-  // [Eff:85.5 V:12.34]
-  // [00:45           ]
+  // [Ef:85.5W V:12.34]
+  // [00:45 Running   ]
 
   uint8_t xdata minutes = elapsed_seconds / 60;
   uint8_t xdata seconds = elapsed_seconds % 60;
@@ -79,11 +82,11 @@ void Display_RunningMessage(uint16_t elapsed_seconds, float loadEff,
   buffer[0] = '\0';
 
   // Convert seconds to string
-  sprintf(buffer, "%02u:%02u", minutes, seconds);
+  sprintf(buffer, "%02u:%02u Running", minutes, seconds);
 
   // 显示负载效率
 
-  sprintf(eff_buffer, "Eff:%.1f", loadEff);
+  sprintf(eff_buffer, "Ef:%.1fW", loadEff);
   LCD_ShowString(1, 1, eff_buffer);
 
   // 显示电压
