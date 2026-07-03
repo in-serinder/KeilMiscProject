@@ -2,38 +2,88 @@
 #include "CHR.h"
 #include "delay.h"
 #include "key.h"
-#include "ssd1306.h"
+#include "ssd13xx.h"
 
-#define BATTER_TH 2.7f // 检测是否为电池
-#define BATTERY_CHS 4
+#define BATTER_TH 2.7f        // 电池低压保护阈值
+#define BATTERY_CHS 4         // 充电通道总数
+#define REFRESH_INTERVAL 1000 // 屏幕/采集刷新间隔ms
 
-uint8_t i;
-float voltage, percent;
-char xdata ch_buffer[4], percent_buffer[5], voltage_buffer[5];
+// 全局仅保留状态数组（需要跨循环保存）
+uint8_t percent_status[BATTERY_CHS] = {0}; // 1充电中 0已充满
+uint16_t sys_tick = 0;
+
+void Timer0_ISR(void) interrupt 1 {
+  TH0 = 0xFF;
+  TL0 = 0x06; // STC15 1ms重载值
+  sys_tick++;
+}
 
 void main(void) {
+  uint8_t idata i;
+  float idata voltage, percent;
+  char idata ch_buffer[4], percent_buffer[5], voltage_buffer[5];
+  uint8_t idata threshold;
+  uint16_t idata last_refresh_tick = 0;
 
+  // 外设初始化
   SSD13XX_Init();
-
-  // 初始化屏幕显示
   SSD13XX_Clear();
-  SSD13XX_WriteString(0, 20, "Initializing..");
+  SSD13XX_WriteString(0, 20, "Initializing..", 0);
   BAT_ADC_Init();
   CHR_Init();
   KEY_Init();
+  Timer0_Init(); // 初始化1ms定时器
 
   while (1) {
-    // 对通道扫描
+    KEY_Scan_Handle();
+    threshold = KEY_GetThreshold();
+
+    if (sys_tick - last_refresh_tick < REFRESH_INTERVAL) {
+      continue;
+    }
+    last_refresh_tick = sys_tick;
+
     for (i = 0; i < BATTERY_CHS; i++) {
       voltage = BAT_ADC_ReadVoltage(i);
       percent = VoltageToSOC(voltage);
+
+      // 低压保护：电压低于2.7V，停止充电
+      if (voltage < BATTER_TH) {
+        CHR_Set_CH(i + 1, 0);
+        sprintf(ch_buffer, "Ch %d", i);
+        sprintf(percent_buffer, "Low Volt");
+        sprintf(voltage_buffer, "%.2fV", voltage);
+        Draw_ProgressBar_Double(0, i * 16, 128, ch_buffer, percent_buffer,
+                                voltage_buffer, 0);
+        percent_status[i] = 0;
+        continue;
+      }
+
+      // 电池百分比高于阈值：充满，停止充电
+      if (percent > threshold) {
+        if (percent_status[i] == 0)
+          continue;
+
+        CHR_Set_CH(i + 1, 0);
+        sprintf(ch_buffer, "Ch %d", i);
+        sprintf(percent_buffer, "%.1f%%(Over)", percent);
+        sprintf(voltage_buffer, "%.2fV", voltage);
+        Draw_ProgressBar_Double(0, i * 16, 128, ch_buffer, percent_buffer,
+                                voltage_buffer, (uint8_t)(percent * 100.0f));
+        percent_status[i] = 0;
+        continue;
+      }
+
+      // 低于阈值，开启充电
+      if (percent_status[i] == 0)
+        percent_status[i] = 1;
+      CHR_Set_CH(i + 1, 1);
+
       sprintf(ch_buffer, "Ch %d", i);
       sprintf(percent_buffer, "%.1f%%", percent);
       sprintf(voltage_buffer, "%.2fV", voltage);
       Draw_ProgressBar_Double(0, i * 16, 128, ch_buffer, percent_buffer,
                               voltage_buffer, (uint8_t)(percent * 100.0f));
-
-      delay_ms(1000); // 延时1秒
     }
   }
 }

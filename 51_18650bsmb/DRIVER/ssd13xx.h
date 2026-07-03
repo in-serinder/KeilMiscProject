@@ -1,7 +1,7 @@
 #ifndef __SSD13XX_H__
 #define __SSD13XX_H__
 
-#include "stc89c52.h" // 根据实际头文件路径修改
+#include "stc15w.h" // 根据实际头文件路径修改
 #include <string.h>
 
 // I2C引脚定义

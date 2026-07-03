@@ -291,8 +291,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\DRIVER\ssd1306.c</PathWithFileName>
-      <FilenameWithoutPath>ssd1306.c</FilenameWithoutPath>
+      <PathWithFileName>.\DRIVER\ssd13xx.c</PathWithFileName>
+      <FilenameWithoutPath>ssd13xx.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -303,8 +303,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\DRIVER\ssd1306.h</PathWithFileName>
-      <FilenameWithoutPath>ssd1306.h</FilenameWithoutPath>
+      <PathWithFileName>.\DRIVER\ssd13xx.h</PathWithFileName>
+      <FilenameWithoutPath>ssd13xx.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -312,7 +312,7 @@
 
   <Group>
     <GroupName>SYS</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

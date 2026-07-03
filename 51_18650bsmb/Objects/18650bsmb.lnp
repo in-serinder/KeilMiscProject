@@ -1,3 +1,8 @@
-".\Objects\main.obj" 
+".\Objects\main.obj",
+".\Objects\BAT.obj",
+".\Objects\CHR.obj",
+".\Objects\key.obj",
+".\Objects\ssd13xx.obj",
+".\Objects\Delay.obj" 
 TO ".\Objects\18650bsmb" 
 PRINT(".\Listings\18650bsmb.m51") RAMSIZE(256) 

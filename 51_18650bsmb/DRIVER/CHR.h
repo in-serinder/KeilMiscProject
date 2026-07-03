@@ -8,5 +8,6 @@ void CHR_Set_CH1(uint8_t state);
 void CHR_Set_CH2(uint8_t state);
 void CHR_Set_CH3(uint8_t state);
 void CHR_Set_CH4(uint8_t state);
+void CHR_Set_CH(uint8_t ch, uint8_t state);
 
 #endif

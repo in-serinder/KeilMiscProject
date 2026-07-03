@@ -71,6 +71,8 @@ float BAT_ADC_ReadVoltage(BAT_Channel ch) {
 
 // 电量估算
 float VoltageToSOC(float ocv) {
+  uint8_t i, s1, s2;
+  float v1, v2, ratio, soc;
   // SOC数组
   float v_table[] = {4.20f, 4.06f, 3.98f, 3.92f, 3.87f, 3.82f,
                      3.79f, 3.77f, 3.74f, 3.68f, 3.45f, 3.00f};
@@ -84,16 +86,16 @@ float VoltageToSOC(float ocv) {
     return 0;
 
   // 查找区间
-  for (uint8_t i = 0; i < len - 1; i++) {
-    float v1 = v_table[i];
-    float v2 = v_table[i + 1];
-    uint8_t s1 = soc_table[i];
-    uint8_t s2 = soc_table[i + 1];
+  for (i = 0; i < len - 1; i++) {
+    v1 = v_table[i];
+    v2 = v_table[i + 1];
+    s1 = soc_table[i];
+    s2 = soc_table[i + 1];
 
     if (ocv <= v1 && ocv >= v2) {
       // 线性插值
-      float ratio = (v1 - ocv) / (v1 - v2);
-      float soc = s1 - ratio * (s1 - s2);
+      ratio = (v1 - ocv) / (v1 - v2);
+      soc = s1 - ratio * (s1 - s2);
       return (uint8_t)(soc + 0.5f);
     }
   }
