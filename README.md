@@ -40,7 +40,7 @@ MCU_Platform_[Driver_specifies_hardware_driver_function]_Project_Name
 
 ### Project List
 
-- [51 18650 Multi-channel Charge/Discharge Controller](./51_18650bsmb/)
+- [51 18650 Multi-channel Charge/Discharge Controller](./51_18650_MultiChannelChargeDischargeController/)
 - [51 Four-channel High Voltage Switch Controller](./51_high_voltage_isolator/)
 - [51 Simple Zhouyi Divination Card](./51_zhouyi/)
 - [51 4V/6V Lead-acid Battery Charge/Discharge Controller](./51_STC15w408as_4V~6vBatterChangerSimple/)

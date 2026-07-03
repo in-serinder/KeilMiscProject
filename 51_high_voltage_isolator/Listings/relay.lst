@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   RELAY                                                             05/18/2026 08:19:49 PAGE 1   
+C51 COMPILER V9.59.0.0   RELAY                                                             07/01/2026 18:26:25 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE RELAY
@@ -10,158 +10,150 @@ line level    source
 
    1          #include "relay.h"
    2          
-   3          void init_relays()
-   4          {
-   5   1          CH1_RELAY = 0; // Initialize all relays to off
-   6   1          CH2_RELAY = 0;
-   7   1          CH3_RELAY = 0;
-   8   1          CH4_RELAY = 0;
-   9   1      }
-  10          
-  11          void set_relay_state(uint8_t channel, uint8_t state)
-  12          {
-  13   1          switch (channel)
-  14   1          {
-  15   2          case 1:
-  16   2              CH1_RELAY = state;
-  17   2              break;
-  18   2          case 2:
-  19   2              CH2_RELAY = state;
-  20   2              break;
-  21   2          case 3:
-  22   2              CH3_RELAY = state;
-  23   2              break;
-  24   2          case 4:
-  25   2              CH4_RELAY = state;
-  26   2              break;
-  27   2          default:
-  28   2              // Invalid channel, handle error if necessary
-  29   2              break;
-  30   2          }
-  31   1      }
-  32          
-  33          void toggle_relay(uint8_t channel)
-  34          {
-  35   1          switch (channel)
-  36   1          {
-  37   2          case 1:
-  38   2              CH1_RELAY = !CH1_RELAY;
-  39   2              break;
-  40   2          case 2:
-  41   2              CH2_RELAY = !CH2_RELAY;
-  42   2              break;
-  43   2          case 3:
-  44   2              CH3_RELAY = !CH3_RELAY;
-  45   2              break;
-  46   2          case 4:
-  47   2              CH4_RELAY = !CH4_RELAY;
-  48   2              break;
-  49   2          default:
-  50   2              // Invalid channel, handle error if necessary
-  51   2              break;
-  52   2          }
-  53   1      }
-  54          
-C51 COMPILER V9.59.0.0   RELAY                                                             05/18/2026 08:19:49 PAGE 2   
+   3          void init_relays() {
+   4   1        CH1_RELAY = 0; // Initialize all relays to off
+   5   1        CH2_RELAY = 0;
+   6   1        CH3_RELAY = 0;
+   7   1        CH4_RELAY = 0;
+   8   1      }
+   9          
+  10          void Relay_set_state(uint8_t channel, uint8_t state) {
+  11   1        switch (channel) {
+  12   2        case 1:
+  13   2          CH1_RELAY = state;
+  14   2          break;
+  15   2        case 2:
+  16   2          CH2_RELAY = state;
+  17   2          break;
+  18   2        case 3:
+  19   2          CH3_RELAY = state;
+  20   2          break;
+  21   2        case 4:
+  22   2          CH4_RELAY = state;
+  23   2          break;
+  24   2        default:
+  25   2          // Invalid channel, handle error if necessary
+  26   2          break;
+  27   2        }
+  28   1      }
+  29          
+  30          void Relay_toggle(uint8_t channel) {
+  31   1        switch (channel) {
+  32   2        case 1:
+  33   2          CH1_RELAY = !CH1_RELAY;
+  34   2          break;
+  35   2        case 2:
+  36   2          CH2_RELAY = !CH2_RELAY;
+  37   2          break;
+  38   2        case 3:
+  39   2          CH3_RELAY = !CH3_RELAY;
+  40   2          break;
+  41   2        case 4:
+  42   2          CH4_RELAY = !CH4_RELAY;
+  43   2          break;
+  44   2        default:
+  45   2          // Invalid channel, handle error if necessary
+  46   2          break;
+  47   2        }
+  48   1      }
+  49          
+  50          void Relay_turn_off_all_relays() {
+  51   1        CH1_RELAY = 0;
+  52   1        CH2_RELAY = 0;
+  53   1        CH3_RELAY = 0;
+  54   1        CH4_RELAY = 0;
+C51 COMPILER V9.59.0.0   RELAY                                                             07/01/2026 18:26:25 PAGE 2   
 
-  55          void turn_off_all_relays()
-  56          {
-  57   1          CH1_RELAY = 0;
-  58   1          CH2_RELAY = 0;
-  59   1          CH3_RELAY = 0;
-  60   1          CH4_RELAY = 0;
-  61   1      }
-  62          
-  63          void trun_on_all_relays()
-  64          {
-  65   1          CH1_RELAY = 0;
-  66   1          CH2_RELAY = 0;
-  67   1          CH3_RELAY = 0;
-  68   1          CH4_RELAY = 0;
-  69   1      }
-  70          
-  71          void self_checking_relays()
-  72          {
-  73   1          uint8_t i =0;
-  74   1          // 流水检测所有继电器
-  75   1          for (i = 1; i <= 4; i++)
-  76   1          {
-  77   2              set_relay_state(i, 1); // Turn on relay
-  78   2              Delay_ms(500);         // Wait for 500ms
-  79   2              set_relay_state(i, 0); // Turn off relay
-  80   2              Delay_ms(500);         // Wait for 500ms
-  81   2          }
-  82   1      
-  83   1          for (i = 4; i >= 1; i--)
-  84   1          {
-  85   2              set_relay_state(i, 1); // Turn on relay
-  86   2              Delay_ms(500);         // Wait for 500ms
-  87   2              set_relay_state(i, 0); // Turn off relay
-  88   2              Delay_ms(500);         // Wait for 500ms
-  89   2          }
-  90   1          // 开关全部
-  91   1          trun_on_all_relays();
-  92   1          Delay_ms(500);
-  93   1          turn_off_all_relays();
-  94   1          Delay_ms(500);
-  95   1      }
-  96          
-  97          uint8_t get_relay_status(void)
-  98          {
-  99   1          uint8_t status = 0;
- 100   1      
- 101   1          if (CH1_RELAY) status |= (1 << 0);
- 102   1          if (CH2_RELAY) status |= (1 << 1);
- 103   1          if (CH3_RELAY) status |= (1 << 2);
- 104   1          if (CH4_RELAY) status |= (1 << 3);
- 105   1      
- 106   1          return status;
- 107   1      }
- 108          void set_ao_led(){
- 109   1          if(get_relay_status()==0x0F)
- 110   1              RELAY_ALLOPEN = 1;
- 111   1      }
- 112          
- 113          // 红外编码映射功能
- 114          uint8_t ir_key_code_map_to_channel(uint8_t key_code){
- 115   1          switch (key_code)
- 116   1          {
-C51 COMPILER V9.59.0.0   RELAY                                                             05/18/2026 08:19:49 PAGE 3   
+  55   1      }
+  56          
+  57          void Relay_turn_on_all_relays() {
+  58   1        CH1_RELAY = 0;
+  59   1        CH2_RELAY = 0;
+  60   1        CH3_RELAY = 0;
+  61   1        CH4_RELAY = 0;
+  62   1      }
+  63          
+  64          void Relay_self_checking_relays() {
+  65   1        uint8_t i = 0;
+  66   1        // 流水检测所有继电器
+  67   1        for (i = 1; i <= 4; i++) {
+  68   2          Relay_set_state(i, 1); // Turn on relay
+  69   2          Delay_ms(500);         // Wait for 500ms
+  70   2          Relay_set_state(i, 0); // Turn off relay
+  71   2          Delay_ms(500);         // Wait for 500ms
+  72   2        }
+  73   1      
+  74   1        for (i = 4; i >= 1; i--) {
+  75   2          Relay_set_state(i, 1); // Turn on relay
+  76   2          Delay_ms(500);         // Wait for 500ms
+  77   2          Relay_set_state(i, 0); // Turn off relay
+  78   2          Delay_ms(500);         // Wait for 500ms
+  79   2        }
+  80   1        // 开关全部
+  81   1        Relay_turn_on_all_relays();
+  82   1        Delay_ms(500);
+  83   1        Relay_turn_off_all_relays();
+  84   1        Delay_ms(500);
+  85   1      }
+  86          
+  87          uint8_t Relay_get_status(void) {
+  88   1        uint8_t status = 0;
+  89   1      
+  90   1        if (CH1_RELAY)
+  91   1          status |= (1 << 0);
+  92   1        if (CH2_RELAY)
+  93   1          status |= (1 << 1);
+  94   1        if (CH3_RELAY)
+  95   1          status |= (1 << 2);
+  96   1        if (CH4_RELAY)
+  97   1          status |= (1 << 3);
+  98   1      
+  99   1        return status;
+ 100   1      }
+ 101          void Relay_set_ao_led() {
+ 102   1        if (Relay_get_status() == 0x0F)
+ 103   1          RELAY_ALLOPEN = 1;
+ 104   1      }
+ 105          
+ 106          // 红外编码映射功能
+ 107          uint8_t Relay_ir_key_code_map_to_channel(uint8_t key_code) {
+ 108   1        switch (key_code) {
+ 109   2        case 0:
+ 110   2          Relay_toggle(1);
+ 111   2          return 0;
+ 112   2        case 1:
+ 113   2          Relay_set_state(2, !CH2_RELAY);
+ 114   2          return 0;
+ 115   2        case 2:
+ 116   2          Relay_set_state(3, !CH3_RELAY);
+C51 COMPILER V9.59.0.0   RELAY                                                             07/01/2026 18:26:25 PAGE 3   
 
- 117   2          case 0:
- 118   2              set_relay_state(1, !CH1_RELAY);
- 119   2              return 0;
- 120   2          case 1:
- 121   2              set_relay_state(2, !CH2_RELAY);
- 122   2              return 0;
- 123   2          case 2:
- 124   2              set_relay_state(3, !CH3_RELAY);
- 125   2              return 0;
- 126   2          case 3:
- 127   2              set_relay_state(4, !CH4_RELAY);
- 128   2              return 0;
- 129   2              break;
- 130   2          // 其他指令处理
- 131   2          // 全开
- 132   2          case 4:
- 133   2              trun_on_all_relays();
- 134   2              return 0;
- 135   2          // 全关
- 136   2          case 5:
- 137   2              turn_off_all_relays();
- 138   2              return 0;
- 139   2          // 再次自检
- 140   2          case 6:
- 141   2              self_checking_relays();
- 142   2              return 0;
- 143   2          default:
- 144   2              return 1;
- 145   2          }
- 146   1      }
+ 117   2          return 0;
+ 118   2        case 3:
+ 119   2          Relay_set_state(4, !CH4_RELAY);
+ 120   2          return 0;
+ 121   2          break;
+ 122   2        // 其他指令处理
+ 123   2        // 全开
+ 124   2        case 4:
+ 125   2          Relay_turn_on_all_relays();
+ 126   2          return 0;
+ 127   2        // 全关
+ 128   2        case 5:
+ 129   2          Relay_turn_off_all_relays();
+ 130   2          return 0;
+ 131   2        // 再次自检
+ 132   2        case 6:
+ 133   2          Relay_self_checking_relays();
+ 134   2          return 0;
+ 135   2        default:
+ 136   2          return 1;
+ 137   2        }
+ 138   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    346    ----
+   CODE SIZE        =    337    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

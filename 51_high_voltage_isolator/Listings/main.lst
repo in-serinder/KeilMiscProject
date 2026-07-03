@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              04/26/2026 15:17:06 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2026 18:26:25 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -8,51 +8,46 @@ COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE 
 
 line level    source
 
-   1          #include "stc15w.h"
-   2          #include "relay.h"
-   3          #include "delay.h"
-   4          #include "ir_receive.h"
+   1          #include "delay.h"
+   2          #include "ir_receive.h"
+   3          #include "relay.h"
+   4          #include "stc15w.h"
    5          #include "uart.h"
    6          
-   7          void main()
-   8          {
-   9   1          uint8_t cmd_flag = 0;
-  10   1          uint8_t digit;
-  11   1      
-  12   1          /*初始化位*/
-  13   1          init_relays();
-  14   1          IR_Init();
-  15   1          UART_Init();
-  16   1          /*自检*/
-  17   1          UART_SendString((uint8_t *)"Booted RelaySelf-Checking ....");
-  18   1          Delay_ms(500);
-  19   1          self_checking_relays();
-  20   1          UART_SendString((uint8_t *)"Relay Self-Checking Completed.");
-  21   1          set_ao_led();
-  22   1          while (1)
-  23   1          {
-  24   2              set_ao_led();
-  25   2              if (ir_receive_complete)
-  26   2              {
-  27   3                  digit = IR_GetDigit();
-  28   3                  if (digit <= 4) // 仅处理1-4的数字按键
-  29   3                  {
-  30   4                      toggle_relay(digit); // 切换对应继电器状态
-  31   4                      UART_SendString((uint8_t *)"Toggled Relay ");
-  32   4                      cmd_flag = ir_key_code_map_to_channel(digit);
-  33   4                      if (cmd_flag != 0)
-  34   4                          UART_SendString((uint8_t *)"Unknown Command\n");
-  35   4      
-  36   4                      UART_SendByte('0' + digit); // 发送继电器编号
-  37   4                      UART_SendByte('\n');
-  38   4                  }
-  39   3                  else
-  40   3                  {
-  41   4                      UART_SendString((uint8_t *)"Received Non-Digit Key\n");
-  42   4                  }
-  43   3              }
-  44   2          }
-  45   1      }
+   7          void main() {
+   8   1        uint8_t cmd_flag = 0;
+   9   1        uint8_t digit;
+  10   1      
+  11   1        /*初始化位*/
+  12   1        init_relays();
+  13   1        IR_Init();
+  14   1        UART_Init();
+  15   1        /*自检*/
+  16   1        UART_SendString((uint8_t *)"Booted RelaySelf-Checking ....");
+  17   1        Delay_ms(500);
+  18   1        Relay_self_checking_relays();
+  19   1        UART_SendString((uint8_t *)"Relay Self-Checking Completed.");
+  20   1        Relay_set_ao_led();
+  21   1        while (1) {
+  22   2          Relay_set_ao_led();
+  23   2          if (ir_receive_complete) {
+  24   3            digit = IR_GetDigit();
+  25   3            if (digit <= 4) // 仅处理1-4的数字按键
+  26   3            {
+  27   4              Relay_toggle(digit); // 切换对应继电器状态
+  28   4              UART_SendString((uint8_t *)"Toggled Relay ");
+  29   4              cmd_flag = Relay_ir_key_code_map_to_channel(digit);
+  30   4              if (cmd_flag != 0)
+  31   4                UART_SendString((uint8_t *)"Unknown Command\n");
+  32   4      
+  33   4              UART_SendByte('0' + digit); // 发送继电器编号
+  34   4              UART_SendByte('\n');
+  35   4            } else {
+  36   4              UART_SendString((uint8_t *)"Received Non-Digit Key\n");
+  37   4            }
+  38   3          }
+  39   2        }
+  40   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
@@ -62,8 +57,6 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----       2
    IDATA SIZE       =   ----    ----
-C51 COMPILER V9.59.0.0   MAIN                                                              04/26/2026 15:17:06 PAGE 2   
-
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
 

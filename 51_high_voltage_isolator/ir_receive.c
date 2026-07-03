@@ -50,7 +50,7 @@ void IR_Init(void)
     TR0 = 0; // 先关闭定时器
 }
 
-// INT1中断处理函数，用于红外接收
+
 void IR_ISR(void) interrupt 0
 {
     switch (ir_state)

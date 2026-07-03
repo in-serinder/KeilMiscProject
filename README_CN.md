@@ -40,7 +40,7 @@ git clone  https://github.com/in-serinder/KeilMiscProject.git
 
 ### 项目列表
 
-- [51 18650 多通道充放电控制器](./51_18650bsmb/)
+- [51 18650 多通道充放电控制器](./51_18650_MultiChannelChargeDischargeController/)
 - [51 四通道高压开关控制器](./51_high_voltage_isolator/)
 - [51 简易周易抽签卡](./51_zhouyi/)
 - [51 4v/6v铅酸电池充电放电控制器](./51_STC15w408as_4V~6vBatterChangerSimple/)

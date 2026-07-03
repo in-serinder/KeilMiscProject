@@ -1,7 +1,8 @@
 #ifndef RELAY_H
 #define RELAY_H
-#include "stc15w.h"
 #include "delay.h"
+#include "stc15w.h"
+
 
 #define CH1_RELAY P33
 #define CH2_RELAY P36
@@ -11,13 +12,13 @@
 #define RELAY_ALLOPEN P12
 
 void init_relays();
-void set_relay_state(uint8_t channel, uint8_t state);
-void toggle_relay(uint8_t channel);
-void turn_off_all_relays();
-void trun_on_all_relays();
-void self_checking_relays();
-uint8_t get_relay_status();
-void set_ao_led();
-uint8_t ir_key_code_map_to_channel(uint8_t key_code);
+void Relay_set_state(uint8_t channel, uint8_t state);
+void Relay_toggle(uint8_t channel);
+void Relay_turn_off_all_relays();
+void Relay_turn_on_all_relays();
+void Relay_self_checking_relays();
+uint8_t Relay_get_status();
+void Relay_set_ao_led();
+uint8_t Relay_ir_key_code_map_to_channel(uint8_t key_code);
 
 #endif // RELAY_H
