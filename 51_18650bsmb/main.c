@@ -4,13 +4,14 @@
 #include "key.h"
 #include "ssd13xx.h"
 
-#define BATTER_TH 2.7f        // 电池低压保护阈值
-#define BATTERY_CHS 4         // 充电通道总数
-#define REFRESH_INTERVAL 1000 // 屏幕/采集刷新间隔ms
+#define BATTER_TH 2.7f           // 电池低压保护阈值
+#define BATTERY_CHS 4            // 充电通道总数
+#define REFRESH_INTERVAL 1000    // 屏幕/采集刷新间隔ms
+#define THRESHOLD_SHOW_HOLD 1000 // 松开后阈值文字停留时长
 
 // 全局仅保留状态数组（需要跨循环保存）
-uint8_t percent_status[BATTERY_CHS] = {0}; // 1充电中 0已充满
-uint16_t sys_tick = 0;
+uint8_t idata percent_status[BATTERY_CHS] = {0}; // 1充电中 0已充满
+uint16_t idata sys_tick = 0;
 
 void Timer0_ISR(void) interrupt 1 {
   TH0 = 0xFF;
@@ -21,9 +22,13 @@ void Timer0_ISR(void) interrupt 1 {
 void main(void) {
   uint8_t idata i;
   float idata voltage, percent;
-  char idata ch_buffer[4], percent_buffer[5], voltage_buffer[5];
-  uint8_t idata threshold;
+  char idata ch_buffer[4], percent_buffer[5], voltage_buffer[5],
+      threshold_buffer[8];
+  uint8_t idata threshold, new_threshold;
   uint16_t idata last_refresh_tick = 0;
+  uint16_t idata key_release_tick =
+      0; // 记录按键松开时刻，用于判断是否需要显示阈值文字
+  uint8_t idata show_threshold_flag = 0; // 是否需要显示阈值文字
 
   // 外设初始化
   SSD13XX_Init();
@@ -36,8 +41,25 @@ void main(void) {
 
   while (1) {
     KEY_Scan_Handle();
-    threshold = KEY_GetThreshold();
+    new_threshold = KEY_GetThreshold();
 
+    // 按键调节
+    if (threshold != new_threshold) {
+      threshold = new_threshold;
+      show_threshold_flag = 1;
+      key_release_tick = sys_tick; // 刷新松开计时起点
+      // 局部刷新阈值页面
+      SSD13XX_ClearPage(1);
+      sprintf(threshold_buffer, "Th: %d", threshold);
+      SSD13XX_WriteString(0, 20, threshold_buffer, 0);
+    } else if (show_threshold_flag) {
+      if (sys_tick - key_release_tick >= THRESHOLD_SHOW_HOLD) {
+        show_threshold_flag = 0;
+        SSD13XX_ClearPage(1); // 停留时间到，清空阈值区域
+      }
+    }
+
+    // 定时采集刷新充电通道（全程无阻塞）
     if (sys_tick - last_refresh_tick < REFRESH_INTERVAL) {
       continue;
     }

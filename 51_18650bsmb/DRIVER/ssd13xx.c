@@ -560,27 +560,27 @@ void SSD13XX_DrawRectangle(unsigned char x1, unsigned char y1, unsigned char x2,
  * 返回: 无
  * 注意: 使用中点圆算法绘制圆形，不填充内部
  **************************************************************************************************/
-void SSD13XX_DrawCircle(unsigned char x0, unsigned char y0, unsigned char r,
-                        unsigned char color) {
-  int idata x = 0, y = r, d = 3 - 2 * r;
-  while (x <= y) {
-    SSD13XX_DrawPixel(x0 + x, y0 + y, color);
-    SSD13XX_DrawPixel(x0 + x, y0 - y, color);
-    SSD13XX_DrawPixel(x0 - x, y0 + y, color);
-    SSD13XX_DrawPixel(x0 - x, y0 - y, color);
-    SSD13XX_DrawPixel(x0 + y, y0 + x, color);
-    SSD13XX_DrawPixel(x0 + y, y0 - x, color);
-    SSD13XX_DrawPixel(x0 - y, y0 + x, color);
-    SSD13XX_DrawPixel(x0 - y, y0 - x, color);
-    if (d < 0)
-      d += 4 * x + 6;
-    else {
-      d += 4 * (x - y) + 10;
-      y--;
-    }
-    x++;
-  }
-}
+// void SSD13XX_DrawCircle(unsigned char x0, unsigned char y0, unsigned char r,
+//                         unsigned char color) {
+//   int idata x = 0, y = r, d = 3 - 2 * r;
+//   while (x <= y) {
+//     SSD13XX_DrawPixel(x0 + x, y0 + y, color);
+//     SSD13XX_DrawPixel(x0 + x, y0 - y, color);
+//     SSD13XX_DrawPixel(x0 - x, y0 + y, color);
+//     SSD13XX_DrawPixel(x0 - x, y0 - y, color);
+//     SSD13XX_DrawPixel(x0 + y, y0 + x, color);
+//     SSD13XX_DrawPixel(x0 + y, y0 - x, color);
+//     SSD13XX_DrawPixel(x0 - y, y0 + x, color);
+//     SSD13XX_DrawPixel(x0 - y, y0 - x, color);
+//     if (d < 0)
+//       d += 4 * x + 6;
+//     else {
+//       d += 4 * (x - y) + 10;
+//       y--;
+//     }
+//     x++;
+//   }
+// }
 
 /***************************************************************************************************
  * 函数名: SSD13XX_DrawBitmap
@@ -593,28 +593,28 @@ void SSD13XX_DrawCircle(unsigned char x0, unsigned char y0, unsigned char r,
  * 返回: 无
  * 注意: 支持跨页绘制，按页为单位处理位图数据
  **************************************************************************************************/
-void SSD13XX_DrawBitmap(unsigned char x, unsigned char y,
-                        const unsigned char *bitmap, unsigned char width,
-                        unsigned char height) {
-  unsigned char page, col, row, dat;
-  unsigned int offset = 0;
-  for (page = 0; page < (height + 7) / 8; page++) {
-    for (col = 0; col < width; col++) {
-      if (x + col >= SSD13XX_WIDTH || y + page * 8 >= SSD13XX_HEIGHT) {
-        offset++;
-        continue;
-      }
-      dat = bitmap[offset++];
-      for (row = 0; row < 8; row++) {
-        if (y + page * 8 + row >= SSD13XX_HEIGHT)
-          break;
-        if (dat & (1 << row)) {
-          SSD13XX_DrawPixel(x + col, y + page * 8 + row, 1);
-        }
-      }
-    }
-  }
-}
+// void SSD13XX_DrawBitmap(unsigned char x, unsigned char y,
+//                         const unsigned char *bitmap, unsigned char width,
+//                         unsigned char height) {
+//   unsigned char page, col, row, dat;
+//   unsigned int offset = 0;
+//   for (page = 0; page < (height + 7) / 8; page++) {
+//     for (col = 0; col < width; col++) {
+//       if (x + col >= SSD13XX_WIDTH || y + page * 8 >= SSD13XX_HEIGHT) {
+//         offset++;
+//         continue;
+//       }
+//       dat = bitmap[offset++];
+//       for (row = 0; row < 8; row++) {
+//         if (y + page * 8 + row >= SSD13XX_HEIGHT)
+//           break;
+//         if (dat & (1 << row)) {
+//           SSD13XX_DrawPixel(x + col, y + page * 8 + row, 1);
+//         }
+//       }
+//     }
+//   }
+// }
 
 // ==================== 文本显示 ====================
 // void SSD1315_WriteChar(unsigned char x, unsigned char y, char c,
@@ -795,77 +795,77 @@ void SSD13XX_Init(void) {
  * @param right_str 右侧显示的字符串（如 "67%"），可为NULL
  * @param percent  进度百分比（0~100）
  */
-void Draw_ProgressBar_Component(unsigned char x, unsigned char y,
-                                unsigned char width, char *left_str,
-                                char *right_str, unsigned char percent) {
-  unsigned char left_width, right_width, remaining_width, fill_width;
-  unsigned char bar_start_x, bar_end_x;
-  unsigned char i;
+// void Draw_ProgressBar_Component(unsigned char x, unsigned char y,
+//                                 unsigned char width, char *left_str,
+//                                 char *right_str, unsigned char percent) {
+//   unsigned char left_width, right_width, remaining_width, fill_width;
+//   unsigned char bar_start_x, bar_end_x;
+//   unsigned char i;
 
-  // 参数检查：y必须为8的倍数，否则文本无法显示
-  if (y % 8 != 0)
-    return;
-  if (percent > 100)
-    percent = 100;
-  if (width < 20)
-    return; // 太窄无法绘制
+//   // 参数检查：y必须为8的倍数，否则文本无法显示
+//   if (y % 8 != 0)
+//     return;
+//   if (percent > 100)
+//     percent = 100;
+//   if (width < 20)
+//     return; // 太窄无法绘制
 
-  // 计算左右文本占据的像素宽度（每个字符8像素）
-  left_width = (left_str != NULL) ? (strlen(left_str) * 8) : 0;
-  right_width = (right_str != NULL) ? (strlen(right_str) * 8) : 0;
+//   // 计算左右文本占据的像素宽度（每个字符8像素）
+//   left_width = (left_str != NULL) ? (strlen(left_str) * 8) : 0;
+//   right_width = (right_str != NULL) ? (strlen(right_str) * 8) : 0;
 
-  // 剩余宽度用于进度条（左右各留1像素边距）
-  remaining_width = width - left_width - right_width - 2; // 减2是两侧留白
-  if (remaining_width < 10)
-    remaining_width = 10; // 最小宽度
+//   // 剩余宽度用于进度条（左右各留1像素边距）
+//   remaining_width = width - left_width - right_width - 2; // 减2是两侧留白
+//   if (remaining_width < 10)
+//     remaining_width = 10; // 最小宽度
 
-  // 进度条填充宽度
-  fill_width = (remaining_width * percent) / 100;
-  if (fill_width < 0)
-    fill_width = 0;
-  if (fill_width > remaining_width)
-    fill_width = remaining_width;
+//   // 进度条填充宽度
+//   fill_width = (remaining_width * percent) / 100;
+//   if (fill_width < 0)
+//     fill_width = 0;
+//   if (fill_width > remaining_width)
+//     fill_width = remaining_width;
 
-  // 计算进度条的起始和结束坐标
-  bar_start_x = x + left_width + 1;        // 左侧文本后空1像素
-  bar_end_x = x + width - right_width - 1; // 右侧文本前空1像素
+//   // 计算进度条的起始和结束坐标
+//   bar_start_x = x + left_width + 1;        // 左侧文本后空1像素
+//   bar_end_x = x + width - right_width - 1; // 右侧文本前空1像素
 
-  // 绘制进度条外框（高度4px，从 y+2 到 y+5）
-  SSD13XX_DrawRectangle(bar_start_x, y + 2, bar_end_x, y + 5, 1);
+//   // 绘制进度条外框（高度4px，从 y+2 到 y+5）
+//   SSD13XX_DrawRectangle(bar_start_x, y + 2, bar_end_x, y + 5, 1);
 
-  // 绘制填充部分（内部用横线填充，填充区域为 bar_start_x+1 到
-  // bar_start_x+fill_width，行范围为 y+2+1 到 y+5-1）
-  if (fill_width > 0) {
-    for (i = y + 3; i <= y + 4;
-         i++) { // 绘制两行横线，使4px高度有较好的填充效果
-      SSD13XX_DrawLine(bar_start_x + 1, i, bar_start_x + fill_width, i, 1);
-    }
-  }
+//   // 绘制填充部分（内部用横线填充，填充区域为 bar_start_x+1 到
+//   // bar_start_x+fill_width，行范围为 y+2+1 到 y+5-1）
+//   if (fill_width > 0) {
+//     for (i = y + 3; i <= y + 4;
+//          i++) { // 绘制两行横线，使4px高度有较好的填充效果
+//       SSD13XX_DrawLine(bar_start_x + 1, i, bar_start_x + fill_width, i, 1);
+//     }
+//   }
 
-  if (left_str != NULL) {
-    SSD13XX_WriteString(x, y, left_str, FONT_8X8);
-  }
+//   if (left_str != NULL) {
+//     SSD13XX_WriteString(x, y, left_str, FONT_8X8);
+//   }
 
-  if (right_str != NULL) {
-    unsigned char right_text_x = x + width - right_width;
-    SSD13XX_WriteString(right_text_x, y, right_str, FONT_8X8);
-  }
-}
+//   if (right_str != NULL) {
+//     unsigned char right_text_x = x + width - right_width;
+//     SSD13XX_WriteString(right_text_x, y, right_str, FONT_8X8);
+//   }
+// }
 // 测试
 
-void SSD13XX_ShowAllChars(void) {
-  unsigned char x, y;
-  unsigned char ch;
+// void SSD13XX_ShowAllChars(void) {
+//   unsigned char x, y;
+//   unsigned char ch;
 
-  SSD13XX_Clear();
+//   SSD13XX_Clear();
 
-  for (ch = 32; ch <= 127; ch++) {
+//   for (ch = 32; ch <= 127; ch++) {
 
-    x = (ch - 32) % 16 * 8;
-    y = (ch - 32) / 16 * 8;
-    SSD13XX_WriteChar(x, y, ch, FONT_8X8);
-  }
-}
+//     x = (ch - 32) % 16 * 8;
+//     y = (ch - 32) / 16 * 8;
+//     SSD13XX_WriteChar(x, y, ch, FONT_8X8);
+//   }
+// }
 
 /**
  * @brief 双行进度条组件（占用2个Page，高度16像素）

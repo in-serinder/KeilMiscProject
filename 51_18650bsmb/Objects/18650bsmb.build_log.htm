@@ -19,12 +19,12 @@ CPU DLL:         S8051.DLL V3.122.0.0
 Dialog DLL:      DP51.DLL V2.66.0.0 
 <h2>Project:</h2>
 F:\SYSFILE\DeskTop\Misc.Git\KeilMiscProject\51_18650bsmb\18650bsmb.uvproj
-Project File Date:  07/01/2026
+Project File Date:  07/03/2026
 
 <h2>Output:</h2>
 Rebuild target 'Target 1'
 compiling main.c...
-main.c(35): warning C206: 'Timer0_Init': missing function-prototype
+main.c(40): warning C206: 'Timer0_Init': missing function-prototype
 compiling BAT.c...
 compiling CHR.c...
 DRIVER\CHR.c(24): warning C280: 'ch': unreferenced local variable
@@ -34,27 +34,18 @@ DRIVER\ssd13xx.c(228): warning C329: single-line comment contains line-continuat
 compiling Delay.c...
 linking...
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_SSD13XX_DRAWCIRCLE?SSD13XX
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_SSD13XX_DRAWBITMAP?SSD13XX
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_DRAW_PROGRESSBAR_COMPONENT?SSD13XX
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?SSD13XX_SHOWALLCHARS?SSD13XX
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?DELAY1000MS?DELAY
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?DELAY1US?DELAY
+    SEGMENT: ?PR?_SSD13XX_DRAWPIXEL?SSD13XX
 *** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
     SYMBOL:  TIMER0_INIT
     MODULE:  .\Objects\main.obj (MAIN)
 *** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
     SYMBOL:  TIMER0_INIT
     MODULE:  .\Objects\main.obj (MAIN)
-    ADDRESS: 0CAEH
-Program Size: data=42.1 xdata=285 code=9559
-".\Objects\18650bsmb" - 0 Error(s), 11 Warning(s).
-Build Time Elapsed:  00:00:00
+    ADDRESS: 0FD3H
+Program Size: data=77.1 xdata=217 code=7895
+creating hex file from ".\Objects\18650bsmb"...
+".\Objects\18650bsmb" - 0 Error(s), 6 Warning(s).
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

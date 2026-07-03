@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              07/03/2026 13:41:52 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              07/03/2026 14:12:09 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
 OBJECT MODULE PLACED IN .\Objects\main.obj
-COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE main.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\DRIVER;..\51_18650bsmb;.\
-                    -SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE main.c LARGE OPTIMIZE(9,SIZE) BROWSE INCDIR(.\DRIVER;..\51_18650bsmb;.\S
+                    -YS) DEBUG OBJECTEXTEND PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
 
 line level    source
 
@@ -14,101 +14,125 @@ line level    source
    4          #include "key.h"
    5          #include "ssd13xx.h"
    6          
-   7          #define BATTER_TH 2.7f        // 电池低压保护阈值
-   8          #define BATTERY_CHS 4         // 充电通道总数
-   9          #define REFRESH_INTERVAL 1000 // 屏幕/采集刷新间隔ms
-  10          
-  11          // 全局仅保留状态数组（需要跨循环保存）
-  12          uint8_t percent_status[BATTERY_CHS] = {0}; // 1充电中 0已充满
-  13          uint16_t sys_tick = 0;
-  14          
-  15          void Timer0_ISR(void) interrupt 1 {
-  16   1        TH0 = 0xFF;
-  17   1        TL0 = 0x06; // STC15 1ms重载值
-  18   1        sys_tick++;
-  19   1      }
-  20          
-  21          void main(void) {
-  22   1        uint8_t i;
-  23   1        float voltage, percent;
-  24   1        char xdata ch_buffer[4], percent_buffer[5], voltage_buffer[5];
-  25   1        uint8_t threshold;
-  26   1        uint16_t last_refresh_tick = 0;
-  27   1      
-  28   1        // 外设初始化
-  29   1        SSD13XX_Init();
-  30   1        SSD13XX_Clear();
-  31   1        SSD13XX_WriteString(0, 20, "Initializing..", 0);
-  32   1        BAT_ADC_Init();
-  33   1        CHR_Init();
-  34   1        KEY_Init();
-  35   1        Timer0_Init(); // 初始化1ms定时器
-*** WARNING C206 IN LINE 35 OF main.c: 'Timer0_Init': missing function-prototype
-  36   1      
-  37   1        while (1) {
-  38   2          KEY_Scan_Handle();
-  39   2          threshold = KEY_GetThreshold();
-  40   2      
-  41   2          if (sys_tick - last_refresh_tick < REFRESH_INTERVAL) {
-  42   3            continue;
-  43   3          }
-  44   2          last_refresh_tick = sys_tick;
+   7          #define BATTER_TH 2.7f           // 电池低压保护阈值
+   8          #define BATTERY_CHS 4            // 充电通道总数
+   9          #define REFRESH_INTERVAL 1000    // 屏幕/采集刷新间隔ms
+  10          #define THRESHOLD_SHOW_HOLD 1000 // 松开后阈值文字停留时长
+  11          
+  12          // 全局仅保留状态数组（需要跨循环保存）
+  13          uint8_t idata percent_status[BATTERY_CHS] = {0}; // 1充电中 0已充满
+  14          uint16_t idata sys_tick = 0;
+  15          
+  16          void Timer0_ISR(void) interrupt 1 {
+  17   1        TH0 = 0xFF;
+  18   1        TL0 = 0x06; // STC15 1ms重载值
+  19   1        sys_tick++;
+  20   1      }
+  21          
+  22          void main(void) {
+  23   1        uint8_t idata i;
+  24   1        float idata voltage, percent;
+  25   1        char idata ch_buffer[4], percent_buffer[5], voltage_buffer[5],
+  26   1            threshold_buffer[8];
+  27   1        uint8_t idata threshold, new_threshold;
+  28   1        uint16_t idata last_refresh_tick = 0;
+  29   1        uint16_t idata key_release_tick =
+  30   1            0; // 记录按键松开时刻，用于判断是否需要显示阈值文字
+  31   1        uint8_t idata show_threshold_flag = 0; // 是否需要显示阈值文字
+  32   1      
+  33   1        // 外设初始化
+  34   1        SSD13XX_Init();
+  35   1        SSD13XX_Clear();
+  36   1        SSD13XX_WriteString(0, 20, "Initializing..", 0);
+  37   1        BAT_ADC_Init();
+  38   1        CHR_Init();
+  39   1        KEY_Init();
+  40   1        Timer0_Init(); // 初始化1ms定时器
+*** WARNING C206 IN LINE 40 OF main.c: 'Timer0_Init': missing function-prototype
+  41   1      
+  42   1        while (1) {
+  43   2          KEY_Scan_Handle();
+  44   2          new_threshold = KEY_GetThreshold();
   45   2      
-  46   2          for (i = 0; i < BATTERY_CHS; i++) {
-  47   3            voltage = BAT_ADC_ReadVoltage(i);
-  48   3            percent = VoltageToSOC(voltage);
-  49   3      
-  50   3            // 低压保护：电压低于2.7V，停止充电
-  51   3            if (voltage < BATTER_TH) {
-  52   4              CHR_Set_CH(i + 1, 0);
-  53   4              sprintf(ch_buffer, "Ch %d", i);
-C51 COMPILER V9.59.0.0   MAIN                                                              07/03/2026 13:41:52 PAGE 2   
+  46   2          // 按键调节
+  47   2          if (threshold != new_threshold) {
+  48   3            threshold = new_threshold;
+  49   3            show_threshold_flag = 1;
+  50   3            key_release_tick = sys_tick; // 刷新松开计时起点
+  51   3            // 局部刷新阈值页面
+  52   3            SSD13XX_ClearPage(1);
+  53   3            sprintf(threshold_buffer, "Th: %d", threshold);
+C51 COMPILER V9.59.0.0   MAIN                                                              07/03/2026 14:12:09 PAGE 2   
 
-  54   4              sprintf(percent_buffer, "Low Volt");
-  55   4              sprintf(voltage_buffer, "%.2fV", voltage);
-  56   4              Draw_ProgressBar_Double(0, i * 16, 128, ch_buffer, percent_buffer,
-  57   4                                      voltage_buffer, 0);
-  58   4              percent_status[i] = 0;
-  59   4              continue;
-  60   4            }
-  61   3      
-  62   3            // 电池百分比高于阈值：充满，停止充电
-  63   3            if (percent > threshold) {
-  64   4              if (percent_status[i] == 0)
-  65   4                continue;
-  66   4      
-  67   4              CHR_Set_CH(i + 1, 0);
-  68   4              sprintf(ch_buffer, "Ch %d", i);
-  69   4              sprintf(percent_buffer, "%.1f%%(Over)", percent);
-  70   4              sprintf(voltage_buffer, "%.2fV", voltage);
-  71   4              Draw_ProgressBar_Double(0, i * 16, 128, ch_buffer, percent_buffer,
-  72   4                                      voltage_buffer, (uint8_t)(percent * 100.0f));
-  73   4              percent_status[i] = 0;
-  74   4              continue;
-  75   4            }
-  76   3      
-  77   3            // 低于阈值，开启充电
-  78   3            if (percent_status[i] == 0)
-  79   3              percent_status[i] = 1;
-  80   3            CHR_Set_CH(i + 1, 1);
-  81   3      
-  82   3            sprintf(ch_buffer, "Ch %d", i);
-  83   3            sprintf(percent_buffer, "%.1f%%", percent);
-  84   3            sprintf(voltage_buffer, "%.2fV", voltage);
-  85   3            Draw_ProgressBar_Double(0, i * 16, 128, ch_buffer, percent_buffer,
-  86   3                                    voltage_buffer, (uint8_t)(percent * 100.0f));
-  87   3          }
-  88   2        }
-  89   1      }
+  54   3            SSD13XX_WriteString(0, 20, threshold_buffer, 0);
+  55   3          } else if (show_threshold_flag) {
+  56   3            if (sys_tick - key_release_tick >= THRESHOLD_SHOW_HOLD) {
+  57   4              show_threshold_flag = 0;
+  58   4              SSD13XX_ClearPage(1); // 停留时间到，清空阈值区域
+  59   4            }
+  60   3          }
+  61   2      
+  62   2          // 定时采集刷新充电通道（全程无阻塞）
+  63   2          if (sys_tick - last_refresh_tick < REFRESH_INTERVAL) {
+  64   3            continue;
+  65   3          }
+  66   2          last_refresh_tick = sys_tick;
+  67   2      
+  68   2          for (i = 0; i < BATTERY_CHS; i++) {
+  69   3            voltage = BAT_ADC_ReadVoltage(i);
+  70   3            percent = VoltageToSOC(voltage);
+  71   3      
+  72   3            // 低压保护：电压低于2.7V，停止充电
+  73   3            if (voltage < BATTER_TH) {
+  74   4              CHR_Set_CH(i + 1, 0);
+  75   4              sprintf(ch_buffer, "Ch %d", i);
+  76   4              sprintf(percent_buffer, "Low Volt");
+  77   4              sprintf(voltage_buffer, "%.2fV", voltage);
+  78   4              Draw_ProgressBar_Double(0, i * 16, 128, ch_buffer, percent_buffer,
+  79   4                                      voltage_buffer, 0);
+  80   4              percent_status[i] = 0;
+  81   4              continue;
+  82   4            }
+  83   3      
+  84   3            // 电池百分比高于阈值：充满，停止充电
+  85   3            if (percent > threshold) {
+  86   4              if (percent_status[i] == 0)
+  87   4                continue;
+  88   4      
+  89   4              CHR_Set_CH(i + 1, 0);
+  90   4              sprintf(ch_buffer, "Ch %d", i);
+  91   4              sprintf(percent_buffer, "%.1f%%(Over)", percent);
+  92   4              sprintf(voltage_buffer, "%.2fV", voltage);
+  93   4              Draw_ProgressBar_Double(0, i * 16, 128, ch_buffer, percent_buffer,
+  94   4                                      voltage_buffer, (uint8_t)(percent * 100.0f));
+  95   4              percent_status[i] = 0;
+  96   4              continue;
+  97   4            }
+  98   3      
+  99   3            // 低于阈值，开启充电
+ 100   3            if (percent_status[i] == 0)
+ 101   3              percent_status[i] = 1;
+ 102   3            CHR_Set_CH(i + 1, 1);
+ 103   3      
+ 104   3            sprintf(ch_buffer, "Ch %d", i);
+ 105   3            sprintf(percent_buffer, "%.1f%%", percent);
+ 106   3            sprintf(voltage_buffer, "%.2fV", voltage);
+ 107   3            Draw_ProgressBar_Double(0, i * 16, 128, ch_buffer, percent_buffer,
+ 108   3                                    voltage_buffer, (uint8_t)(percent * 100.0f));
+ 109   3          }
+ 110   2        }
+ 111   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    907    ----
-   CONSTANT SIZE    =     56    ----
-   XDATA SIZE       =      6      26
+   CODE SIZE        =    675    ----
+C51 COMPILER V9.59.0.0   MAIN                                                              07/03/2026 14:12:09 PAGE 3   
+
+   CONSTANT SIZE    =     63    ----
+   XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
-   IDATA SIZE       =   ----    ----
+   IDATA SIZE       =      6      38
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
 
