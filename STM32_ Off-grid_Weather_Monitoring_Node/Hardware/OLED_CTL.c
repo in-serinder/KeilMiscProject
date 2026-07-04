@@ -9,7 +9,7 @@ void OLED_CTL_Init(void) {
   GPIO_Init(GPIOB, &GPIO_InitStructure);
 
   //   跳线设置常态供电
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
   GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
