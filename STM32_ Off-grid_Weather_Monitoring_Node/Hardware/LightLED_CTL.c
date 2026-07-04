@@ -1,7 +1,7 @@
 #include "LightLED_CTL.h"
 
 void LightLED_CTL_Init(void) {
-  // led供电驱动
+  // LED控制供电驱动
   GPIO_InitTypeDef GPIO_InitStructure;
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
