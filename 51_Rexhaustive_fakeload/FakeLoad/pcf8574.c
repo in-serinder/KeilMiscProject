@@ -3,10 +3,10 @@
 // 保存当前端口状态
 uint8_t xdata pcf8574_port_data = 0xFF;
 static uint8_t idata i;
-// 延时函数
+// 延时函数（使用局部变量，避免与I2C_SendByte的循环计数器冲突）
 void I2C_Delay(void) {
-  i = 100; // 低于100延时在解码中会出现多1字符解码问题（逻辑分析仪显示FF）
-  while (i--)
+  unsigned char idata dly = 100;
+  while (dly--)
     ;
 }
 
@@ -135,12 +135,17 @@ unsigned char PCF8574_Read(void) {
 void PCF8574_Write(unsigned char dat) {
   I2C_Start();
   I2C_SendByte(PCF8574_W_ADDR);
-  if (I2C_WaitAck())
+  if (I2C_WaitAck()) {
+    // ACK失败，可能地址错误或设备未响应
+    I2C_Stop();
     return;
+  }
 
   I2C_SendByte(dat);
-  if (I2C_WaitAck())
+  if (I2C_WaitAck()) {
+    I2C_Stop();
     return;
+  }
 
   I2C_Stop();
   pcf8574_port_data = dat;
@@ -156,15 +161,21 @@ void PCF8574_Write(unsigned char dat) {
  * @warning port参数超出0~7范围时函数不执行任何操作
  */
 void PCF8574_SetPort(unsigned char port, bit state) {
+  unsigned char temp_data = pcf8574_port_data;
   if (port > 7)
     return;
 
-  if (state)
-    pcf8574_port_data |= (1 << port);
-  else
-    pcf8574_port_data &= ~(1 << port);
+  // 先保存当前值
 
-  PCF8574_Write(pcf8574_port_data);
+  if (state)
+    temp_data |= (1 << port);
+  else
+    temp_data &= ~(1 << port);
+
+  // 只有当值改变时才发送
+  if (temp_data != pcf8574_port_data) {
+    PCF8574_Write(temp_data);
+  }
 }
 
 /**

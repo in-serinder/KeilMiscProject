@@ -1,9 +1,9 @@
-C51 COMPILER V9.59.0.0   ENCODE                                                            07/01/2026 15:24:55 PAGE 1   
+C51 COMPILER V9.59.0.0   ENCODE                                                            07/12/2026 23:50:26 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE ENCODE
 OBJECT MODULE PLACED IN .\Objects\encode.obj
-COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Key\encode.c LARGE OPTIMIZE(8,SIZE) BROWSE INCDIR(.\Display;.\FakeLoad;.
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Key\encode.c LARGE OPTIMIZE(9,SIZE) BROWSE INCDIR(.\Display;.\FakeLoad;.
                     -\Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\encode.lst) TABS(2) OBJECT(.\Objects\encode.obj)
 
 line level    source
@@ -12,118 +12,83 @@ line level    source
    2          
    3          #define EC11_A P32
    4          #define EC11_B P12
-   5          #define EC11_KEY P43
+   5          #define EC11_KEY P33
    6          
    7          // 高电平有效
-   8          bit AB_DIR; // 0: A->B  1: B->A>
+   8          bit AB_DIR; // 0: 顺时针  1: 逆时针
    9          
-  10          // AB都在中断上
-  11          // void EC11_Init(void) {
-  12          //   EC11_A = 1;
-  13          //   EC11_B = 1;
-  14          //   EC11_KEY = 1;
-  15          
-  16          //   IT0 = 1; // INT0(P3.2)低电平触发
-  17          //   EX0 = 1; // 使能INT0中断
-  18          
-  19          //   IT1 = 1; // INT1(P3.3)低电平触发
-  20          //   EX1 = 1; // 使能INT1中断
-  21          
-  22          //   IT2 = 1; // INT2(P3.4)低电平触发
-  23          //   EX2 = 1; // 使能INT2中断
-  24          
-  25          //   EA = 1; // 使能全局中断
-  26          // }
-  27          
-  28          // void disableAint(void) { EX0 = 0; }
-  29          // void enableAint(void) { EX0 = 1; }
-  30          
-  31          // void disableBint(void) { EX1 = 0; }
-  32          // void enableBint(void) { EX1 = 1; }
-  33          
-  34          // void EC11_A_Triggered(void) interrupt 0 {
-  35          //   disableBint();
-  36          //   P1 = 0xFF;
-  37          
-  38          //   if (EC11_B == 0)
-  39          //     AB_DIR = 0;
+  10          // 编码器事件标志和数据（Timer0 1ms ISR设置，主循环读取）
+  11          bit enc_event_flag = 0;
+  12          bit enc_event_dir = 0;
+  13          bit enc_event_key = 0;
+  14          
+  15          // 调试用：触发计数器
+  16          uint8_t idata enc_int_count = 0;
+  17          
+  18          // 编码器初始化：仅配置IO口，不再使能INT0中断
+  19          // 编码器采样由Timer0 1ms定时中断完成（见peripheral.c）
+  20          void EC11_Init(void) {
+  21   1        EC11_A = 1;
+  22   1        EC11_B = 1;
+  23   1        EC11_KEY = 1;
+  24   1      
+  25   1        // 关闭INT0中断，改用Timer0定时采样
+  26   1        EX0 = 0;
+  27   1        EX1 = 0;
+  28   1      }
+  29          
+  30          // 获取编码器事件（在主循环中调用）
+  31          bit EC11_GetEvent(unsigned char *dir, unsigned char *key) {
+  32   1        if (enc_event_flag) {
+  33   2          *dir = (unsigned char)enc_event_dir;
+  34   2          *key = (unsigned char)enc_event_key;
+  35   2          enc_event_flag = 0;
+  36   2          return 1;
+  37   2        }
+  38   1        return 0;
+  39   1      }
   40          
-  41          //   // 回调到main - state=0表示旋转
-  42          //   encode_CallBack(AB_DIR, 0);
-  43          //   enableBint();
-  44          // }
-  45          
-  46          // void EC11_B_Triggered(void) interrupt 1 {
-  47          //   disableAint();
-  48          //   if (EC11_A == 0)
-  49          //     AB_DIR = 1;
-  50          //   encode_CallBack(AB_DIR, 0);
-  51          //   enableAint();
-  52          // }
-  53          
-  54          // void EC11_KEY_Triggered(void) interrupt 10 {
-C51 COMPILER V9.59.0.0   ENCODE                                                            07/01/2026 15:24:55 PAGE 2   
+  41          // 按键非阻塞扫描（不阻塞主循环）
+  42          bit EC11_ScanKey(void) {
+  43   1        static bit idata key_pressed = 0;      // 按键按下标志
+  44   1        static uint8_t idata key_debounce = 0; // 防抖计数器
+  45   1      
+  46   1        if (EC11_KEY == 0) {
+  47   2          // 按键按下，启动防抖计数
+  48   2          if (!key_pressed) {
+  49   3            if (key_debounce < 2) {
+  50   4              key_debounce++; // 约20ms防抖（10ms一次调用）
+  51   4            } else {
+  52   4              // 防抖完成，确认按下
+  53   4              key_pressed = 1;
+  54   4              key_debounce = 0;
+C51 COMPILER V9.59.0.0   ENCODE                                                            07/12/2026 23:50:26 PAGE 2   
 
-  55          //   encode_CallBack(AB_DIR, 1); // state=1表示按键
-  56          // }
-  57          
-  58          // bit checkDirection(void) { return AB_DIR; }
-  59          
-  60          // 减少中断占用
-  61          void EC11_Init(void) {
-  62   1        EC11_A = 1;
-  63   1        EC11_B = 1;
-  64   1        EC11_KEY = 1;
-  65   1      
-  66   1        // 只开INT0中断，INT1留给Timer0蜂鸣，禁止INT1中断
-  67   1        IT0 = 1; // 下降沿触发（编码器标准）
-  68   1        EX0 = 1; // 使能INT0
-  69   1        EX1 = 0; // 关闭INT1外部中断，留给定时器0
-  70   1      
-  71   1        EA = 1; // 全局中断开
-  72   1      }
-  73          
-  74          void disableAint(void) { EX0 = 0; }
-  75          void enableAint(void) { EX0 = 1; }
-  76          
-  77          // 仅A相中断，B相普通IO读取判断方向
-  78          void EC11_A_Triggered(void) interrupt 0 {
-  79   1        disableAint();
-  80   1      
-  81   1        if (EC11_B == 0)
-  82   1          AB_DIR = 0;
-  83   1        else
-  84   1          AB_DIR = 1;
-  85   1      
-  86   1        encode_CallBack(AB_DIR, 0); // 0=旋转
-  87   1        enableAint();
-  88   1      }
-  89          
-  90          // 按键不使用中断，主循环轮询调用
-  91          bit EC11_ScanKey(void) {
-  92   1        if (EC11_KEY == 0) {
-  93   2          Delay_ms(20); // 防抖
-  94   2          if (EC11_KEY == 0) {
-  95   3            while (EC11_KEY == 0)
-  96   3              ;                         // 等待松手
-  97   3            encode_CallBack(AB_DIR, 1); // 1=按键按下
-  98   3            return 1;
-  99   3          }
- 100   2        }
- 101   1        return 0;
- 102   1      }
- 103          
- 104          bit checkDirection(void) { return AB_DIR; }
+  55   4              enc_event_flag = 1;
+  56   4              enc_event_dir = AB_DIR;
+  57   4              enc_event_key = 1; // 1=按键按下
+  58   4              return 1;
+  59   4            }
+  60   3          }
+  61   2        } else {
+  62   2          // 按键松开，清除标志
+  63   2          key_pressed = 0;
+  64   2          key_debounce = 0;
+  65   2        }
+  66   1        return 0;
+  67   1      }
+  68          
+  69          // bit checkDirection(void) { return AB_DIR; } // 未使用
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    133    ----
+   CODE SIZE        =     87    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----    ----
+   XDATA SIZE       =   ----       6
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
-   IDATA SIZE       =   ----    ----
-   BIT SIZE         =      1    ----
+   IDATA SIZE       =      2    ----
+   BIT SIZE         =      5    ----
 END OF MODULE INFORMATION.
 
 

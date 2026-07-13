@@ -2,31 +2,9 @@
 #include <intrins.h>
 
 static unsigned char xdata i, j;
-void Delay(unsigned int xms) {
-  
-  while (xms--) {
-    i = 2;
-    j = 239;
-    do {
-      while (--j)
-        ;
-    } while (--i);
-  }
-}
 
-void Delay10us() //@11.0592MHz
+void Delay1ms(void) //@11.0592MHz
 {
-
-
-  i = 2;
-  while (--i)
-    ;
-}
-
-void Delay1ms() //@11.0592MHz
-{
-
-
   _nop_();
   i = 2;
   j = 199;

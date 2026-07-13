@@ -1,1 +1,0 @@
-"Utility\Efficiency.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(.\Display;.\FakeLoad;.\Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\Efficiency.lst) TABS (2) OBJECT(.\Objects\Efficiency.obj)

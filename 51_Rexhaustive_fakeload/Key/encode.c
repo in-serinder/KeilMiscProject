@@ -5,103 +5,65 @@
 #define EC11_KEY P33
 
 // 高电平有效
-bit AB_DIR; // 0: A->B  1: B->A>
+bit AB_DIR; // 0: 顺时针  1: 逆时针
 
-// AB都在中断上
-// void EC11_Init(void) {
-//   EC11_A = 1;
-//   EC11_B = 1;
-//   EC11_KEY = 1;
+// 编码器事件标志和数据（Timer0 1ms ISR设置，主循环读取）
+bit enc_event_flag = 0;
+bit enc_event_dir = 0;
+bit enc_event_key = 0;
 
-//   IT0 = 1; // INT0(P3.2)低电平触发
-//   EX0 = 1; // 使能INT0中断
+// 调试用：触发计数器
+uint8_t idata enc_int_count = 0;
 
-//   IT1 = 1; // INT1(P3.3)低电平触发
-//   EX1 = 1; // 使能INT1中断
-
-//   IT2 = 1; // INT2(P3.4)低电平触发
-//   EX2 = 1; // 使能INT2中断
-
-//   EA = 1; // 使能全局中断
-// }
-
-// void disableAint(void) { EX0 = 0; }
-// void enableAint(void) { EX0 = 1; }
-
-// void disableBint(void) { EX1 = 0; }
-// void enableBint(void) { EX1 = 1; }
-
-// void EC11_A_Triggered(void) interrupt 0 {
-//   disableBint();
-//   P1 = 0xFF;
-
-//   if (EC11_B == 0)
-//     AB_DIR = 0;
-
-//   // 回调到main - state=0表示旋转
-//   encode_CallBack(AB_DIR, 0);
-//   enableBint();
-// }
-
-// void EC11_B_Triggered(void) interrupt 1 {
-//   disableAint();
-//   if (EC11_A == 0)
-//     AB_DIR = 1;
-//   encode_CallBack(AB_DIR, 0);
-//   enableAint();
-// }
-
-// void EC11_KEY_Triggered(void) interrupt 10 {
-//   encode_CallBack(AB_DIR, 1); // state=1表示按键
-// }
-
-// bit checkDirection(void) { return AB_DIR; }
-
-// 减少中断占用
+// 编码器初始化：仅配置IO口，不再使能INT0中断
+// 编码器采样由Timer0 1ms定时中断完成（见peripheral.c）
 void EC11_Init(void) {
   EC11_A = 1;
   EC11_B = 1;
   EC11_KEY = 1;
 
-  // 只开INT0中断，INT1留给Timer0蜂鸣，禁止INT1中断
-  IT0 = 1; // 下降沿触发（编码器标准）
-  EX0 = 1; // 使能INT0
-  EX1 = 0; // 关闭INT1外部中断，留给定时器0
-
-  IT1 = 0; // INT1(P3.3)上升沿+下降沿中断
-  EX1 = 1; // 使能INT1中断
-
-  EA = 1; // 全局中断开
+  // 关闭INT0中断，改用Timer0定时采样
+  EX0 = 0;
+  EX1 = 0;
 }
 
-void disableAint(void) { EX0 = 0; }
-void enableAint(void) { EX0 = 1; }
-
-// 仅A相中断，B相普通IO读取判断方向
-void EC11_A_Triggered(void) interrupt 0 {
-  disableAint();
-
-  if (EC11_B == 0)
-    AB_DIR = 0;
-  else
-    AB_DIR = 1;
-
-  encode_CallBack(AB_DIR, 0); // 0=旋转
-  enableAint();
-}
-
-// 按键不使用中断，主循环轮询调用
-bit EC11_ScanKey(void) {
-  if (EC11_KEY == 0) {
-    Delay_ms(20); // 防抖
-    if (EC11_KEY == 0) {
-      while (EC11_KEY == 0)
-        ;                         // 等待松手
-      encode_CallBack(AB_DIR, 1); // 1=按键按下
-      return 1;
-    }
+// 获取编码器事件（在主循环中调用）
+bit EC11_GetEvent(unsigned char *dir, unsigned char *key) {
+  if (enc_event_flag) {
+    *dir = (unsigned char)enc_event_dir;
+    *key = (unsigned char)enc_event_key;
+    enc_event_flag = 0;
+    return 1;
   }
   return 0;
 }
 
-bit checkDirection(void) { return AB_DIR; }
+// 按键非阻塞扫描（不阻塞主循环）
+bit EC11_ScanKey(void) {
+  static bit idata key_pressed = 0;      // 按键按下标志
+  static uint8_t idata key_debounce = 0; // 防抖计数器
+
+  if (EC11_KEY == 0) {
+    // 按键按下，启动防抖计数
+    if (!key_pressed) {
+      if (key_debounce < 2) {
+        key_debounce++; // 约20ms防抖（10ms一次调用）
+      } else {
+        // 防抖完成，确认按下
+        key_pressed = 1;
+        key_debounce = 0;
+        enc_event_flag = 1;
+        enc_event_dir = AB_DIR;
+        enc_event_key = 1; // 1=按键按下
+        return 1;
+      }
+    }
+  } else {
+    // 按键松开，清除标志
+    key_pressed = 0;
+    key_debounce = 0;
+  }
+  return 0;
+}
+
+// bit checkDirection(void) { return AB_DIR; } // 未使用

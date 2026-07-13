@@ -1,0 +1,51 @@
+C51 COMPILER V9.59.0.0   UART                                                              07/12/2026 23:14:53 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN .\Objects\UART.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE System\UART.c LARGE OPTIMIZE(9,SIZE) BROWSE INCDIR(.\Display;.\FakeLoad;
+                    -.\Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\UART.lst) TABS(2) OBJECT(.\Objects\UART.obj)
+
+line level    source
+
+   1          #include "UART.h"
+   2          
+   3          void Uart1_Init(void) {
+   4   1        SCON = 0x50;  // 模式1，8位UART，允许接收
+   5   1        TMOD &= 0x0F; // 清空T1控制位
+   6   1        TMOD |= 0x20; // T1模式2（8位自动重装）
+   7   1        TH1 = 0xFD;   // 11.0592MHz 9600bps 重装值
+   8   1        TL1 = 0xFD;
+   9   1        TR1 = 1; // 启动定时器1
+  10   1        TI = 1;  // ★★★ 关键！将TI置1，让第一次发送能顺利开始 ★★★
+  11   1                 // ES = 0;      // 若不用中断，可不开启
+  12   1      }
+  13          
+  14          // 发送单个字符
+  15          void UART_SendChar(unsigned char ch) {
+  16   1        SBUF = ch;
+  17   1        while (!TI)
+  18   1          ;     // 等待发送完成
+  19   1        TI = 0; // 清除发送标志
+  20   1      }
+  21          
+  22          // 发送字符串
+  23          void UART_SendString(unsigned char *str) {
+  24   1        while (*str != '\0') {
+  25   2          UART_SendChar(*str++);
+  26   2        }
+  27   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     65    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       3
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

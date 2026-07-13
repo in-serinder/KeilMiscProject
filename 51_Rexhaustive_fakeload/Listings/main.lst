@@ -1,9 +1,9 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2026 15:29:34 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              07/13/2026 02:43:58 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
 OBJECT MODULE PLACED IN .\Objects\main.obj
-COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE main.c LARGE OPTIMIZE(8,SIZE) BROWSE INCDIR(.\Display;.\FakeLoad;.\Key;.
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE main.c LARGE OPTIMIZE(9,SIZE) BROWSE INCDIR(.\Display;.\FakeLoad;.\Key;.
                     -\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
 
 line level    source
@@ -11,167 +11,447 @@ line level    source
    1          #include "Delay.h"
    2          #include "Display.h"
    3          #include "LCD1602.h"
-   4          #include "TLCx543.h"
-   5          #include "encode.h"
-   6          #include "fakeload.h"
-   7          #include "key.h"
-   8          #include "peripheral.h"
-   9          #include "stc89c52.h"
-  10          // Keil C51 does not support stdint.h, using native types
-  11          // void vector_lock(void) code_at 0x0000 {
-  12          // goto main;             // 0000 复位
-  13          // goto EC11_A_Triggered; // 0003 INT0
-  14          // goto Timer0_ISR;       // 000B T0 关键保护区域
-  15          //  ;                      // 填充剩余字节
-  16          //}
-  17          #define BEEP_SEC 3U
-  18          void FakeLoadTest(void);
-  19          // 编码器旋转只去变动一个功耗索引数值
-  20          uint8_t loadIndex = 0;
-  21          uint16_t idata tick = 0; // 10ms -》 1tick
-  22          uint16_t idata buzzer_tick = 0;
-  23          uint16_t idata duration_time_seconds = 0;
-  24          float idata voltage = 0.0f;
-  25          float idata power = 0.0f;
-  26          
-  27          // 调整值
-  28          bit is_adjusting_duration_time =
-  29              0; // 是否正在调整时间 0:调整功率负载 1:调整持续时间
-  30          bit is_running = 0;
-  31          
-  32          void main(void) {
-  33   1        Display_Init();
-  34   1        // 初始化显示
-  35   1        Display_BootMessage();
-  36   1        FakeLoad_Init();
-  37   1        EC11_Init();
-  38   1        Timer0_Init();
-*** WARNING C206 IN LINE 38 OF main.c: 'Timer0_Init': missing function-prototype
-  39   1        Key_Init();
-  40   1        TLCx543_Init(TLC1543);
-  41   1        FakeLoad_Reset();
-  42   1        FakeLoadTest();
-  43   1        // 预采集修复
-  44   1        voltage = TLCx543_ReadVoltageV(6);
-  45   1      
-  46   1        // 启用风扇
-  47   1        shellFAN(1);
-  48   1        extFAN(1);
-  49   1      
-  50   1        // 显示空闲
-  51   1        Display_IdleMessage();
-  52   1      
-  53   1        while (1) {
-C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2026 15:29:34 PAGE 2   
+   4          #include "System/Timer.h"
+   5          #include "System/UART.h"
+   6          #include "System/stc89c52.h"
+   7          #include "System/stm32cmdADC.h"
+   8          #include "encode.h"
+   9          #include "fakeload.h"
+  10          #include "key.h"
+  11          #include "peripheral.h"
+  12          
+  13          // Keil C51 does not support stdint.h, using native types
+  14          // void vector_lock(void) code_at 0x0000 {
+  15          // goto main;             // 0000 复位
+  16          // goto EC11_A_Triggered; // 0003 INT0
+  17          // goto Timer0_ISR;       // 000B T0 关键保护区域
+  18          //  ;                      // 填充剩余字节
+  19          //}
+  20          #define BEEP_SEC 3U
+  21          #define SAFE_VOLTAGE 37.0f
+  22          // 编码器旋转只去变动一个功耗索引数值
+  23          uint8_t idata loadIndex = 0;
+  24          uint16_t idata buzzer_tick = 0;
+  25          uint16_t idata duration_time_seconds = 0;
+  26          // 运行模式专用变量
+  27          static uint8_t idata last_loadIndex_run = 0xFF; // 上次设置的负载索引
+  28          static uint16_t idata last_run_tick = 0;        // 上次刷新时的系统滴答值
+  29          uint8_t idata encFlag = 0; // bit0:模式切换；bit1:编码器旋转
+  30          uint8_t idata encDir = 0;
+  31          // 使用static避免与Display.c的buffer重复定义
+  32          static uint8_t idata buffer[20];
+  33          bit idata encKeyPress = 0;
+  34          float idata voltage = 0.0f;
+  35          float idata power = 0.0f;
+  36          
+  37          // 调整值
+  38          bit is_adjusting_duration_time =
+  39              0; // 是否正在调整时间 0:调整功率负载 1:调整持续时间
+  40          bit is_running = 0;
+  41          
+  42          // 启停按键防抖计数器（非阻塞扫描用）
+  43          uint8_t idata start_key_debounce = 0;
+  44          
+  45          // 过压状态跟踪（避免每10ms重复显示错误）
+  46          bit prev_over_voltage = 0;
+  47          // 浮空状态跟踪
+  48          bit idata input_floating = 0;
+  49          
+  50          // 空闲超时（1分钟无操作进入空闲屏幕）
+  51          #define IDLE_TIMEOUT_TICKS 6000 // 6000 * 10ms = 60秒
+  52          uint16_t idata idle_counter = 0;
+  53          bit idata is_idle = 0;
+  54          
+C51 COMPILER V9.59.0.0   MAIN                                                              07/13/2026 02:43:58 PAGE 2   
 
-  54   2          // 10ms基础节拍必执行
-  55   2          voltage = (TLCx543_ReadADC(6) * 5.0f / 1024.0f) * 34700.0f / 4700.0f;
-  56   2      
-  57   2          // 按键防抖扫描
-  58   2          if (Key_Scan() == 0) {
-  59   3            Delay_ms(20);
-  60   3            while (Key_Scan() == 0)
-  61   3              ;
-  62   3            is_running = !is_running;
-  63   3            buzzer_tick = 0; // 按键启停直接关闭结束蜂鸣
-  64   3          }
-  65   2      
-  66   2          if (is_running) {
-  67   3            heartFAN(1);
-  68   3            FakeLoad_SetResistance(loadIndex);
-  69   3            power = FakeLoad_getPower(loadIndex, voltage);
-  70   3      
-  71   3            if (tick >= 100) // 1秒周期刷新
-  72   3            {
-  73   4              Display_RunningMessage(duration_time_seconds, power, voltage);
-  74   4              if (duration_time_seconds > 0) {
-  75   5                duration_time_seconds--;
-  76   5                // 计时归零触发蜂鸣
-  77   5                if (duration_time_seconds == 0) {
-  78   6                  buzzer_tick = BEEP_SEC * 100; // 3s = 300个10ms节拍
-  79   6                }
-  80   5              }
-  81   4              tick = 0;
-  82   4            }
-  83   3            tick++;
-  84   3          } else {
-  85   3            heartFAN(0);
-  86   3            FakeLoad_Reset();
-  87   3            tick = 0;
-  88   3            buzzer_tick = 0; // 停止负载直接关蜂鸣
-  89   3          }
-  90   2      
-  91   2          // 蜂鸣器逻辑
-  92   2          if (buzzer_tick > 0) {
-  93   3            BuzzerPWM(200); // 鸣叫频率200，可自行调整音调
-  94   3            buzzer_tick--;
-  95   3          } else {
-  96   3            BuzzerPWM(0); // 关闭蜂鸣
-  97   3          }
-  98   2          // 编码器扫描 扫描后走回调
-  99   2          EC11_ScanKey();
- 100   2      
- 101   2          Delay_ms(10);
- 102   2        }
- 103   1      }
- 104          // 编码器方向/按键状态回调函数
- 105          void encode_CallBack(bit dir, bit keystate) {
- 106   1        // keystate=1：编码器按键按下，切换调节模式
- 107   1        if (keystate == 1) {
- 108   2          is_adjusting_duration_time = !is_adjusting_duration_time;
- 109   2        }
- 110   1      
- 111   1        if (is_adjusting_duration_time) {
- 112   2          if (dir == 0) {
- 113   3            if (duration_time_seconds < 7200) // 上限7200秒 2小时
- 114   3              duration_time_seconds++;
- 115   3          } else {
-C51 COMPILER V9.59.0.0   MAIN                                                              07/01/2026 15:29:34 PAGE 3   
+  55          // 自动接收STM32电压数据（中断方式）
+  56          char idata rx_voltage_str[8];     // 中断中存储的电压数字字符串
+  57          bit idata voltage_updated = 0;    // 电压更新标志
+  58          bit idata voltage_valid = 0;      // 是否已收到有效电压数据
+  59          float idata prev_voltage = -1.0f; // 上次显示的电压值（初始化为-1确保首次更新）
+  60          uint16_t idata auto_rx_timeout =
+  61              0; // 自动接收超时计数（约2秒无数据启用后备查询）
+  62          
+  63          // 显示刷新节流（避免频繁刷屏）
+  64          uint8_t idata display_refresh_tick = 0;
+  65          
+  66          // UART中断服务函数 - 接收STM32自动发送的电压数据
+  67          // 格式：">> X.XX\r\n" 或 ">> XX.X\r\n"
+  68          void UART_IRQHandler(void) interrupt 4 {
+  69   1        static unsigned char idata rx_state = 0;
+  70   1        static unsigned char idata rx_idx = 0;
+  71   1        unsigned char ch;
+  72   1      
+  73   1        if (RI) {
+  74   2          RI = 0;
+  75   2          ch = SBUF;
+  76   2      
+  77   2          // 状态机：匹配 ">> " 前缀后提取数字字符串
+  78   2          if (rx_state == 0 && ch == '>') {
+  79   3            rx_state = 1;
+  80   3          } else if (rx_state == 1 && ch == '>') {
+  81   3            rx_state = 2;
+  82   3            rx_idx = 0;
+  83   3          } else if (rx_state == 2) {
+  84   3            if (ch == '\r' || ch == '\n') {
+  85   4              // 收到结束符，标记数据就绪
+  86   4              rx_voltage_str[rx_idx] = '\0';
+  87   4              voltage_updated = 1;
+  88   4              rx_state = 0;
+  89   4            } else if (ch == ' ' && rx_idx == 0) {
+  90   4              // 跳过 ">>" 后的空格
+  91   4            } else {
+  92   4              // 提取数字字符（最多7位：XXX.XX）
+  93   4              if (rx_idx < 7) {
+  94   5                rx_voltage_str[rx_idx++] = ch;
+  95   5              }
+  96   4            }
+  97   3          } else {
+  98   3            rx_state = 0; // 不匹配则重置
+  99   3          }
+ 100   2        }
+ 101   1        // 不处理TI，让UART_SendChar的轮询方式正常工作
+ 102   1      }
+ 103          
+ 104          void main(void) {
+ 105   1        // 初始化串口用于调试
+ 106   1        Uart1_Init();
+ 107   1        ES = 1; // 使能UART中断（被动接收STM32自动数据）
+ 108   1        EA = 1; // 使能总中断
+ 109   1        UART_SendString("[DEBUG] System Booting...\r\n");
+ 110   1        Display_Init();
+ 111   1        UART_SendString("[DEBUG] Display initialized\r\n");
+ 112   1      
+ 113   1        // 初始化显示
+ 114   1        Display_BootMessage();
+ 115   1      
+ 116   1        UART_SendString("[DEBUG] FakeLoad initialized\r\n");
+C51 COMPILER V9.59.0.0   MAIN                                                              07/13/2026 02:43:58 PAGE 3   
 
- 116   3            if (duration_time_seconds > 0) // 禁止负数
- 117   3              duration_time_seconds--;
- 118   3          }
- 119   2          Display_TimerSetupMessage(duration_time_seconds);
- 120   2        } else {
- 121   2          // 调整功率负载
- 122   2          voltage = TLCx543_ReadVoltageV(0);
- 123   2          if (dir == 0) {
- 124   3            if (loadIndex < RESISTANCE_LIST_SIZE - 1) {
- 125   4              loadIndex++;
- 126   4            }
- 127   3          } else {
- 128   3            if (loadIndex > 0) {
- 129   4              loadIndex--;
- 130   4            }
- 131   3          }
- 132   2          power = FakeLoad_getPower(loadIndex, voltage);
- 133   2          Display_FakeLoad(power, FakeLoad_getResistance(loadIndex), voltage);
- 134   2        }
- 135   1      }
- 136          
- 137          void FakeLoadTest(void) {
- 138   1        uint8_t test_index = 0;
- 139   1      
- 140   1        for (test_index = 0; test_index < 7; test_index++) {
- 141   2          FakeLoad_Set(test_index, 1);
- 142   2          Delay_ms(500);
- 143   2        }
- 144   1        for (test_index = 0; test_index < 7; test_index++) {
- 145   2          FakeLoad_Set(test_index, 0);
- 146   2          Delay_ms(500);
- 147   2        }
- 148   1      }
+ 117   1        FakeLoad_Init();
+ 118   1        //  FakeLoad_Reset();
+ 119   1        FakeLoadTest();
+ 120   1        EC11_Init();
+ 121   1        UART_SendString("[DEBUG] EC11 encoder initialized\r\n");
+ 122   1      
+ 123   1        Timer0_Init();
+ 124   1        sys_tick_1ms = 0; // 硬件滴答计数器归零
+ 125   1        Key_Init();
+ 126   1        STM32_Init();
+ 127   1        UART_SendString("[DEBUG] STM32 ADC Helper initialized\r\n");
+ 128   1      
+ 129   1        // 不再阻塞等待STM32回复，由UART中断被动接收自动数据
+ 130   1        // 初始voltage=0，voltage_valid=0，屏幕显示"V:UK"
+ 131   1      
+ 132   1        // 启用风扇
+ 133   1        shellFAN(1);
+ 134   1        extFAN(1);
+ 135   1        // TLCx543_PinTest(); // 引脚测试
+ 136   1        // 显示空闲
+ 137   1        Display_IdleMessage();
+ 138   1      
+ 139   1        // 获取编码器旋转事件计数（用于调试）
+ 140   1        UART_SendString("[DEBUG] Encoder int count: ");
+ 141   1        sprintf(buffer, "%d", enc_int_count);
+ 142   1        UART_SendString(buffer);
+ 143   1        UART_SendString("\r\n");
+ 144   1      
+ 145   1        UART_SendString("[DEBUG] All systems initialized\r\n");
+ 146   1      
+ 147   1        while (1) {
+ 148   2          // 10ms基础节拍必执行
+ 149   2          // 自动接收STM32电压数据（中断方式，非阻塞）
+ 150   2          {
+ 151   3            if (voltage_updated) {
+ 152   4              float idata new_voltage;
+ 153   4              unsigned char idata i;
+ 154   4              unsigned int idata int_part;
+ 155   4              unsigned int idata frac_part;
+ 156   4              unsigned int idata frac_div;
+ 157   4              float idata diff;
+ 158   4      
+ 159   4              voltage_updated = 0;
+ 160   4              new_voltage = 0.0f;
+ 161   4              i = 0;
+ 162   4              int_part = 0;
+ 163   4              frac_part = 0;
+ 164   4              frac_div = 1;
+ 165   4      
+ 166   4              // 解析整数部分
+ 167   4              while (rx_voltage_str[i] >= '0' && rx_voltage_str[i] <= '9') {
+ 168   5                int_part = int_part * 10 + (rx_voltage_str[i] - '0');
+ 169   5                i++;
+ 170   5              }
+ 171   4              // 解析小数部分
+ 172   4              if (rx_voltage_str[i] == '.') {
+ 173   5                i++;
+ 174   5                while (rx_voltage_str[i] >= '0' && rx_voltage_str[i] <= '9') {
+ 175   6                  frac_part = frac_part * 10 + (rx_voltage_str[i] - '0');
+ 176   6                  frac_div *= 10;
+ 177   6                  i++;
+ 178   6                }
+C51 COMPILER V9.59.0.0   MAIN                                                              07/13/2026 02:43:58 PAGE 4   
+
+ 179   5              }
+ 180   4              new_voltage = (float)int_part + (float)frac_part / (float)frac_div;
+ 181   4      
+ 182   4              // === 电压变化检测：仅当变化超过阈值时才更新 ===
+ 183   4              diff = new_voltage - prev_voltage;
+ 184   4              if (diff < 0)
+ 185   4                diff = -diff;
+ 186   4              if (diff > 0.01f || prev_voltage < 0) {
+ 187   5                prev_voltage = new_voltage;
+ 188   5                voltage = new_voltage;
+ 189   5                voltage_valid = 1;
+ 190   5                // 电压变化时刷新屏幕（仅设置页面，空闲页面不覆盖）
+ 191   5                if (!is_running && !is_adjusting_duration_time && !is_idle) {
+ 192   6                  power = FakeLoad_getPower(loadIndex, voltage);
+ 193   6                  Display_FakeLoad(power, FakeLoad_getResistance(loadIndex), voltage);
+ 194   6                }
+ 195   5                sprintf(buffer, "V=%.2f\r\n", voltage);
+ 196   5                UART_SendString(buffer);
+ 197   5              }
+ 198   4              auto_rx_timeout = 0;
+ 199   4            } else {
+ 200   4              // 自动接收超时（约2秒无数据），使用主动查询后备
+ 201   4              auto_rx_timeout++;
+ 202   4              if (auto_rx_timeout >= 200) {
+ 203   5                auto_rx_timeout = 0;
+ 204   5                ES = 0; // 临时关闭UART中断，避免与轮询模式冲突
+ 205   5                {
+ 206   6                  float idata fallback_v;
+ 207   6                  float idata diff;
+ 208   6      
+ 209   6                  fallback_v = STM32_ReadVoltage();
+ 210   6                  if (fallback_v >= 0.0f) {
+ 211   7                    diff = fallback_v - prev_voltage;
+ 212   7                    if (diff < 0)
+ 213   7                      diff = -diff;
+ 214   7                    if (diff > 0.01f || prev_voltage < 0) {
+ 215   8                      prev_voltage = fallback_v;
+ 216   8                      voltage = fallback_v;
+ 217   8                      voltage_valid = 1;
+ 218   8                      // 电压变化时刷新屏幕（仅设置页面，空闲页面不覆盖）
+ 219   8                      if (!is_running && !is_adjusting_duration_time && !is_idle) {
+ 220   9                        power = FakeLoad_getPower(loadIndex, voltage);
+ 221   9                        Display_FakeLoad(power, FakeLoad_getResistance(loadIndex),
+ 222   9                                         voltage);
+ 223   9                      }
+ 224   8                      sprintf(buffer, "V=%.2f\r\n", voltage);
+ 225   8                      UART_SendString(buffer);
+ 226   8                    }
+ 227   7                  }
+ 228   6                }
+ 229   5                ES = 1; // 恢复UART中断
+ 230   5              }
+ 231   4            }
+ 232   3          }
+ 233   2      
+ 234   2          // 浮空检测：ADC读数为0或接近1023时，可能是输入未连接
+ 235   2          // {
+ 236   2          //   uint16_t idata raw_adc = TLCx543_ReadADC(6);
+ 237   2          //   if (raw_adc < 5 || raw_adc > 1020) {
+ 238   2          //     if (!prev_over_voltage) {
+ 239   2          //       Display_ErrorMessage("No Input");
+ 240   2          //       prev_over_voltage = 1;
+C51 COMPILER V9.59.0.0   MAIN                                                              07/13/2026 02:43:58 PAGE 5   
+
+ 241   2          //     }
+ 242   2          //   } else {
+ 243   2          //     // 仅在非浮空状态清除错误标记
+ 244   2          //     // prev_over_voltage 由下面的过压检测独立管理
+ 245   2          //   }
+ 246   2          // }
+ 247   2      
+ 248   2          // === 编码器事件优先处理（避免被阻塞延迟） ===
+ 249   2          {
+ 250   3            unsigned char dir, key;
+ 251   3            if (EC11_GetEvent(&dir, &key)) {
+ 252   4              idle_counter = 0; // 重置空闲超时
+ 253   4              is_idle = 0;      // 退出空闲状态
+ 254   4              encode_CallBack((bit)dir, (bit)key);
+ 255   4            }
+ 256   3          }
+ 257   2      
+ 258   2          // 编码器按键非阻塞扫描
+ 259   2          if (EC11_ScanKey()) {
+ 260   3            idle_counter = 0; // 按键也重置空闲超时
+ 261   3            is_idle = 0;
+ 262   3          }
+ 263   2      
+ 264   2          // === 启停按键非阻塞处理（带状态机消抖） ===
+ 265   2          {
+ 266   3            static bit key_handled = 0; // 防止重复触发
+ 267   3      
+ 268   3            if (Key_Scan() == 0) {
+ 269   4              if (!key_handled) {
+ 270   5                start_key_debounce++;
+ 271   5                if (start_key_debounce >= 5) { // 50ms防抖
+ 272   6                  start_key_debounce = 0;
+ 273   6                  key_handled = 1;
+ 274   6                  idle_counter = 0; // 重置空闲超时
+ 275   6                  is_idle = 0;      // 退出空闲状态
+ 276   6      
+ 277   6                  if (is_running) {
+ 278   7                    // 运行中按下run键 → 停止运行，显示设置页面
+ 279   7                    is_running = 0;
+ 280   7                    buzzer_tick = 0;
+ 281   7                    power = FakeLoad_getPower(loadIndex, voltage);
+ 282   7                    Display_FakeLoad(power, FakeLoad_getResistance(loadIndex),
+ 283   7                                     voltage);
+ 284   7                    UART_SendString("[DEBUG] Stopped\r\n");
+ 285   7                  } else if (duration_time_seconds > 0) {
+ 286   7                    // 非运行且倒计时>0 → 开始运行
+ 287   7                    is_running = 1;
+ 288   7                    last_run_tick = sys_tick_1ms;
+ 289   7                    UART_SendString("[DEBUG] Started\r\n");
+ 290   7                  } else {
+ 291   7                    // 非运行且倒计时=0 → 不动作，仅显示设置页面
+ 292   7                    power = FakeLoad_getPower(loadIndex, voltage);
+ 293   7                    Display_FakeLoad(power, FakeLoad_getResistance(loadIndex),
+ 294   7                                     voltage);
+ 295   7                    UART_SendString("[DEBUG] Timer is 0, stay in settings\r\n");
+ 296   7                  }
+ 297   6                }
+ 298   5              }
+ 299   4            } else {
+ 300   4              start_key_debounce = 0;
+ 301   4              key_handled = 0; // 按键释放后才允许下次触发
+ 302   4            }
+C51 COMPILER V9.59.0.0   MAIN                                                              07/13/2026 02:43:58 PAGE 6   
+
+ 303   3          }
+ 304   2      
+ 305   2          if (is_running) {
+ 306   3            heartFAN(1);
+ 307   3            runStateLED(1);
+ 308   3            // 运行指示灯
+ 309   3            P22 = 0;
+ 310   3      
+ 311   3            // 仅在倒计时运行时设置负载（倒计时结束后保持断开）
+ 312   3            if (duration_time_seconds > 0) {
+ 313   4              if (loadIndex != last_loadIndex_run) {
+ 314   5                FakeLoad_SetResistance(loadIndex);
+ 315   5                last_loadIndex_run = loadIndex;
+ 316   5              }
+ 317   4            }
+ 318   3      
+ 319   3            power = FakeLoad_getPower(loadIndex, voltage);
+ 320   3      
+ 321   3            // 使用sys_tick_1ms实现精确1秒刷新（不受主循环阻塞影响）
+ 322   3            if ((unsigned int)(sys_tick_1ms - last_run_tick) >= 1000) {
+ 323   4              last_run_tick = sys_tick_1ms;
+ 324   4      
+ 325   4              // 先减后显示：确保倒计时结束时显示00:00而非00:01
+ 326   4              if (duration_time_seconds > 0) {
+ 327   5                duration_time_seconds--;
+ 328   5                if (duration_time_seconds == 0) {
+ 329   6                  buzzer_tick = BEEP_SEC * 100;
+ 330   6                  FakeLoad_SetPower(0, voltage);
+ 331   6                  // 不清除is_running：保持显示00:00等待用户按run键确认
+ 332   6                }
+ 333   5              }
+ 334   4      
+ 335   4              // 倒计时结束后仍显示00:00 Running，直到用户按run键退出
+ 336   4              Display_RunningMessage(duration_time_seconds, power, voltage);
+ 337   4            }
+ 338   3          } else {
+ 339   3            heartFAN(0);
+ 340   3            runStateLED(0);
+ 341   3            // 停止时复位负载，重置运行模式变量
+ 342   3            FakeLoad_Reset();
+ 343   3            // 运行指示灯
+ 344   3            P22 = 1;
+ 345   3            last_loadIndex_run = 0xFF; // 强制下次运行时重新设置电阻
+ 346   3            last_run_tick = 0;         // 重置计时基准
+ 347   3            // 不重置buzzer_tick：让蜂鸣器自然响完
+ 348   3          }
+ 349   2      
+ 350   2          // 安全检查：电压过高时显示错误信息（仅电压超限时显示一次）
+ 351   2          if (voltage > SAFE_VOLTAGE) {
+ 352   3            if (!prev_over_voltage) {
+ 353   4              Display_ErrorMessage("Over Voltage");
+ 354   4              prev_over_voltage = 1;
+ 355   4            }
+ 356   3          } else {
+ 357   3            prev_over_voltage = 0;
+ 358   3          }
+ 359   2      
+ 360   2          // === 空闲超时检测（1分钟无操作进入空闲屏幕） ===
+ 361   2          if (!is_running && idle_counter < IDLE_TIMEOUT_TICKS) {
+ 362   3            idle_counter++;
+ 363   3            if (idle_counter >= IDLE_TIMEOUT_TICKS && !is_idle) {
+ 364   4              is_idle = 1;
+C51 COMPILER V9.59.0.0   MAIN                                                              07/13/2026 02:43:58 PAGE 7   
+
+ 365   4              Display_IdleMessage();
+ 366   4            }
+ 367   3          }
+ 368   2      
+ 369   2          // 蜂鸣器逻辑
+ 370   2          if (buzzer_tick > 0) {
+ 371   3            BuzzerPWM(200); // 鸣叫频率200，可自行调整音调
+ 372   3            buzzer_tick--;
+ 373   3          } else {
+ 374   3            BuzzerPWM(0); // 关闭蜂鸣
+ 375   3          }
+ 376   2      
+ 377   2          Delay_ms(10);
+ 378   2        }
+ 379   1      }
+ 380          // 编码器方向/按键状态处理函数（在主循环中调用）
+ 381          void encode_CallBack(bit dir, bit keystate) {
+ 382   1        // keystate=1：编码器按键按下，切换调节模式
+ 383   1        if (keystate == 1) {
+ 384   2          is_adjusting_duration_time = !is_adjusting_duration_time;
+ 385   2        }
+ 386   1      
+ 387   1        if (is_adjusting_duration_time) {
+ 388   2          if (dir == 0) {
+ 389   3            if (duration_time_seconds < 7200) // 上限7200秒 2小时
+ 390   3              duration_time_seconds++;
+ 391   3          } else {
+ 392   3            if (duration_time_seconds > 0) // 禁止负数
+ 393   3              duration_time_seconds--;
+ 394   3          }
+ 395   2          Display_TimerSetupMessage(duration_time_seconds);
+ 396   2        } else {
+ 397   2          // 调整功率负载（电压由STM32自动更新，保留当前voltage值）
+ 398   2      
+ 399   2          if (dir == 0) {
+ 400   3            if (loadIndex < RESISTANCE_LIST_SIZE - 1) {
+ 401   4              loadIndex++;
+ 402   4            }
+ 403   3          } else {
+ 404   3            if (loadIndex > 0) {
+ 405   4              loadIndex--;
+ 406   4            }
+ 407   3          }
+ 408   2          power = FakeLoad_getPower(loadIndex, voltage);
+ 409   2          Display_FakeLoad(power, FakeLoad_getResistance(loadIndex), voltage);
+ 410   2        }
+ 411   1      }
+ 412          
+ 413          // INT1已禁用（EC11_Init中EX1=0），此中断函数不再使用
+ 414          // void INT1_Isr(void) interrupt 2 {
+ 415          //   EA = 0;
+ 416          //   encFlag |= 0x01;
+ 417          //   encKeyPress = 1;
+ 418          //   EA = 1;
+ 419          // }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    583    ----
-   CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =      1       1
+   CODE SIZE        =   1577    ----
+   CONSTANT SIZE    =    328    ----
+   XDATA SIZE       =   ----       2
    PDATA SIZE       =   ----    ----
+C51 COMPILER V9.59.0.0   MAIN                                                              07/13/2026 02:43:58 PAGE 8   
+
    DATA SIZE        =   ----    ----
-   IDATA SIZE       =     14    ----
-   BIT SIZE         =      2       2
+   IDATA SIZE       =     58      23
+   BIT SIZE         =      9       2
 END OF MODULE INFORMATION.
 
 
-C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

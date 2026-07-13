@@ -1,1 +1,0 @@
-"FakeLoad\fakeload_iic.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(.\Display;.\FakeLoad;.\Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\fakeload_iic.lst) TABS (2) OBJECT(.\Objects\fakeload_iic.obj)

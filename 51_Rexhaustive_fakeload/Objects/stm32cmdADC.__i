@@ -1,0 +1,1 @@
+"System\stm32cmdADC.c" LARGE OPTIMIZE (9,SIZE) BROWSE INCDIR(.\Display;.\FakeLoad;.\Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\stm32cmdADC.lst) TABS (2) OBJECT(.\Objects\stm32cmdADC.obj)

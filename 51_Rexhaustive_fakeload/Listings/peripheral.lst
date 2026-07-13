@@ -1,9 +1,9 @@
-C51 COMPILER V9.59.0.0   PERIPHERAL                                                        07/01/2026 15:24:55 PAGE 1   
+C51 COMPILER V9.59.0.0   PERIPHERAL                                                        07/13/2026 00:15:57 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE PERIPHERAL
 OBJECT MODULE PLACED IN .\Objects\peripheral.obj
-COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Key\peripheral.c LARGE OPTIMIZE(8,SIZE) BROWSE INCDIR(.\Display;.\FakeLo
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Key\peripheral.c LARGE OPTIMIZE(9,SIZE) BROWSE INCDIR(.\Display;.\FakeLo
                     -ad;.\Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\peripheral.lst) TABS(2) OBJECT(.\Objects\peripheral.obj
                     -)
 
@@ -12,81 +12,123 @@ line level    source
    1          #include "peripheral.h"
    2          #include "Delay.h"
    3          #include "Timer.h"
-   4          
-   5          uint16_t PWMPeriod = 0;
-   6          uint16_t pwmCounter = 0;
-   7          uint8_t dutyCycle = 0;
-   8          bit buzzer_en = 0;       // 蜂鸣总开关
-   9          #define BUZZER_VOLUME 50 // 默认音量50%占空比
-  10          #define TICK_PER_SEC 250 // 全局宏，解决未定义报错
-  11          
-  12          #define Buzzer P36
-  13          #define ShellFAN P25
-  14          #define EXTFAN P24
-  15          #define HEARTFAN P34
-  16          #define RUNSTATE_LED P35
-  17          
-  18          /*功能函数*/
-  19          void Timer0_ISR(void) interrupt 1 {
-  20   1        TH0 = 0xFC;
-  21   1        TL0 = 0x66;
-  22   1      
-  23   1        if (!buzzer_en) {
-  24   2          Buzzer = 0;
-  25   2          return;
-  26   2        }
-  27   1      
-  28   1        pwmCounter++;
-  29   1        if (pwmCounter >= PWMPeriod) {
-  30   2          pwmCounter = 0;
-  31   2        }
-  32   1      
-  33   1        Buzzer = (pwmCounter < dutyCycle) ? 1 : 0;
-  34   1      }
-  35          
-  36          void setBuzzerDutyCycle(uint8_t duty) { dutyCycle = (duty > 100) ? 100 : duty; }
-  37          
-  38          /*外设函数*/
-  39          // freq=0 关闭蜂鸣；freq>0 开启对应频率发声
-  40          void BuzzerPWM(uint8_t freq) {
-  41   1        if (freq == 0) {
-  42   2          buzzer_en = 0;
-  43   2          PWMPeriod = 0;
-  44   2          Buzzer = 0;
-  45   2          return;
-  46   2        }
-  47   1      
-  48   1        buzzer_en = 1;
-  49   1        setBuzzerDutyCycle(BUZZER_VOLUME); // 开启默认音量
-  50   1      
-  51   1        // PWM周期计算
-  52   1        PWMPeriod = TICK_PER_SEC / freq;
-  53   1      
-C51 COMPILER V9.59.0.0   PERIPHERAL                                                        07/01/2026 15:24:55 PAGE 2   
+   4          #include <intrins.h>
+   5          
+   6          uint16_t PWMPeriod = 0;
+   7          uint16_t pwmCounter = 0;
+   8          uint8_t dutyCycle = 0;
+   9          bit buzzer_en = 0;                    // 蜂鸣总开关
+  10          volatile uint16_t idata sys_tick_1ms; // 1ms硬件滴答计数器（在main中初始化为0）
+  11          #define BUZZER_VOLUME 50              // 默认音量50%占空比
+  12          #define TICK_PER_SEC 250              // 全局宏，解决未定义报错
+  13          
+  14          #define Buzzer P36
+  15          #define ShellFAN P25
+  16          #define EXTFAN P24
+  17          #define HEARTFAN P34
+  18          #define RUNSTATE_LED P35
+  19          
+  20          // 编码器相关（来自encode.c，Timer0 ISR中采样）
+  21          extern bit AB_DIR;
+  22          extern bit enc_event_flag;
+  23          extern bit enc_event_dir;
+  24          extern bit enc_event_key;
+  25          extern uint8_t idata enc_int_count;
+  26          
+  27          // 系统滴答计数器（1ms递增，用于精确计时）
+  28          volatile uint16_t idata sys_tick_1ms = 0;
+  29          
+  30          /*功能函数*/
+  31          void Timer0_ISR(void) interrupt 1 {
+  32   1        static uint8_t idata enc_prev_a = 1;
+  33   1        uint8_t idata enc_a;
+  34   1      
+  35   1        TH0 = 0xFC;
+  36   1        TL0 = 0x66;
+  37   1      
+  38   1        sys_tick_1ms++; // 1ms系统滴答
+  39   1      
+  40   1        // === 编码器A相采样（1ms轮询，替代INT0中断） ===
+  41   1        enc_a = P32; // EC11_A
+  42   1        if (enc_a == 0 && enc_prev_a == 1) {
+  43   2          // 检测到下降沿，读取B相判断方向
+  44   2          _nop_();
+  45   2          _nop_();
+  46   2          _nop_();
+  47   2          _nop_();
+  48   2          _nop_();
+  49   2          _nop_();
+  50   2          _nop_();
+  51   2          _nop_();
+  52   2          _nop_();
+  53   2          _nop_();
+C51 COMPILER V9.59.0.0   PERIPHERAL                                                        07/13/2026 00:15:57 PAGE 2   
 
-  54   1        // 限制周期范围 1~200
-  55   1        if (PWMPeriod < 1)
-  56   1          PWMPeriod = 1;
-  57   1        if (PWMPeriod > 200)
-  58   1          PWMPeriod = 200;
-  59   1      }
-  60          
-  61          void shellFAN(bit state) { ShellFAN = state; }
-  62          
-  63          void extFAN(bit state) { EXTFAN = state; }
-  64          
-  65          void heartFAN(bit state) { HEARTFAN = state; }
-  66          
-  67          void runStateLED(bit state) { RUNSTATE_LED = state; }
+  54   2          AB_DIR = (P12 == 0) ? 0 : 1; // EC11_B
+  55   2          enc_event_flag = 1;
+  56   2          enc_event_dir = AB_DIR;
+  57   2          enc_event_key = 0;
+  58   2          enc_int_count++;
+  59   2        }
+  60   1        enc_prev_a = enc_a;
+  61   1      
+  62   1        // === 蜂鸣器PWM ===
+  63   1        if (!buzzer_en) {
+  64   2          Buzzer = 0;
+  65   2          return;
+  66   2        }
+  67   1      
+  68   1        pwmCounter++;
+  69   1        if (pwmCounter >= PWMPeriod) {
+  70   2          pwmCounter = 0;
+  71   2        }
+  72   1      
+  73   1        Buzzer = (pwmCounter < dutyCycle) ? 1 : 0;
+  74   1      }
+  75          
+  76          void setBuzzerDutyCycle(uint8_t duty) { dutyCycle = (duty > 100) ? 100 : duty; }
+  77          
+  78          /*外设函数*/
+  79          // freq=0 关闭蜂鸣；freq>0 开启对应频率发声
+  80          void BuzzerPWM(uint8_t freq) {
+  81   1        if (freq == 0) {
+  82   2          buzzer_en = 0;
+  83   2          PWMPeriod = 0;
+  84   2          Buzzer = 0;
+  85   2          return;
+  86   2        }
+  87   1      
+  88   1        buzzer_en = 1;
+  89   1        setBuzzerDutyCycle(BUZZER_VOLUME); // 开启默认音量
+  90   1      
+  91   1        // PWM周期计算
+  92   1        PWMPeriod = TICK_PER_SEC / freq;
+  93   1      
+  94   1        // 限制周期范围 1~200
+  95   1        if (PWMPeriod < 1)
+  96   1          PWMPeriod = 1;
+  97   1        if (PWMPeriod > 200)
+  98   1          PWMPeriod = 200;
+  99   1      }
+ 100          
+ 101          void shellFAN(bit state) { ShellFAN = state; }
+ 102          
+ 103          void extFAN(bit state) { EXTFAN = state; }
+ 104          
+ 105          void heartFAN(bit state) { HEARTFAN = state; }
+ 106          
+ 107          void runStateLED(bit state) { RUNSTATE_LED = state; }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    227    ----
+   CODE SIZE        =    282    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =      5    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
-   IDATA SIZE       =   ----    ----
+C51 COMPILER V9.59.0.0   PERIPHERAL                                                        07/13/2026 00:15:57 PAGE 3   
+
+   IDATA SIZE       =      3       1
    BIT SIZE         =      1       4
 END OF MODULE INFORMATION.
 

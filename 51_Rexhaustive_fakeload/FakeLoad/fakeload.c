@@ -112,35 +112,57 @@
 
 /* 安全阈值简化后 */
 
-float code resistance_list[RESISTANCE_LIST_SIZE] = {
+// float xdata resistance_list[RESISTANCE_LIST_SIZE] = {
+//     3.23f, 3.33f, 3.85f,  4.00f,  4.76f,  5.00f, 6.25f,
+//     6.67f, 9.09f, 10.00f, 16.67f, 20.00f, 100.0f};
+// uint8_t xdata resistance_list_hex_list[RESISTANCE_LIST_SIZE] = {
+//     0xC0, // 3.23
+//     0xE0, // 3.33
+//     0xC2, // 3.85
+//     0xE2, // 4.00
+//     0xC1, // 4.76
+//     0xE1, // 5.00
+//     0xC3, // 6.25
+//     0xE3, // 6.67
+//     0xC7, // 9.09
+//     0xE7, // 10.00
+//     0xCF, // 16.67
+//     0xEF, // 20.00
+//     0xDF  // 100.0
+// };
+const float xdata resistance_list[RESISTANCE_LIST_SIZE] = {
     3.23f, 3.33f, 3.85f,  4.00f,  4.76f,  5.00f, 6.25f,
     6.67f, 9.09f, 10.00f, 16.67f, 20.00f, 100.0f};
-uint8_t code resistance_list_hex_list[RESISTANCE_LIST_SIZE] = {
-    0xC0, // 3.23
-    0xE0, // 3.33
-    0xC2, // 3.85
-    0xE2, // 4.00
-    0xC1, // 4.76
-    0xE1, // 5.00
-    0xC3, // 6.25
-    0xE3, // 6.67
-    0xC7, // 9.09
-    0xE7, // 10.00
-    0xCF, // 16.67
-    0xEF, // 20.00
-    0xDF  // 100.0
+
+// 对应PCF8574控制码（低电平接入电阻，P6/P7保持高电平）
+const uint8_t xdata resistance_list_hex_list[RESISTANCE_LIST_SIZE] = {
+    0x3F, // 3.23Ω  全并联
+    0x1F, // 3.33Ω  R10 + 4×20Ω
+    0x2F, // 3.85Ω  R10 + 3×20Ω + R100
+    0x0F, // 4.00Ω  R10 + 3×20Ω
+    0x3E, // 4.76Ω  4×20Ω + R100  【最优功率84W】
+    0x1E, // 5.00Ω  4×20Ω        【最优功率80W】
+    0x2E, // 6.25Ω  3×20Ω + R100 【最优功率64W】
+    0x0E, // 6.67Ω  3×20Ω        【最优功率60W】
+    0x26, // 9.09Ω  2×20Ω + R100 【最优功率44W】
+    0x06, // 10.00Ω 2×20Ω        【最优功率40W】
+    0x22, // 16.67Ω 1×20Ω + R100
+    0x02, // 20.00Ω 单只20Ω
+    0x20  // 100.0Ω 单只R100
 };
 
 // 初始化假负载
 void FakeLoad_Init(void) {
+  // UART_SendString("[DEBUG] FakeLoad_Init: Delay start\r\n");
+  Delay_ms(50);
+  // UART_SendString(
+  // "[DEBUG] FakeLoad_Init: Delay done, calling PCF8574_Init\r\n");
   PCF8574_Init();
-  // 初始化所有电阻继电器关闭
-  PCF8574_SetPort(R10, 0);   // 10R 关闭
-  PCF8574_SetPort(R20_1, 0); // 20R_1 关闭
-  PCF8574_SetPort(R20_2, 0); // 20R_2 关闭
-  PCF8574_SetPort(R20_3, 0); // 20R_3 关闭
-  PCF8574_SetPort(R20_4, 0); // 20R_4 关闭
-  PCF8574_SetPort(R100, 0);  // 100R 关闭
+  // UART_SendString(
+  // "[DEBUG] FakeLoad_Init: PCF8574_Init done, calling FakeLoadTest\r\n");
+  // FakeLoadTest();
+  // UART_SendString("[DEBUG] FakeLoad_Init: FakeLoadTest done\r\n");
+  FakeLoad_Reset();
 }
 
 // 由指定目标功率计算并设置电阻负载状态 返回索引
@@ -188,3 +210,16 @@ float FakeLoad_getResistance(uint8_t resistance_index) {
 }
 void FakeLoad_Reset(void) { PCF8574_Write(0x00); }
 void FakeLoad_Set(uint8_t port, uint8_t value) { PCF8574_SetPort(port, value); }
+
+void FakeLoadTest(void) {
+  uint8_t test_index = 0;
+
+  for (test_index = 0; test_index < 7; test_index++) {
+    FakeLoad_Set(test_index, 1);
+    Delay_ms(50);
+  }
+  for (test_index = 0; test_index < 7; test_index++) {
+    FakeLoad_Set(test_index, 0);
+    Delay_ms(50);
+  }
+}

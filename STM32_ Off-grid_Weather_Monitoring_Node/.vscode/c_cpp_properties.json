@@ -7,6 +7,7 @@
                 "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\STM32_ Off-grid_Weather_Monitoring_Node\\Library",
                 "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\STM32_ Off-grid_Weather_Monitoring_Node\\User",
                 "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\STM32_ Off-grid_Weather_Monitoring_Node\\System",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\STM32_ Off-grid_Weather_Monitoring_Node\\Hardware",
                 "D:\\Keil_v5\\ARM\\ARMCC\\include"
             ],
             "defines": [

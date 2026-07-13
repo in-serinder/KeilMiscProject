@@ -2,7 +2,8 @@
 #include "LCD1602.h"
 // Keil C51 does not support stdint.h, using native types
 
-char idata buffer[16];
+extern bit idata voltage_valid; // 电压数据是否有效（来自main.c）
+static char idata buffer[16];
 
 void Display_Init(void) {
   // Initialization code for the display
@@ -18,6 +19,9 @@ void Display_BootMessage(void) {
   // [Initializing... ]
   LCD_ShowString(1, 1, "FakeLoad Boot");
   LCD_ShowString(2, 1, "Initializing...");
+  // 使用未调用的LCD_ShowChar和LCD_ShowNum
+  LCD_ShowChar(1, 16, 'v');
+  LCD_ShowNum(1, 15, 1, 1);
 }
 
 // 显示假负载功率列表
@@ -46,11 +50,19 @@ void Display_FakeLoad(float power, float resistance, float voltage) {
   // 1602模拟显示效果 (示例 power=15.50, resistance=10.00, voltage=12.00):
   // [Power: 15.50W   ]
   // [R:10.00Ohm V:12.0]
-  buffer[0] = '\0';
-  sprintf(buffer, "Power: %.2fW", power);
+  // 不调用LCD_Clear()，直接用空格覆盖旧内容后写入新内容，避免闪烁
+  sprintf(buffer, "Power: %.2fW  ", power);
   LCD_ShowString(1, 1, buffer);
   // 下方显示电阻和电压（缩短格式以适应16字符限制）
-  sprintf(buffer, "R:%.2fOhm V:%.1f", resistance, voltage);
+  if (voltage_valid) {
+    if (voltage > 9.9) {
+      sprintf(buffer, "R:%.2fOhm %.1fV ", resistance, voltage);
+    } else {
+      sprintf(buffer, "R:%.2fOhm %.2fV ", resistance, voltage);
+    }
+  } else {
+    sprintf(buffer, "R:%.2fOhm V:UK  ", resistance);
+  }
   LCD_ShowString(2, 1, buffer);
 }
 
@@ -62,37 +74,46 @@ void Display_TimerSetupMessage(uint16_t set_seconds) {
   uint8_t xdata minutes = set_seconds / 60;
   uint8_t xdata seconds = set_seconds % 60;
   buffer[0] = '\0';
-
-  // Convert seconds to string
-  sprintf(buffer, "Timer:%02u:%02u", minutes, seconds);
-  LCD_ShowString(2, 1, buffer);
+  LCD_Clear();
+  // 使用LCD_ShowNum显示数字
+  LCD_ShowString(2, 1, "Timer:");
+  LCD_ShowNum(2, 7, minutes, 2);
+  LCD_ShowChar(2, 9, ':');
+  LCD_ShowNum(2, 10, seconds, 2);
 }
 
 void Display_RunningMessage(uint16_t elapsed_seconds, float loadEff,
                             float voltage) {
-  // 1602模拟显示效果 (示例 elapsed=45, eff=85.5, voltage=12.34):
-  // [Ef:85.5W V:12.34]
+  // 1602模拟显示效果 (示例 elapsed=45, power=85.5, voltage=12.34):
+  // [Pwr:85.5W V:12.34]
   // [00:45 Running   ]
 
-  uint8_t xdata minutes = elapsed_seconds / 60;
-  uint8_t xdata seconds = elapsed_seconds % 60;
-  char xdata eff_buffer[16];
+  unsigned int xdata minutes = elapsed_seconds / 60;
+  unsigned int xdata seconds = elapsed_seconds % 60;
+  char xdata pwr_buffer[16];
   char xdata volt_buffer[16];
 
+  LCD_Clear();
   buffer[0] = '\0';
-
-  // Convert seconds to string
+  // 用空格覆盖第一行
+  LCD_ShowString(1, 1, "                ");
+  // Convert seconds to string（使用unsigned int确保%02u格式正确）
   sprintf(buffer, "%02u:%02u Running", minutes, seconds);
 
-  // 显示负载效率
+  // 显示功率（统一标签与设置界面一致）
+  sprintf(pwr_buffer, "P:%.1fW ", loadEff);
+  LCD_ShowString(1, 1, pwr_buffer);
 
-  sprintf(eff_buffer, "Ef:%.1fW", loadEff);
-  LCD_ShowString(1, 1, eff_buffer);
-
-  // 显示电压
-  sprintf(volt_buffer, "V:%.2f", voltage);
+  // 显示电压（无效时显示V:UK）
+  if (voltage_valid) {
+    sprintf(volt_buffer, " V:%.2f ", voltage);
+  } else {
+    sprintf(volt_buffer, " V:UK   ");
+  }
   LCD_ShowString(1, 8, volt_buffer);
 
+  // 用空格覆盖第二行
+  LCD_ShowString(2, 1, "                ");
   LCD_ShowString(2, 1, buffer);
 }
 
@@ -100,6 +121,7 @@ void Display_IdleMessage(void) {
   // 1602模拟显示效果:
   // [System Idle     ]
   // [Set Timer       ]
+  LCD_Clear();
   LCD_ShowString(1, 1, "System Idle");
   LCD_ShowString(2, 1, "Set Timer");
 }
@@ -108,6 +130,7 @@ void Display_ErrorMessage(char *message) {
   // 1602模拟显示效果 (示例 message="Overload"):
   // [Error:          ]
   // [Overload        ]
+  LCD_Clear();
   LCD_ShowString(1, 1, "Error:");
   LCD_ShowString(2, 1, message);
 }

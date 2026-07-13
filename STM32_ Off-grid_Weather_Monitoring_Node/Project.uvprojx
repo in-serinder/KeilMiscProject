@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Booter;.\Library;.\User;.\System</IncludePath>
+              <IncludePath>.\Booter;.\Library;.\User;.\System;.\Hardware</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -679,6 +679,16 @@
               <FileName>Delay.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\System\Delay.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>HardWare</GroupName>
+          <Files>
+            <File>
+              <FileName>Serial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Hardware\Serial.c</FilePath>
             </File>
           </Files>
         </Group>

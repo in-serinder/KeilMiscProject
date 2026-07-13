@@ -1,1 +1,0 @@
-"System\Status.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(.\Display;.\FakeLoad;.\Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\Status.lst) TABS (2) OBJECT(.\Objects\Status.obj)

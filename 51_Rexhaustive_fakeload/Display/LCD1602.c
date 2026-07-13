@@ -6,23 +6,45 @@
 #define LCD_EN P17
 #define LCD_DataPort P0
 
-static unsigned char xdata i, j;
-
 // 函数定义：
+
 /**
  * @brief  LCD1602延时函数，12MHz调用可延时1ms
  * @param  无
  * @retval 无
  */
 void LCD_Delay() {
-  
-
-  i = 2;
-  j = 239;
+  unsigned char xdata dly_i = 5;
+  unsigned char xdata dly_j = 248;
   do {
-    while (--j)
+    dly_j = 248;
+    while (--dly_j)
       ;
-  } while (--i);
+  } while (--dly_i);
+}
+
+/**
+ * @brief  LCD1602长延时，约5ms（12MHz）
+ */
+void LCD_LongDelay() {
+  unsigned char xdata dly_i, dly_j;
+  for (dly_i = 0; dly_i < 5; dly_i++) {
+    dly_j = 248;
+    while (--dly_j)
+      ;
+    dly_j = 248;
+    while (--dly_j)
+      ;
+    dly_j = 248;
+    while (--dly_j)
+      ;
+    dly_j = 248;
+    while (--dly_j)
+      ;
+    dly_j = 248;
+    while (--dly_j)
+      ;
+  }
 }
 
 /**
@@ -75,11 +97,33 @@ void LCD_SetCursor(unsigned char Line, unsigned char Column) {
  * @retval 无
  */
 void LCD_Init() {
+  // 上电后等待 >15ms 让LCD稳定
+  LCD_LongDelay();
+  LCD_LongDelay();
+  LCD_LongDelay();
+
+  // 按照HD44780规格书，0x38需要发送3次确保可靠
   LCD_WriteCommand(0x38); // 八位数据接口，两行显示，5*7点阵
+  LCD_LongDelay();        // 等待 >4.1ms
+  LCD_WriteCommand(0x38);
+  LCD_Delay(); // 等待 >100us
+  LCD_WriteCommand(0x38);
+  LCD_Delay();
+
   LCD_WriteCommand(0x0c); // 显示开，光标关，闪烁关
+  LCD_Delay();
+  LCD_WriteCommand(0x01); // 光标复位，清屏（需要最长延时）
+  LCD_LongDelay();        // 清屏需要 >1.64ms，给足5ms
   LCD_WriteCommand(0x06); // 数据读写操作后，光标自动加一，画面不动
-  LCD_WriteCommand(0x01); // 光标复位，清屏
+  LCD_Delay();
 }
+
+/**
+ * @brief  LCD1602清屏函数
+ * @param  无
+ * @retval 无
+ */
+void LCD_Clear() { LCD_WriteCommand(0x01); }
 
 /**
  * @brief  在LCD1602指定位置上显示一个字符
@@ -101,9 +145,10 @@ void LCD_ShowChar(unsigned char Line, unsigned char Column, char Char) {
  * @retval 无
  */
 void LCD_ShowString(unsigned char Line, unsigned char Column, char *String) {
+  unsigned char xdata idx;
   LCD_SetCursor(Line, Column);
-  for (i = 0; String[i] != '\0'; i++) {
-    LCD_WriteData(String[i]);
+  for (idx = 0; String[idx] != '\0'; idx++) {
+    LCD_WriteData(String[idx]);
   }
 }
 
@@ -112,7 +157,8 @@ void LCD_ShowString(unsigned char Line, unsigned char Column, char *String) {
  */
 int LCD_Pow(int X, int Y) {
   int xdata Result = 1;
-  for (i = 0; i < Y; i++) {
+  unsigned char xdata p;
+  for (p = 0; p < Y; p++) {
     Result *= X;
   }
   return Result;
@@ -128,9 +174,10 @@ int LCD_Pow(int X, int Y) {
  */
 void LCD_ShowNum(unsigned char Line, unsigned char Column, unsigned int Number,
                  unsigned char Length) {
+  unsigned char xdata n;
   LCD_SetCursor(Line, Column);
-  for (i = Length; i > 0; i--) {
-    LCD_WriteData(Number / LCD_Pow(10, i - 1) % 10 + '0');
+  for (n = Length; n > 0; n--) {
+    LCD_WriteData(Number / LCD_Pow(10, n - 1) % 10 + '0');
   }
 }
 

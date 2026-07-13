@@ -11,5 +11,6 @@ void Display_FakeLoad(float power, float resistance, float voltage);
 void Display_TimerSetupMessage(uint16_t set_seconds);
 void Display_RunningMessage(uint16_t elapsed_seconds, float loadEff,
                             float voltage);
+void Display_ErrorMessage(char *message);
 
 #endif

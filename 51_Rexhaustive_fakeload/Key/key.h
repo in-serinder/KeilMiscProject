@@ -2,7 +2,7 @@
 #define __KEY_H__
 #include "stc89c52.h"
 
-#define RunKey P11
+#define RunKey P20
 
 void Key_Init(void);
 bit Key_Scan(void);
