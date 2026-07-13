@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/13/2026 02:43:58 PAGE 1   
+C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/13/2026 20:46:45 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE FAKELOAD
@@ -62,7 +62,7 @@ line level    source
   52                        'P0: 10Ω,P3: 20Ω,P4: 20Ω,',
   53                        'P3: 20Ω,P4: 20Ω,',
   54                         'P0: 10Ω,P1: 20Ω,P2: 20Ω,P4: 20Ω,',
-C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/13/2026 02:43:58 PAGE 2   
+C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/13/2026 20:46:45 PAGE 2   
 
   55                         'P1: 20Ω,P2: 20Ω,P4: 20Ω,',
   56                         'P0: 10Ω,P2: 20Ω,P4: 20Ω,',
@@ -126,7 +126,7 @@ line level    source
  114          
  115          // float xdata resistance_list[RESISTANCE_LIST_SIZE] = {
  116          //     3.23f, 3.33f, 3.85f,  4.00f,  4.76f,  5.00f, 6.25f,
-C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/13/2026 02:43:58 PAGE 3   
+C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/13/2026 20:46:45 PAGE 3   
 
  117          //     6.67f, 9.09f, 10.00f, 16.67f, 20.00f, 100.0f};
  118          // uint8_t xdata resistance_list_hex_list[RESISTANCE_LIST_SIZE] = {
@@ -190,7 +190,7 @@ line level    source
  176   1        if (power == 0) {
  177   2          PCF8574_Write(0xC0);
  178   2          return 0;
-C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/13/2026 02:43:58 PAGE 4   
+C51 COMPILER V9.59.0.0   FAKELOAD                                                          07/13/2026 20:46:45 PAGE 4   
 
  179   2        }
  180   1        target_r = (voltage * voltage) / power;

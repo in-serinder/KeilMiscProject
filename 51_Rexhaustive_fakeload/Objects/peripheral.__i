@@ -1,1 +1,0 @@
-"Key\peripheral.c" LARGE OPTIMIZE (9,SIZE) BROWSE INCDIR(.\Display;.\FakeLoad;.\Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\peripheral.lst) TABS (2) OBJECT(.\Objects\peripheral.obj)

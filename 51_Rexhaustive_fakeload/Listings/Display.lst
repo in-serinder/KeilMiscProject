@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   DISPLAY                                                           07/13/2026 00:51:19 PAGE 1   
+C51 COMPILER V9.59.0.0   DISPLAY                                                           07/13/2026 20:10:42 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE DISPLAY
@@ -62,7 +62,7 @@ line level    source
   52   1        // [R:10.00Ohm V:12.0]
   53   1        // 不调用LCD_Clear()，直接用空格覆盖旧内容后写入新内容，避免闪烁
   54   1        sprintf(buffer, "Power: %.2fW  ", power);
-C51 COMPILER V9.59.0.0   DISPLAY                                                           07/13/2026 00:51:19 PAGE 2   
+C51 COMPILER V9.59.0.0   DISPLAY                                                           07/13/2026 20:10:42 PAGE 2   
 
   55   1        LCD_ShowString(1, 1, buffer);
   56   1        // 下方显示电阻和电压（缩短格式以适应16字符限制）
@@ -78,111 +78,126 @@ line level    source
   66   1        LCD_ShowString(2, 1, buffer);
   67   1      }
   68          
-  69          // Timer: 分钟:秒
-  70          void Display_TimerSetupMessage(uint16_t set_seconds) {
+  69          // Timer: 分钟:秒（Stand模式显示"Timer:    Stand"）
+  70          void Display_TimerSetupMessage(uint16_t set_seconds, bit is_stand_mode) {
   71   1        // 1602模拟显示效果 (示例 set_seconds=125 -> 2分05秒):
   72   1        // [                ]
   73   1        // [Timer:02:05     ]
-  74   1        uint8_t xdata minutes = set_seconds / 60;
-  75   1        uint8_t xdata seconds = set_seconds % 60;
-  76   1        buffer[0] = '\0';
-  77   1        LCD_Clear();
-  78   1        // 使用LCD_ShowNum显示数字
-  79   1        LCD_ShowString(2, 1, "Timer:");
-  80   1        LCD_ShowNum(2, 7, minutes, 2);
-  81   1        LCD_ShowChar(2, 9, ':');
-  82   1        LCD_ShowNum(2, 10, seconds, 2);
-  83   1      }
-  84          
-  85          void Display_RunningMessage(uint16_t elapsed_seconds, float loadEff,
-  86                                      float voltage) {
-  87   1        // 1602模拟显示效果 (示例 elapsed=45, power=85.5, voltage=12.34):
-  88   1        // [Pwr:85.5W V:12.34]
-  89   1        // [00:45 Running   ]
-  90   1      
-  91   1        unsigned int xdata minutes = elapsed_seconds / 60;
-  92   1        unsigned int xdata seconds = elapsed_seconds % 60;
-  93   1        char xdata pwr_buffer[16];
-  94   1        char xdata volt_buffer[16];
-  95   1      
-  96   1        LCD_Clear();
-  97   1        buffer[0] = '\0';
-  98   1        // 用空格覆盖第一行
-  99   1        LCD_ShowString(1, 1, "                ");
- 100   1        // Convert seconds to string（使用unsigned int确保%02u格式正确）
- 101   1        sprintf(buffer, "%02u:%02u Running", minutes, seconds);
- 102   1      
- 103   1        // 显示功率（统一标签与设置界面一致）
- 104   1        sprintf(pwr_buffer, "P:%.1fW ", loadEff);
- 105   1        LCD_ShowString(1, 1, pwr_buffer);
- 106   1      
- 107   1        // 显示电压（无效时显示V:UK）
- 108   1        if (voltage_valid) {
- 109   2          sprintf(volt_buffer, " V:%.2f ", voltage);
- 110   2        } else {
- 111   2          sprintf(volt_buffer, " V:UK   ");
- 112   2        }
- 113   1        LCD_ShowString(1, 8, volt_buffer);
- 114   1      
- 115   1        // 用空格覆盖第二行
- 116   1        LCD_ShowString(2, 1, "                ");
-C51 COMPILER V9.59.0.0   DISPLAY                                                           07/13/2026 00:51:19 PAGE 3   
+  74   1        // 或Stand模式:
+  75   1        // [                ]
+  76   1        // [Timer:    Stand ]
+  77   1        buffer[0] = '\0';
+  78   1        LCD_Clear();
+  79   1        if (is_stand_mode) {
+  80   2          LCD_ShowString(2, 1, "Timer:    Stand");
+  81   2        } else {
+  82   2          uint8_t xdata minutes = set_seconds / 60;
+  83   2          uint8_t xdata seconds = set_seconds % 60;
+  84   2          LCD_ShowString(2, 1, "Timer:");
+  85   2          LCD_ShowNum(2, 7, minutes, 2);
+  86   2          LCD_ShowChar(2, 9, ':');
+  87   2          LCD_ShowNum(2, 10, seconds, 2);
+  88   2        }
+  89   1      }
+  90          
+  91          void Display_RunningMessage(uint16_t elapsed_seconds, float loadEff,
+  92                                      float voltage, bit is_free_run) {
+  93   1        // 1602模拟显示效果 (示例 elapsed=45, power=85.5, voltage=12.34):
+  94   1        // [P:85.5W V:12.34]
+  95   1        // [00:45 Running   ]
+  96   1        // 或自由运行模式:
+  97   1        // [P:85.5W V:12.34]
+  98   1        // [F 00:45 Running ]
+  99   1      
+ 100   1        unsigned int xdata minutes = elapsed_seconds / 60;
+ 101   1        unsigned int xdata seconds = elapsed_seconds % 60;
+ 102   1        char xdata pwr_buffer[16];
+ 103   1        char xdata volt_buffer[16];
+ 104   1      
+ 105   1        LCD_Clear();
+ 106   1        buffer[0] = '\0';
+ 107   1        // 用空格覆盖第一行
+ 108   1        LCD_ShowString(1, 1, "                ");
+ 109   1        // 倒计时/正计时显示（自由运行模式加F前缀）
+ 110   1        if (is_free_run) {
+ 111   2          sprintf(buffer, "F %02u:%02u Running", minutes, seconds);
+ 112   2        } else {
+ 113   2          sprintf(buffer, "%02u:%02u Running", minutes, seconds);
+ 114   2        }
+ 115   1      
+ 116   1        // 显示功率（统一标签与设置界面一致）
+C51 COMPILER V9.59.0.0   DISPLAY                                                           07/13/2026 20:10:42 PAGE 3   
 
- 117   1        LCD_ShowString(2, 1, buffer);
- 118   1      }
- 119          
- 120          void Display_IdleMessage(void) {
- 121   1        // 1602模拟显示效果:
- 122   1        // [System Idle     ]
- 123   1        // [Set Timer       ]
- 124   1        LCD_Clear();
- 125   1        LCD_ShowString(1, 1, "System Idle");
- 126   1        LCD_ShowString(2, 1, "Set Timer");
- 127   1      }
- 128          
- 129          void Display_ErrorMessage(char *message) {
- 130   1        // 1602模拟显示效果 (示例 message="Overload"):
- 131   1        // [Error:          ]
- 132   1        // [Overload        ]
- 133   1        LCD_Clear();
- 134   1        LCD_ShowString(1, 1, "Error:");
- 135   1        LCD_ShowString(2, 1, message);
- 136   1      }
- 137          
- 138          // void Display_Clear(void) {
- 139          //   // 1602模拟显示效果:
- 140          //   // [                ]
- 141          //   // [                ]
- 142          //   LCD_ShowString(1, 1, "                "); // Clear line 1
- 143          //   LCD_ShowString(2, 1, "                "); // Clear line 2
- 144          // }
- 145          
- 146          // void Display_LoadingMessage(void) {
- 147          //   // 1602模拟显示效果:
- 148          //   // [Loading...      ]
- 149          //   // [                ]
- 150          //   LCD_ShowString(1, 1, "Loading...");
- 151          // }
- 152          
- 153          // void Display_CalcLoadEfficiency(float efficiency) {
- 154          //   // 1602模拟显示效果 (示例 efficiency=95.67):
- 155          //   // [                ]
- 156          //   // [Eff: 95.67%     ]
- 157          //   buffer[0] = '\0';
- 158          //   // Convert efficiency to string with 2 decimal places
- 159          //   sprintf(buffer, "Eff: %.2f%%", efficiency);
- 160          //   LCD_ShowString(2, 1, buffer);
- 161          // }
+ 117   1        sprintf(pwr_buffer, "P:%.1fW ", loadEff);
+ 118   1        LCD_ShowString(1, 1, pwr_buffer);
+ 119   1      
+ 120   1        // 显示电压（无效时显示V:UK）
+ 121   1        if (voltage_valid) {
+ 122   2          sprintf(volt_buffer, " V:%.2f ", voltage);
+ 123   2        } else {
+ 124   2          sprintf(volt_buffer, " V:UK   ");
+ 125   2        }
+ 126   1        LCD_ShowString(1, 8, volt_buffer);
+ 127   1      
+ 128   1        // 用空格覆盖第二行
+ 129   1        LCD_ShowString(2, 1, "                ");
+ 130   1        LCD_ShowString(2, 1, buffer);
+ 131   1      }
+ 132          
+ 133          void Display_IdleMessage(void) {
+ 134   1        // 1602模拟显示效果:
+ 135   1        // [System Idle     ]
+ 136   1        // [Set Timer       ]
+ 137   1        LCD_Clear();
+ 138   1        LCD_ShowString(1, 1, "System Idle");
+ 139   1        LCD_ShowString(2, 1, "Set Timer");
+ 140   1      }
+ 141          
+ 142          void Display_ErrorMessage(char *message) {
+ 143   1        // 1602模拟显示效果 (示例 message="Overload"):
+ 144   1        // [Error:          ]
+ 145   1        // [Overload        ]
+ 146   1        LCD_Clear();
+ 147   1        LCD_ShowString(1, 1, "Error:");
+ 148   1        LCD_ShowString(2, 1, message);
+ 149   1      }
+ 150          
+ 151          // void Display_Clear(void) {
+ 152          //   // 1602模拟显示效果:
+ 153          //   // [                ]
+ 154          //   // [                ]
+ 155          //   LCD_ShowString(1, 1, "                "); // Clear line 1
+ 156          //   LCD_ShowString(2, 1, "                "); // Clear line 2
+ 157          // }
+ 158          
+ 159          // void Display_LoadingMessage(void) {
+ 160          //   // 1602模拟显示效果:
+ 161          //   // [Loading...      ]
+ 162          //   // [                ]
+ 163          //   LCD_ShowString(1, 1, "Loading...");
+ 164          // }
+ 165          
+ 166          // void Display_CalcLoadEfficiency(float efficiency) {
+ 167          //   // 1602模拟显示效果 (示例 efficiency=95.67):
+ 168          //   // [                ]
+ 169          //   // [Eff: 95.67%     ]
+ 170          //   buffer[0] = '\0';
+ 171          //   // Convert efficiency to string with 2 decimal places
+ 172          //   sprintf(buffer, "Eff: %.2f%%", efficiency);
+ 173          //   LCD_ShowString(2, 1, buffer);
+ 174          // }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    546    ----
-   CONSTANT SIZE    =    194    ----
-   XDATA SIZE       =   ----      63
+   CODE SIZE        =    597    ----
+C51 COMPILER V9.59.0.0   DISPLAY                                                           07/13/2026 20:10:42 PAGE 4   
+
+   CONSTANT SIZE    =    230    ----
+   XDATA SIZE       =   ----      65
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =     16    ----
-   BIT SIZE         =   ----    ----
+   BIT SIZE         =   ----       2
 END OF MODULE INFORMATION.
 
 

@@ -66,27 +66,36 @@ void Display_FakeLoad(float power, float resistance, float voltage) {
   LCD_ShowString(2, 1, buffer);
 }
 
-// Timer: 分钟:秒
-void Display_TimerSetupMessage(uint16_t set_seconds) {
+// Timer: 分钟:秒（Stand模式显示"Timer:    Stand"）
+void Display_TimerSetupMessage(uint16_t set_seconds, bit is_stand_mode) {
   // 1602模拟显示效果 (示例 set_seconds=125 -> 2分05秒):
   // [                ]
   // [Timer:02:05     ]
-  uint8_t xdata minutes = set_seconds / 60;
-  uint8_t xdata seconds = set_seconds % 60;
+  // 或Stand模式:
+  // [                ]
+  // [Timer:    Stand ]
   buffer[0] = '\0';
   LCD_Clear();
-  // 使用LCD_ShowNum显示数字
-  LCD_ShowString(2, 1, "Timer:");
-  LCD_ShowNum(2, 7, minutes, 2);
-  LCD_ShowChar(2, 9, ':');
-  LCD_ShowNum(2, 10, seconds, 2);
+  if (is_stand_mode) {
+    LCD_ShowString(2, 1, "Timer:    Stand");
+  } else {
+    uint8_t xdata minutes = set_seconds / 60;
+    uint8_t xdata seconds = set_seconds % 60;
+    LCD_ShowString(2, 1, "Timer:");
+    LCD_ShowNum(2, 7, minutes, 2);
+    LCD_ShowChar(2, 9, ':');
+    LCD_ShowNum(2, 10, seconds, 2);
+  }
 }
 
 void Display_RunningMessage(uint16_t elapsed_seconds, float loadEff,
-                            float voltage) {
+                            float voltage, bit is_free_run) {
   // 1602模拟显示效果 (示例 elapsed=45, power=85.5, voltage=12.34):
-  // [Pwr:85.5W V:12.34]
+  // [P:85.5W V:12.34]
   // [00:45 Running   ]
+  // 或自由运行模式:
+  // [P:85.5W V:12.34]
+  // [F 00:45 Running ]
 
   unsigned int xdata minutes = elapsed_seconds / 60;
   unsigned int xdata seconds = elapsed_seconds % 60;
@@ -97,8 +106,12 @@ void Display_RunningMessage(uint16_t elapsed_seconds, float loadEff,
   buffer[0] = '\0';
   // 用空格覆盖第一行
   LCD_ShowString(1, 1, "                ");
-  // Convert seconds to string（使用unsigned int确保%02u格式正确）
-  sprintf(buffer, "%02u:%02u Running", minutes, seconds);
+  // 倒计时/正计时显示（自由运行模式加F前缀）
+  if (is_free_run) {
+    sprintf(buffer, "F %02u:%02u Running", minutes, seconds);
+  } else {
+    sprintf(buffer, "%02u:%02u Running", minutes, seconds);
+  }
 
   // 显示功率（统一标签与设置界面一致）
   sprintf(pwr_buffer, "P:%.1fW ", loadEff);

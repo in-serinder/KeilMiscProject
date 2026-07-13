@@ -7,11 +7,13 @@
 void main() {
   uint8_t cmd_flag = 0;
   uint8_t digit;
+UART_Init();
+	  UART_SendString((uint8_t *)"Booting ....");
 
   /*初始化位*/
   init_relays();
   IR_Init();
-  UART_Init();
+  
   /*自检*/
   UART_SendString((uint8_t *)"Booted Relay Self-Checking ....");
   Delay_ms(500);

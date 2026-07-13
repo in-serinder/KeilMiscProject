@@ -1,1 +1,0 @@
-"Display\Display.c" LARGE OPTIMIZE (9,SIZE) BROWSE INCDIR(.\Display;.\FakeLoad;.\Key;.\System;.\Utility) DEBUG OBJECTEXTEND PRINT(.\Listings\Display.lst) TABS (2) OBJECT(.\Objects\Display.obj)

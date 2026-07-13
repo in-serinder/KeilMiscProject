@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   PCF8574                                                           07/12/2026 23:14:54 PAGE 1   
+C51 COMPILER V9.59.0.0   PCF8574                                                           07/13/2026 20:46:45 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE PCF8574
@@ -62,7 +62,7 @@ line level    source
   52   1        unsigned char xdata byte = 0;
   53   1        SDA = 1;
   54   1        for (i = 0; i < 8; i++) {
-C51 COMPILER V9.59.0.0   PCF8574                                                           07/12/2026 23:14:54 PAGE 2   
+C51 COMPILER V9.59.0.0   PCF8574                                                           07/13/2026 20:46:45 PAGE 2   
 
   55   2          byte <<= 1;
   56   2          SCL = 1;
@@ -120,23 +120,23 @@ line level    source
  108           * @retval 读取成功返回当前端口状态
  109           * @retval 读取失败返回上次保存的端口状态
  110           */
- 111          unsigned char PCF8574_Read(void) {
- 112   1        unsigned char dat;
- 113   1      
- 114   1        I2C_Start();
- 115   1        I2C_SendByte(PCF8574_R_ADDR);
- 116   1        if (I2C_WaitAck())
-C51 COMPILER V9.59.0.0   PCF8574                                                           07/12/2026 23:14:54 PAGE 3   
+ 111          // unsigned char PCF8574_Read(void) {
+ 112          //   unsigned char dat;
+ 113          
+ 114          //   I2C_Start();
+ 115          //   I2C_SendByte(PCF8574_R_ADDR);
+ 116          //   if (I2C_WaitAck())
+C51 COMPILER V9.59.0.0   PCF8574                                                           07/13/2026 20:46:45 PAGE 3   
 
- 117   1          return pcf8574_port_data; // 读取失败，返回上次保存的值
- 118   1      
- 119   1        dat = I2C_ReceiveByte();
- 120   1        I2C_SendAck(1); // 发送NACK
- 121   1        I2C_Stop();
- 122   1      
- 123   1        pcf8574_port_data = dat;
- 124   1        return dat;
- 125   1      }
+ 117          //     return pcf8574_port_data; // 读取失败，返回上次保存的值
+ 118          
+ 119          //   dat = I2C_ReceiveByte();
+ 120          //   I2C_SendAck(1); // 发送NACK
+ 121          //   I2C_Stop();
+ 122          
+ 123          //   pcf8574_port_data = dat;
+ 124          //   return dat;
+ 125          // }
  126          
  127          /**
  128           * @brief  写入数据到PCF8574所有8位端口
@@ -190,7 +190,7 @@ line level    source
  176   1        if (temp_data != pcf8574_port_data) {
  177   2          PCF8574_Write(temp_data);
  178   2        }
-C51 COMPILER V9.59.0.0   PCF8574                                                           07/12/2026 23:14:54 PAGE 4   
+C51 COMPILER V9.59.0.0   PCF8574                                                           07/13/2026 20:46:45 PAGE 4   
 
  179   1      }
  180          
@@ -204,16 +204,16 @@ line level    source
  188           * @retval 1: 端口为高电平
  189           * @warning port参数超出0~7范围时返回0
  190           */
- 191          bit PCF8574_GetPort(unsigned char port) {
- 192   1        if (port > 7)
- 193   1          return 0;
- 194   1      
- 195   1        return (PCF8574_Read() >> port) & 0x01;
- 196   1      }
+ 191          // bit PCF8574_GetPort(unsigned char port) {
+ 192          //   if (port > 7)
+ 193          //     return 0;
+ 194          
+ 195          //   return (PCF8574_Read() >> port) & 0x01;
+ 196          // }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    333    ----
+   CODE SIZE        =    269    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =      1    ----
    PDATA SIZE       =   ----    ----

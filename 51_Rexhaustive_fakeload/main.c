@@ -23,6 +23,8 @@
 uint8_t idata loadIndex = 0;
 uint16_t idata buzzer_tick = 0;
 uint16_t idata duration_time_seconds = 0;
+bit idata is_stand_mode = 0;            // 无限制运行模式（Stand）
+uint16_t idata elapsed_run_seconds = 0; // 正计时运行时间
 // 运行模式专用变量
 static uint8_t idata last_loadIndex_run = 0xFF; // 上次设置的负载索引
 static uint16_t idata last_run_tick = 0;        // 上次刷新时的系统滴答值
@@ -201,6 +203,7 @@ void main(void) {
         auto_rx_timeout++;
         if (auto_rx_timeout >= 200) {
           auto_rx_timeout = 0;
+          /* ========== 主动查询后备已注释，改用中断被动接收 ==========
           ES = 0; // 临时关闭UART中断，避免与轮询模式冲突
           {
             float idata fallback_v;
@@ -227,6 +230,7 @@ void main(void) {
             }
           }
           ES = 1; // 恢复UART中断
+          ========================================================== */
         }
       }
     }
@@ -282,10 +286,13 @@ void main(void) {
               Display_FakeLoad(power, FakeLoad_getResistance(loadIndex),
                                voltage);
               UART_SendString("[DEBUG] Stopped\r\n");
-            } else if (duration_time_seconds > 0) {
-              // 非运行且倒计时>0 → 开始运行
+            } else if (duration_time_seconds > 0 || is_stand_mode) {
+              // 非运行且倒计时>0 或 Stand模式 → 开始运行
               is_running = 1;
               last_run_tick = sys_tick_1ms;
+              if (is_stand_mode) {
+                elapsed_run_seconds = 0; // 正计时归零
+              }
               UART_SendString("[DEBUG] Started\r\n");
             } else {
               // 非运行且倒计时=0 → 不动作，仅显示设置页面
@@ -308,8 +315,8 @@ void main(void) {
       // 运行指示灯
       P22 = 0;
 
-      // 仅在倒计时运行时设置负载（倒计时结束后保持断开）
-      if (duration_time_seconds > 0) {
+      // 设置负载（Stand模式或倒计时进行中）
+      if (is_stand_mode || duration_time_seconds > 0) {
         if (loadIndex != last_loadIndex_run) {
           FakeLoad_SetResistance(loadIndex);
           last_loadIndex_run = loadIndex;
@@ -322,18 +329,23 @@ void main(void) {
       if ((unsigned int)(sys_tick_1ms - last_run_tick) >= 1000) {
         last_run_tick = sys_tick_1ms;
 
-        // 先减后显示：确保倒计时结束时显示00:00而非00:01
-        if (duration_time_seconds > 0) {
+        if (is_stand_mode) {
+          // 正计时模式：持续累加运行时间
+          elapsed_run_seconds++;
+          Display_RunningMessage(elapsed_run_seconds, power, voltage, 1);
+        } else if (duration_time_seconds > 0) {
+          // 倒计时模式
           duration_time_seconds--;
           if (duration_time_seconds == 0) {
             buzzer_tick = BEEP_SEC * 100;
             FakeLoad_SetPower(0, voltage);
             // 不清除is_running：保持显示00:00等待用户按run键确认
           }
+          Display_RunningMessage(duration_time_seconds, power, voltage, 0);
+        } else {
+          // 倒计时结束（duration_time_seconds == 0），显示00:00
+          Display_RunningMessage(0, power, voltage, 0);
         }
-
-        // 倒计时结束后仍显示00:00 Running，直到用户按run键退出
-        Display_RunningMessage(duration_time_seconds, power, voltage);
       }
     } else {
       heartFAN(0);
@@ -386,13 +398,27 @@ void encode_CallBack(bit dir, bit keystate) {
 
   if (is_adjusting_duration_time) {
     if (dir == 0) {
-      if (duration_time_seconds < 7200) // 上限7200秒 2小时
+      // CW顺时针：增加时间
+      if (is_stand_mode) {
+        // 从Stand切回1秒
+        is_stand_mode = 0;
+        duration_time_seconds = 1;
+      } else if (duration_time_seconds < 7200) {
         duration_time_seconds++;
+      }
     } else {
-      if (duration_time_seconds > 0) // 禁止负数
+      // CCW逆时针：减少时间
+      if (is_stand_mode) {
+        // 已是Stand模式，不变化
+      } else if (duration_time_seconds > 1) {
         duration_time_seconds--;
+      } else if (duration_time_seconds == 1) {
+        // 从1秒切换到Stand模式
+        is_stand_mode = 1;
+        duration_time_seconds = 0;
+      }
     }
-    Display_TimerSetupMessage(duration_time_seconds);
+    Display_TimerSetupMessage(duration_time_seconds, is_stand_mode);
   } else {
     // 调整功率负载（电压由STM32自动更新，保留当前voltage值）
 

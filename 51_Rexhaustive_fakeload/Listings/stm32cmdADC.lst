@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   STM32CMDADC                                                       07/12/2026 23:17:41 PAGE 1   
+C51 COMPILER V9.59.0.0   STM32CMDADC                                                       07/13/2026 20:46:45 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE STM32CMDADC
@@ -18,127 +18,132 @@ line level    source
    7          static unsigned char idata rx_buf[RX_BUF_SIZE];
    8          static unsigned char rx_idx;
    9          
-  10          /**
-  11           * @brief  等待接收一个字符（超时机制）
-  12           * @param  timeout  超时计数（大约 0.1ms/计数值 @ 11.0592MHz）
-  13           * @return 接收到的字符，超时返回 0
-  14           */
-  15          static unsigned char UART_ReceiveChar(unsigned int timeout) {
-  16   1        while (timeout--) {
-  17   2          if (RI) {
-  18   3            RI = 0;
-  19   3            return SBUF;
-  20   3          }
-  21   2        }
-  22   1        return 0;
-  23   1      }
-  24          
-  25          /**
-  26           * @brief  发送命令到 STM32，等待回复，结果存于 rx_buf
-  27           * @param  cmd  命令字符串（不含换行符）
-  28           * @return 1=成功收到回复，0=超时
-  29           */
-  30          static unsigned char STM32_SendCommand(const char *cmd) {
-  31   1        unsigned char i;
-  32   1        unsigned char ch;
-  33   1      
-  34   1        rx_idx = 0;
-  35   1        for (i = 0; i < RX_BUF_SIZE; i++)
-  36   1          rx_buf[i] = 0;
-  37   1      
-  38   1        UART_SendString((unsigned char *)cmd);
-  39   1        UART_SendString("\r\n");
-  40   1      
-  41   1        for (i = 0; i < STM32_CMD_TIMEOUT; i++) {
-  42   2          ch = UART_ReceiveChar(1);
-  43   2          if (ch != 0) {
-  44   3            if (rx_idx < RX_BUF_SIZE - 1)
-  45   3              rx_buf[rx_idx++] = ch;
-  46   3            if (ch == '\n') {
-  47   4              rx_buf[rx_idx] = '\0';
-  48   4              break;
-  49   4            }
-  50   3          }
-  51   2        }
-  52   1      
-  53   1        return (rx_idx > 0 && rx_buf[0] == '>') ? 1 : 0;
-C51 COMPILER V9.59.0.0   STM32CMDADC                                                       07/12/2026 23:17:41 PAGE 2   
+  10          // ============================================================
+  11          // 以下主动发送指令的函数已注释，改用UART中断被动接收STM32数据
+  12          // ============================================================
+  13          // static unsigned char UART_ReceiveChar(unsigned int timeout) {
+  14          //  while (timeout--) {
+  15          //    if (RI) {
+  16          //      RI = 0;
+  17          //      return SBUF;
+  18          //    }
+  19          //  }
+  20          //  return 0;
+  21          //}
+  22          //
+  23          ///**
+  24          // * @brief  发送命令到 STM32，等待回复，结果存于 rx_buf
+  25          // * @param  cmd  命令字符串（不含换行符）
+  26          // * @return 1=成功收到回复，0=超时
+  27          // */
+  28          // static unsigned char STM32_SendCommand(const char *cmd) {
+  29          //  unsigned char i;
+  30          //  unsigned char ch;
+  31          //
+  32          //  rx_idx = 0;
+  33          //  for (i = 0; i < RX_BUF_SIZE; i++)
+  34          //    rx_buf[i] = 0;
+  35          //
+  36          //  UART_SendString((unsigned char *)cmd);
+  37          //  UART_SendString("\r\n");
+  38          //
+  39          //  for (i = 0; i < STM32_CMD_TIMEOUT; i++) {
+  40          //    ch = UART_ReceiveChar(1);
+  41          //    if (ch != 0) {
+  42          //      if (rx_idx < RX_BUF_SIZE - 1)
+  43          //        rx_buf[rx_idx++] = ch;
+  44          //      if (ch == '\n') {
+  45          //        rx_buf[rx_idx] = '\0';
+  46          //        break;
+  47          //      }
+  48          //    }
+  49          //  }
+  50          //
+  51          //  return (rx_idx > 0 && rx_buf[0] == '>') ? 1 : 0;
+  52          //}
+  53          //
+C51 COMPILER V9.59.0.0   STM32CMDADC                                                       07/13/2026 20:46:45 PAGE 2   
 
-  54   1      }
-  55          
-  56          /**
-  57           * @brief  从 rx_buf 解析 ">> XXXX" 格式的整数
-  58           * @return 解析到的整数值
-  59           */
-  60          static unsigned int parse_uint(void) {
-  61   1        unsigned char i = 3; // 跳过 ">> "
-  62   1        unsigned int val = 0;
-  63   1        while (rx_buf[i] >= '0' && rx_buf[i] <= '9') {
-  64   2          val = val * 10 + (rx_buf[i] - '0');
-  65   2          i++;
-  66   2        }
-  67   1        return val;
-  68   1      }
-  69          
-  70          /**
-  71           * @brief  从 rx_buf 解析 ">> XX.XX" 格式的浮点数
-  72           * @return 解析到的浮点值
-  73           */
-  74          static float parse_float(void) {
-  75   1        unsigned char i = 3; // 跳过 ">> "
-  76   1        unsigned int int_part = 0;
-  77   1        unsigned int frac_part = 0;
-  78   1        unsigned int frac_div = 1;
-  79   1      
-  80   1        while (rx_buf[i] >= '0' && rx_buf[i] <= '9') {
-  81   2          int_part = int_part * 10 + (rx_buf[i] - '0');
-  82   2          i++;
-  83   2        }
-  84   1        if (rx_buf[i] == '.') {
-  85   2          i++;
-  86   2          while (rx_buf[i] >= '0' && rx_buf[i] <= '9') {
-  87   3            frac_part = frac_part * 10 + (rx_buf[i] - '0');
-  88   3            frac_div *= 10;
-  89   3            i++;
-  90   3          }
-  91   2        }
-  92   1        return (float)int_part + (float)frac_part / (float)frac_div;
-  93   1      }
-  94          
-  95          /**
-  96           * @brief  初始化 STM32 通信
-  97           */
-  98          void STM32_Init(void) {
-  99   1        UART_SendString("STM32_ADC Helper: Querying STM32...\r\n");
- 100   1      }
- 101          
- 102          /**
- 103           * @brief  查询 STM32 原始 ADC 值
- 104           * @return ADC 原始值（0-4095），超时返回 0xFFFF
- 105           */
- 106          unsigned int STM32_ReadADC(void) {
- 107   1        if (!STM32_SendCommand("AT+QUERY+ADC"))
- 108   1          return 0xFFFF;
- 109   1        return parse_uint();
- 110   1      }
- 111          
- 112          /**
- 113           * @brief  查询 STM32 分压后输入电压
- 114           * @return 电压值（伏特），超时返回 -1.0f
- 115           */
-C51 COMPILER V9.59.0.0   STM32CMDADC                                                       07/12/2026 23:17:41 PAGE 3   
+  54          ///**
+  55          // * @brief  从 rx_buf 解析 ">> XXXX" 格式的整数
+  56          // * @return 解析到的整数值
+  57          // */
+  58          // static unsigned int parse_uint(void) {
+  59          //  unsigned char i = 3; // 跳过 ">> "
+  60          //  unsigned int val = 0;
+  61          //  while (rx_buf[i] >= '0' && rx_buf[i] <= '9') {
+  62          //    val = val * 10 + (rx_buf[i] - '0');
+  63          //    i++;
+  64          //  }
+  65          //  return val;
+  66          //}
+  67          //
+  68          ///**
+  69          // * @brief  从 rx_buf 解析 ">> XX.XX" 格式的浮点数
+  70          // * @return 解析到的浮点值
+  71          // */
+  72          // static float parse_float(void) {
+  73          //  unsigned char i = 3; // 跳过 ">> "
+  74          //  unsigned int int_part = 0;
+  75          //  unsigned int frac_part = 0;
+  76          //  unsigned int frac_div = 1;
+  77          //
+  78          //  while (rx_buf[i] >= '0' && rx_buf[i] <= '9') {
+  79          //    int_part = int_part * 10 + (rx_buf[i] - '0');
+  80          //    i++;
+  81          //  }
+  82          //  if (rx_buf[i] == '.') {
+  83          //    i++;
+  84          //    while (rx_buf[i] >= '0' && rx_buf[i] <= '9') {
+  85          //      frac_part = frac_part * 10 + (rx_buf[i] - '0');
+  86          //      frac_div *= 10;
+  87          //      i++;
+  88          //    }
+  89          //  }
+  90          //  return (float)int_part + (float)frac_part / (float)frac_div;
+  91          //}
+  92          //
+  93          ///**
+  94          // * @brief  查询 STM32 原始 ADC 值
+  95          // * @return ADC 原始值（0-4095），超时返回 0xFFFF
+  96          // */
+  97          // unsigned int STM32_ReadADC(void) {
+  98          //  if (!STM32_SendCommand("AT+QUERY+ADC"))
+  99          //    return 0xFFFF;
+ 100          //  return parse_uint();
+ 101          //}
+ 102          //
+ 103          ///**
+ 104          // * @brief  查询 STM32 分压后输入电压
+ 105          // * @return 电压值（伏特），超时返回 -1.0f
+ 106          // */
+ 107          // float STM32_ReadVoltage(void) {
+ 108          //  if (!STM32_SendCommand("AT+QUERY+Voltage"))
+ 109          //    return -1.0f;
+ 110          //  return parse_float();
+ 111          //}
+ 112          // ===================== 注释结束 =====================
+ 113          
+ 114          /**
+ 115           * @brief  初始化 STM32 通信
+C51 COMPILER V9.59.0.0   STM32CMDADC                                                       07/13/2026 20:46:45 PAGE 3   
 
- 116          float STM32_ReadVoltage(void) {
- 117   1        if (!STM32_SendCommand("AT+QUERY+Voltage"))
- 118   1          return -1.0f;
- 119   1        return parse_float();
- 120   1      }
+ 116           */
+ 117          void STM32_Init(void) {
+ 118   1        UART_SendString("STM32_ADC Helper: Querying STM32...\r\n");
+ 119   1      }
+ 120          
+ 121          /**
+ 122           * @brief  查询 STM32 分压后输入电压（后备函数，返回-1表示无数据）
+ 123           * @return 始终返回 -1.0f（改为纯中断接收，不再主动查询）
+ 124           */
+ 125          float STM32_ReadVoltage(void) { return -1.0f; }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    437    ----
-   CONSTANT SIZE    =     71    ----
-   XDATA SIZE       =      1       6
+   CODE SIZE        =     17    ----
+   CONSTANT SIZE    =     38    ----
+   XDATA SIZE       =      1    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =     32    ----

@@ -38,6 +38,6 @@ void PCF8574_Write(unsigned char dat);
 void PCF8574_SetPort(unsigned char port, bit state);
 
 // 读取指定端口状态
-bit PCF8574_GetPort(unsigned char port);
+// bit PCF8574_GetPort(unsigned char port);
 
 #endif

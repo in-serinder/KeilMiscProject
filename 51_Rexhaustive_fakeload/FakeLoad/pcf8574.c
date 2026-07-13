@@ -108,21 +108,21 @@ void PCF8574_Init(void) {
  * @retval 读取成功返回当前端口状态
  * @retval 读取失败返回上次保存的端口状态
  */
-unsigned char PCF8574_Read(void) {
-  unsigned char dat;
+// unsigned char PCF8574_Read(void) {
+//   unsigned char dat;
 
-  I2C_Start();
-  I2C_SendByte(PCF8574_R_ADDR);
-  if (I2C_WaitAck())
-    return pcf8574_port_data; // 读取失败，返回上次保存的值
+//   I2C_Start();
+//   I2C_SendByte(PCF8574_R_ADDR);
+//   if (I2C_WaitAck())
+//     return pcf8574_port_data; // 读取失败，返回上次保存的值
 
-  dat = I2C_ReceiveByte();
-  I2C_SendAck(1); // 发送NACK
-  I2C_Stop();
+//   dat = I2C_ReceiveByte();
+//   I2C_SendAck(1); // 发送NACK
+//   I2C_Stop();
 
-  pcf8574_port_data = dat;
-  return dat;
-}
+//   pcf8574_port_data = dat;
+//   return dat;
+// }
 
 /**
  * @brief  写入数据到PCF8574所有8位端口
@@ -188,9 +188,9 @@ void PCF8574_SetPort(unsigned char port, bit state) {
  * @retval 1: 端口为高电平
  * @warning port参数超出0~7范围时返回0
  */
-bit PCF8574_GetPort(unsigned char port) {
-  if (port > 7)
-    return 0;
+// bit PCF8574_GetPort(unsigned char port) {
+//   if (port > 7)
+//     return 0;
 
-  return (PCF8574_Read() >> port) & 0x01;
-}
+//   return (PCF8574_Read() >> port) & 0x01;
+// }

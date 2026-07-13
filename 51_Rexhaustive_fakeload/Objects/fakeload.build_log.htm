@@ -24,15 +24,19 @@ Project File Date:  07/12/2026
 <h2>Output:</h2>
 Build target 'Target 1'
 compiling main.c...
+compiling stm32cmdADC.c...
 compiling fakeload.c...
+compiling pcf8574.c...
 linking...
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?STM32_READADC?STM32CMDADC
+    SEGMENT: ?PR?STM32_READVOLTAGE?STM32CMDADC
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_PCF8574_GETPORT?PCF8574
-Program Size: data=154.3 xdata=170 code=8091
+    SEGMENT: ?PR?I2C_RECEIVEBYTE?PCF8574
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?I2C_SENDACK?PCF8574
+Program Size: data=148.4 xdata=170 code=7574
 creating hex file from ".\Objects\fakeload"...
-".\Objects\fakeload" - 0 Error(s), 2 Warning(s).
+".\Objects\fakeload" - 0 Error(s), 3 Warning(s).
 Build Time Elapsed:  00:00:00
 </pre>
 </body>
