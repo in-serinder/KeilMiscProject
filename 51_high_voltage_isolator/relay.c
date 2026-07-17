@@ -1,6 +1,7 @@
 #include "relay.h"
 
 void init_relays() {
+  RELAY_IO_PUSH_PULL();
   CH1_RELAY = 0; // Initialize all relays to off
   CH2_RELAY = 0;
   CH3_RELAY = 0;
@@ -55,10 +56,38 @@ void Relay_turn_off_all_relays() {
 }
 
 void Relay_turn_on_all_relays() {
-  CH1_RELAY = 0;
-  CH2_RELAY = 0;
-  CH3_RELAY = 0;
-  CH4_RELAY = 0;
+  CH1_RELAY = 1;
+  CH2_RELAY = 1;
+  CH3_RELAY = 1;
+  CH4_RELAY = 1;
+}
+
+// 流水灯：逐个开启（关闭所有 → 逐个打开）
+void Relay_running_light_on(void) {
+  uint8_t i;
+  Relay_turn_off_all_relays();
+  for (i = 1; i <= 4; i++) {
+    Relay_set_state(i, 1);
+    Delay_ms(300);
+  }
+}
+
+// 流水灯：逐个关闭（打开所有 → 逐个关闭）
+void Relay_running_light_off(void) {
+  uint8_t i;
+  Relay_turn_on_all_relays();
+  for (i = 4; i >= 1; i--) {
+    Relay_set_state(i, 0);
+    Delay_ms(300);
+  }
+}
+
+// 翻转所有继电器状态（开→关，关→开）
+void Relay_toggle_all(void) {
+  CH1_RELAY = !CH1_RELAY;
+  CH2_RELAY = !CH2_RELAY;
+  CH3_RELAY = !CH3_RELAY;
+  CH4_RELAY = !CH4_RELAY;
 }
 
 void Relay_self_checking_relays() {

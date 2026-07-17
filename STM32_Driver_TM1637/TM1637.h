@@ -1,0 +1,11 @@
+#ifndef __TM1637_H__
+#define __TM1637_H__
+
+#include "stm32f10x.h"
+
+void TM1637_Init(void);
+void TM1637_Display(uint8_t pos, uint8_t num, uint8_t colon);
+void TM1637_Display4Num(uint16_t num, uint8_t colon);
+void TM1637_Clear(void);
+
+#endif
