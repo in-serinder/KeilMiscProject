@@ -115,6 +115,17 @@ void TM1637_Display4Num(uint16_t num, uint8_t colon) {
   TM1637_Display(4, d4, 0);
 }
 
+void TM1637_DisplayRaw(uint8_t pos, uint8_t seg_data) {
+  TM1637_Start();
+  TM1637_WriteByte(0x44);
+  TM1637_Stop();
+
+  TM1637_Start();
+  TM1637_WriteByte(0xc0 | (pos - 1));
+  TM1637_WriteByte(seg_data);
+  TM1637_Stop();
+}
+
 void TM1637_Clear(void) {
   uint8_t i;
   TM1637_Start();
@@ -125,5 +136,16 @@ void TM1637_Clear(void) {
   TM1637_WriteByte(0xc0);
   for (i = 0; i < 4; i++)
     TM1637_WriteByte(0x00);
+  TM1637_Stop();
+}
+
+void TM1637_ClearPos(uint8_t pos) {
+  TM1637_Start();
+  TM1637_WriteByte(0x44);
+  TM1637_Stop();
+
+  TM1637_Start();
+  TM1637_WriteByte(0xc0 | (pos - 1));
+  TM1637_WriteByte(0x00);
   TM1637_Stop();
 }

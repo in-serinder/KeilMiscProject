@@ -30,5 +30,6 @@
 .\objects\main.o: .\Library\stm32f10x_wwdg.h
 .\objects\main.o: .\Library\misc.h
 .\objects\main.o: .\System\Delay.h
+.\objects\main.o: .\HardWare\LED.h
 .\objects\main.o: .\HardWare\MAX7219.h
 .\objects\main.o: .\HardWare\TM1637.h

@@ -700,6 +700,11 @@
               <FileType>1</FileType>
               <FilePath>.\HardWare\TM1637.c</FilePath>
             </File>
+            <File>
+              <FileName>LED.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\HardWare\LED.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

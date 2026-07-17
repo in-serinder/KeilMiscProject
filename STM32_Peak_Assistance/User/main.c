@@ -1,8 +1,10 @@
 #include "Channel_Ctl.h"
 #include "Delay.h"
+#include "LED.h"
 #include "MAX7219.h"
 #include "TM1637.h"
 #include "stm32f10x.h"
+
 
 void Test_MAX7219(void) {
   uint8_t i;
@@ -53,6 +55,8 @@ void Test_ChannelCtl(void) {
 
 void Test_Combined(void) {
   uint16_t val = 0;
+  LED_RED_On();
+  LED_GREEN_Off();
 
   ChannelSet_600V();
   MAX7219_Display(1, 6, 0);
@@ -61,6 +65,8 @@ void Test_Combined(void) {
   MAX7219_Display(4, 0, 0);
   TM1637_Display4Num(6000, 1);
   Delay_ms(1500);
+  LED_RED_Off();
+  LED_GREEN_On();
 
   ChannelSet_250V();
   MAX7219_Clear();
@@ -70,6 +76,8 @@ void Test_Combined(void) {
   MAX7219_Display(4, 0, 0);
   TM1637_Display4Num(2500, 1);
   Delay_ms(1500);
+  LED_RED_Off();
+  LED_GREEN_On();
 
   ChannelSet_36V();
   MAX7219_Clear();
@@ -79,6 +87,8 @@ void Test_Combined(void) {
   MAX7219_Display(4, 0, 0);
   TM1637_Display4Num(0036, 0);
   Delay_ms(1500);
+  LED_RED_Off();
+  LED_GREEN_On();
 
   ChannelSet_5V();
   MAX7219_Clear();
@@ -88,7 +98,8 @@ void Test_Combined(void) {
   MAX7219_Display(4, 0, 0);
   TM1637_Display4Num(0005, 0);
   Delay_ms(1500);
-
+  LED_RED_Off();
+  LED_GREEN_On();
   MAX7219_Clear();
   TM1637_Clear();
   for (val = 0; val < 10000; val += 1111) {
@@ -107,6 +118,7 @@ int main(void) {
   ChannelSet_Init();
   MAX7219_Init();
   TM1637_Init();
+  LED_Init();
 
   while (1) {
     Test_MAX7219();

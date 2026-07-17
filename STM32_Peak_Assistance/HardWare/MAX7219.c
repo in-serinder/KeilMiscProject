@@ -71,3 +71,5 @@ void MAX7219_Clear(void) {
     MAX7219_Write(i + 1, 0x00);
   }
 }
+
+void MAX7219_ClearPos(uint8_t pos) { MAX7219_Write(pos, 0x00); }
