@@ -22,12 +22,57 @@ Dialog DLL:      TCM.DLL V1.34.0.0
  
 <h2>Project:</h2>
 F:\SYSFILE\DeskTop\Misc.Git\KeilMiscProject\STM32_Peak_Assistance\Project.uvprojx
-Project File Date:  07/17/2026
+Project File Date:  07/18/2026
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 6 (build 750)', folder: 'D:\Keil_ARM\ARM\ARMCC\Bin'
 Build target 'Target_1'
-".\Objects\Project.axf" - 0 Error(s), 0 Warning(s).
+compiling MAX7219.c...
+HardWare\MAX7219.h(21): warning:  #1-D: last line of file ends without a newline
+  #endif
+HardWare\MAX7219.c(144): warning:  #1-D: last line of file ends without a newline
+  }
+HardWare\MAX7219.c: 2 warnings, 0 errors
+compiling main.c...
+.\HardWare\ADC.h(46): warning:  #1-D: last line of file ends without a newline
+  #endif
+.\HardWare\Channel_Ctl.h(48): warning:  #1-D: last line of file ends without a newline
+  #endif
+.\HardWare\LED.h(14): warning:  #1-D: last line of file ends without a newline
+  #endif
+.\HardWare\MAX7219.h(21): warning:  #1-D: last line of file ends without a newline
+  #endif
+.\HardWare\TM1637.h(15): warning:  #1-D: last line of file ends without a newline
+  #endif
+User\Display.h(24): warning:  #1-D: last line of file ends without a newline
+  #endif
+.\System\UART.h(12): warning:  #1-D: last line of file ends without a newline
+  #endif
+User\main.c: 7 warnings, 0 errors
+compiling Display.c...
+.\HardWare\LED.h(14): warning:  #1-D: last line of file ends without a newline
+  #endif
+.\HardWare\MAX7219.h(21): warning:  #1-D: last line of file ends without a newline
+  #endif
+.\HardWare\TM1637.h(15): warning:  #1-D: last line of file ends without a newline
+  #endif
+User\Display.h(24): warning:  #1-D: last line of file ends without a newline
+  #endif
+User\Display.c(529): warning:  #223-D: function "ChannelSet_600V" declared implicitly
+    ChannelSet_600V();
+User\Display.c(531): warning:  #223-D: function "ChannelSet_250V" declared implicitly
+    ChannelSet_250V();
+User\Display.c(533): warning:  #223-D: function "ChannelSet_36V" declared implicitly
+    ChannelSet_36V();
+User\Display.c(535): warning:  #223-D: function "ChannelSet_5V" declared implicitly
+    ChannelSet_5V();
+User\Display.c(537): warning:  #1-D: last line of file ends without a newline
+  }
+User\Display.c: 9 warnings, 0 errors
+linking...
+Program Size: Code=16316 RO-data=848 RW-data=24 ZI-data=1632  
+FromELF: creating hex file...
+".\Objects\Project.axf" - 0 Error(s), 18 Warning(s).
 
 <h2>Software Packages used:</h2>
 

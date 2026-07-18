@@ -435,6 +435,11 @@
               <FileType>5</FileType>
               <FilePath>.\User\stm32f10x_it.h</FilePath>
             </File>
+            <File>
+              <FileName>Display.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\Display.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -680,6 +685,11 @@
               <FileType>1</FileType>
               <FilePath>.\System\Delay.c</FilePath>
             </File>
+            <File>
+              <FileName>UART.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\System\UART.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -704,6 +714,11 @@
               <FileName>LED.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\HardWare\LED.c</FilePath>
+            </File>
+            <File>
+              <FileName>ADC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\HardWare\ADC.c</FilePath>
             </File>
           </Files>
         </Group>

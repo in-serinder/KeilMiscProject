@@ -4,6 +4,7 @@
 ".\objects\system_stm32f10x.o"
 ".\objects\main.o"
 ".\objects\stm32f10x_it.o"
+".\objects\display.o"
 ".\objects\misc.o"
 ".\objects\stm32f10x_adc.o"
 ".\objects\stm32f10x_bkp.o"
@@ -28,10 +29,12 @@
 ".\objects\stm32f10x_usart.o"
 ".\objects\stm32f10x_wwdg.o"
 ".\objects\delay.o"
+".\objects\uart.o"
 ".\objects\channel_ctl.o"
 ".\objects\max7219.o"
 ".\objects\tm1637.o"
 ".\objects\led.o"
+".\objects\adc.o"
 --strict --scatter ".\Objects\Project.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

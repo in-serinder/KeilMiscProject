@@ -10,9 +10,12 @@
 #define MAX7219_DISPLAYTEST 0x0F
 
 void MAX7219_Init(void);
+void MAX7219_ReInit(void);
 void MAX7219_Write(uint8_t address, uint8_t dat);
 void MAX7219_Display(uint8_t digit, uint8_t value, uint8_t dot_v);
+void MAX7219_DisplayBlank(uint8_t digit, uint8_t dot_v);
 void MAX7219_Clear(void);
 void MAX7219_ClearPos(uint8_t pos);
+uint8_t MAX7219_RevPos(uint8_t pos);
 
 #endif

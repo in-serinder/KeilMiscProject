@@ -1,5 +1,5 @@
 .\objects\main.o: User\main.c
-.\objects\main.o: .\HardWare\Channel_Ctl.h
+.\objects\main.o: .\HardWare\ADC.h
 .\objects\main.o: .\Booter\stm32f10x.h
 .\objects\main.o: .\Booter\core_cm3.h
 .\objects\main.o: D:\Keil_ARM\ARM\ARMCC\Bin\..\include\stdint.h
@@ -29,7 +29,10 @@
 .\objects\main.o: .\Library\stm32f10x_usart.h
 .\objects\main.o: .\Library\stm32f10x_wwdg.h
 .\objects\main.o: .\Library\misc.h
+.\objects\main.o: .\HardWare\Channel_Ctl.h
 .\objects\main.o: .\System\Delay.h
+.\objects\main.o: User\Display.h
 .\objects\main.o: .\HardWare\LED.h
 .\objects\main.o: .\HardWare\MAX7219.h
 .\objects\main.o: .\HardWare\TM1637.h
+.\objects\main.o: .\System\UART.h

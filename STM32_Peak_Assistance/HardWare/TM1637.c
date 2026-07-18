@@ -15,6 +15,8 @@ static const uint8_t SMG_duanma[18] = {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d,
                                        0x7d, 0x07, 0x7f, 0x6f, 0x77, 0x7c,
                                        0x39, 0x5e, 0x79, 0x71, 0x40, 0x00};
 
+static uint8_t TM1637_buf[4] = {0, 0, 0, 0};
+
 static void TM1637_Start(void) {
   TM1637_CLK_H();
   TM1637_DIO_H();
@@ -91,14 +93,7 @@ void TM1637_Display(uint8_t pos, uint8_t num, uint8_t colon) {
   if (colon)
     seg_data |= 0x80;
 
-  TM1637_Start();
-  TM1637_WriteByte(0x44);
-  TM1637_Stop();
-
-  TM1637_Start();
-  TM1637_WriteByte(0xc0 | (pos - 1));
-  TM1637_WriteByte(seg_data);
-  TM1637_Stop();
+  TM1637_DisplayRaw(pos, seg_data);
 }
 
 void TM1637_Display4Num(uint16_t num, uint8_t colon) {
@@ -116,6 +111,9 @@ void TM1637_Display4Num(uint16_t num, uint8_t colon) {
 }
 
 void TM1637_DisplayRaw(uint8_t pos, uint8_t seg_data) {
+  if (pos >= 1 && pos <= 4)
+    TM1637_buf[pos - 1] = seg_data;
+
   TM1637_Start();
   TM1637_WriteByte(0x44);
   TM1637_Stop();
@@ -124,6 +122,27 @@ void TM1637_DisplayRaw(uint8_t pos, uint8_t seg_data) {
   TM1637_WriteByte(0xc0 | (pos - 1));
   TM1637_WriteByte(seg_data);
   TM1637_Stop();
+}
+
+void TM1637_SetColon(uint8_t pos, uint8_t on) {
+  uint8_t seg_data;
+  if (pos < 1 || pos > 4)
+    return;
+  seg_data = TM1637_buf[pos - 1];
+  if (on)
+    seg_data |= 0x80;
+  else
+    seg_data &= 0x7F;
+  TM1637_DisplayRaw(pos, seg_data);
+}
+
+void TM1637_ToggleColon(uint8_t pos) {
+  uint8_t seg_data;
+  if (pos < 1 || pos > 4)
+    return;
+  seg_data = TM1637_buf[pos - 1];
+  seg_data ^= 0x80;
+  TM1637_DisplayRaw(pos, seg_data);
 }
 
 void TM1637_Clear(void) {
@@ -139,13 +158,4 @@ void TM1637_Clear(void) {
   TM1637_Stop();
 }
 
-void TM1637_ClearPos(uint8_t pos) {
-  TM1637_Start();
-  TM1637_WriteByte(0x44);
-  TM1637_Stop();
-
-  TM1637_Start();
-  TM1637_WriteByte(0xc0 | (pos - 1));
-  TM1637_WriteByte(0x00);
-  TM1637_Stop();
-}
+void TM1637_ClearPos(uint8_t pos) { TM1637_DisplayRaw(pos, 0x00); }
