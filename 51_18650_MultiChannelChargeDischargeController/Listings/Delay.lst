@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   DELAY                                                             07/03/2026 14:12:10 PAGE 1   
+C51 COMPILER V9.59.0.0   DELAY                                                             07/19/2026 15:51:37 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE DELAY
 OBJECT MODULE PLACED IN .\Objects\Delay.obj
-COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE SYS\Delay.c LARGE OPTIMIZE(9,SIZE) BROWSE INCDIR(.\DRIVER;..\51_18650bsm
-                    -b;.\SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\Delay.lst) TABS(2) OBJECT(.\Objects\Delay.obj)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE SYS\Delay.c LARGE RTX51 OPTIMIZE(9,SIZE) BROWSE INCDIR(.\DRIVER;..\51_18
+                    -650bsmb;.\SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\Delay.lst) TABS(2) OBJECT(.\Objects\Delay.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----       2
    IDATA SIZE       =   ----    ----
-C51 COMPILER V9.59.0.0   DELAY                                                             07/03/2026 14:12:10 PAGE 2   
+C51 COMPILER V9.59.0.0   DELAY                                                             07/19/2026 15:51:37 PAGE 2   
 
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.

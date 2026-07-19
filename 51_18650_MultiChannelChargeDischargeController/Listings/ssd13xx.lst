@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 1   
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE SSD13XX
 OBJECT MODULE PLACED IN .\Objects\ssd13xx.obj
-COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE DRIVER\ssd13xx.c LARGE OPTIMIZE(9,SIZE) BROWSE INCDIR(.\DRIVER;..\51_186
-                    -50bsmb;.\SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\ssd13xx.lst) TABS(2) OBJECT(.\Objects\ssd13xx.obj)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE DRIVER\ssd13xx.c LARGE RTX51 OPTIMIZE(9,SIZE) BROWSE INCDIR(.\DRIVER;..\
+                    -51_18650bsmb;.\SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\ssd13xx.lst) TABS(2) OBJECT(.\Objects\ssd13xx.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   52              {0x00, 0x7F, 0x40, 0x40, 0x40, 0x40, 0x00, 0x00}, // L
   53              {0x00, 0x7F, 0x02, 0x0C, 0x02, 0x7F, 0x00, 0x00}, // M
   54              {0x00, 0x7F, 0x04, 0x08, 0x10, 0x7F, 0x00, 0x00}, // N
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 2   
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 2   
 
   55              {0x00, 0x3E, 0x41, 0x41, 0x41, 0x3E, 0x00, 0x00}, // O
   56              {0x00, 0x7F, 0x09, 0x09, 0x09, 0x06, 0x00, 0x00}, // P
@@ -126,7 +126,7 @@ line level    source
  114          //      0x00, 0x00, 0x00, 0x00}, // #
  115          //     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
  116          //      0x00, 0x00, 0x00, 0x00}, // $
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 3   
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 3   
 
  117          //     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
  118          //      0x00, 0x00, 0x00, 0x00}, // %
@@ -190,7 +190,7 @@ line level    source
  176          //      0xFF, 0xFF, 0x00, 0x00}, // B
  177          //     {0x00, 0x00, 0x3E, 0xFF, 0xFF, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0xFF,
  178          //      0xFF, 0x3E, 0x00, 0x00}, // C
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 4   
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 4   
 
  179          //     {0x00, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x81, 0x81, 0x81, 0x81, 0xFF,
  180          //      0xFF, 0x01, 0x00, 0x00}, // D
@@ -254,7 +254,7 @@ line level    source
  237          //     {0x00, 0x00, 0x00, 0x00, 0x00, 0x7C, 0xFE, 0xFE, 0x7C, 0x00, 0x00, 0xFF,
  238          //      0xFF, 0xFF, 0x00, 0x00}, // a
  239          //     {0x00, 0x00, 0x80, 0x80, 0x80, 0xFC, 0xFE, 0xFE, 0xFE, 0x80, 0x80, 0xFF,
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 5   
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 5   
 
  240          //      0xFF, 0xFF, 0x00, 0x00}, // b
  241          //     {0x00, 0x00, 0x00, 0x00, 0x00, 0x7C, 0xFE, 0xFE, 0xFE, 0x82, 0x82, 0x82,
@@ -318,7 +318,7 @@ line level    source
  299          // ==================== I2C 底层函数 ====================
  300          void I2C_Init(void) {
  301   1        SDA = 1;
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 6   
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 6   
 
  302   1        SCL = 1;
  303   1      }
@@ -382,7 +382,7 @@ line level    source
  361           * 注意: 使用I2C接口发送命令，控制字节标识为命令类型
  362           **************************************************************************************************/
  363          void SSD13XX_WriteCommand(unsigned char command) {
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 7   
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 7   
 
  364   1        I2C_Start();
  365   1        I2C_SendByte(SSD13XX_I2C_ADDRESS << 1); // 发送器件地址+W
@@ -446,7 +446,7 @@ line level    source
  423   1          SSD13XX_PageBuffer[i] = 0x00;
  424   1        SSD13XX_FlushPage(page);
  425   1      }
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 8   
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 8   
 
  426          
  427          /***************************************************************************************************
@@ -498,522 +498,523 @@ line level    source
  473           * 返回: 无
  474           * 注意: 自动计算像素所属页面并刷新该页面
  475           **************************************************************************************************/
- 476          void SSD13XX_DrawPixel(unsigned char x, unsigned char y, unsigned char color) {
- 477   1        unsigned char xdata page, row, i;
- 478   1        page = y / 8;
- 479   1        row = y % 8;
- 480   1        for (i = 0; i < SSD13XX_PAGE_WIDTH; i++)
- 481   1          SSD13XX_PageBuffer[i] = 0x00;
- 482   1        _DrawPixelOnPage(x, row, color);
- 483   1        SSD13XX_FlushPage(page);
- 484   1      }
- 485          
- 486          /***************************************************************************************************
- 487           * 函数名: SSD13XX_DrawLine
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 9   
+ 476          // void SSD13XX_DrawPixel(unsigned char x, unsigned char y, unsigned char color)
+ 477          // {
+ 478          //   unsigned char xdata page, row, i;
+ 479          //   page = y / 8;
+ 480          //   row = y % 8;
+ 481          //   for (i = 0; i < SSD13XX_PAGE_WIDTH; i++)
+ 482          //     SSD13XX_PageBuffer[i] = 0x00;
+ 483          //   _DrawPixelOnPage(x, row, color);
+ 484          //   SSD13XX_FlushPage(page);
+ 485          // }
+ 486          
+ 487          /***************************************************************************************************
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 9   
 
- 488           * 描述: 绘制一条直线
- 489           * 输入: x1, y1 - 起始点坐标
- 490           *       x2, y2 - 结束点坐标
- 491           *       color - 线条颜色(0=黑色/关闭, 1=白色/点亮)
- 492           * 输出: 无
- 493           * 返回: 无
- 494           * 注意: 使用Bresenham算法绘制直线，自动处理跨页情况
- 495           **************************************************************************************************/
- 496          void SSD13XX_DrawLine(unsigned char x1, unsigned char y1, unsigned char x2,
- 497                                unsigned char y2, unsigned char color) {
- 498   1        int idata dx, dy, stepX, stepY, err, x, y;
- 499   1        unsigned char idata currentPage, row, page, i;
- 500   1        dx = (x2 > x1) ? (x2 - x1) : (x1 - x2);
- 501   1        dy = (y2 > y1) ? (y2 - y1) : (y1 - y2);
- 502   1        stepX = (x2 >= x1) ? 1 : -1;
- 503   1        stepY = (y2 >= y1) ? 1 : -1;
- 504   1        err = dx - dy;
- 505   1        x = x1;
- 506   1        y = y1;
- 507   1        currentPage = y / 8;
- 508   1        for (i = 0; i < SSD13XX_PAGE_WIDTH; i++)
- 509   1          SSD13XX_PageBuffer[i] = 0x00;
- 510   1      
- 511   1        while (1) {
- 512   2          page = y / 8;
- 513   2          row = y % 8;
- 514   2          if (page != currentPage) {
- 515   3            SSD13XX_FlushPage(currentPage);
- 516   3            for (i = 0; i < SSD13XX_PAGE_WIDTH; i++)
- 517   3              SSD13XX_PageBuffer[i] = 0x00;
- 518   3            currentPage = page;
- 519   3          }
- 520   2          _DrawPixelOnPage(x, row, color);
- 521   2          if (x == x2 && y == y2)
- 522   2            break;
- 523   2          if (err * 2 > -dy) {
- 524   3            err -= dy;
- 525   3            x += stepX;
- 526   3          }
- 527   2          if (err * 2 < dx) {
- 528   3            err += dx;
- 529   3            y += stepY;
- 530   3          }
- 531   2        }
- 532   1        SSD13XX_FlushPage(currentPage);
- 533   1      }
- 534          
- 535          /***************************************************************************************************
- 536           * 函数名: SSD13XX_DrawRectangle
- 537           * 描述: 绘制一个矩形框
- 538           * 输入: x1, y1 - 矩形左上角坐标
- 539           *       x2, y2 - 矩形右下角坐标
- 540           *       color - 矩形线条颜色(0=黑色/关闭, 1=白色/点亮)
- 541           * 输出: 无
- 542           * 返回: 无
- 543           * 注意: 绘制矩形的四条边，不填充内部
- 544           **************************************************************************************************/
- 545          void SSD13XX_DrawRectangle(unsigned char x1, unsigned char y1, unsigned char x2,
- 546                                     unsigned char y2, unsigned char color) {
- 547   1        SSD13XX_DrawLine(x1, y1, x2, y1, color);
- 548   1        SSD13XX_DrawLine(x2, y1, x2, y2, color);
- 549   1        SSD13XX_DrawLine(x1, y2, x2, y2, color);
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 10  
+ 488           * 函数名: SSD13XX_DrawLine
+ 489           * 描述: 绘制一条直线
+ 490           * 输入: x1, y1 - 起始点坐标
+ 491           *       x2, y2 - 结束点坐标
+ 492           *       color - 线条颜色(0=黑色/关闭, 1=白色/点亮)
+ 493           * 输出: 无
+ 494           * 返回: 无
+ 495           * 注意: 使用Bresenham算法绘制直线，自动处理跨页情况
+ 496           **************************************************************************************************/
+ 497          void SSD13XX_DrawLine(unsigned char x1, unsigned char y1, unsigned char x2,
+ 498                                unsigned char y2, unsigned char color) {
+ 499   1        int idata dx, dy, stepX, stepY, err, x, y;
+ 500   1        unsigned char idata currentPage, row, page, i;
+ 501   1        dx = (x2 > x1) ? (x2 - x1) : (x1 - x2);
+ 502   1        dy = (y2 > y1) ? (y2 - y1) : (y1 - y2);
+ 503   1        stepX = (x2 >= x1) ? 1 : -1;
+ 504   1        stepY = (y2 >= y1) ? 1 : -1;
+ 505   1        err = dx - dy;
+ 506   1        x = x1;
+ 507   1        y = y1;
+ 508   1        currentPage = y / 8;
+ 509   1        for (i = 0; i < SSD13XX_PAGE_WIDTH; i++)
+ 510   1          SSD13XX_PageBuffer[i] = 0x00;
+ 511   1      
+ 512   1        while (1) {
+ 513   2          page = y / 8;
+ 514   2          row = y % 8;
+ 515   2          if (page != currentPage) {
+ 516   3            SSD13XX_FlushPage(currentPage);
+ 517   3            for (i = 0; i < SSD13XX_PAGE_WIDTH; i++)
+ 518   3              SSD13XX_PageBuffer[i] = 0x00;
+ 519   3            currentPage = page;
+ 520   3          }
+ 521   2          _DrawPixelOnPage(x, row, color);
+ 522   2          if (x == x2 && y == y2)
+ 523   2            break;
+ 524   2          if (err * 2 > -dy) {
+ 525   3            err -= dy;
+ 526   3            x += stepX;
+ 527   3          }
+ 528   2          if (err * 2 < dx) {
+ 529   3            err += dx;
+ 530   3            y += stepY;
+ 531   3          }
+ 532   2        }
+ 533   1        SSD13XX_FlushPage(currentPage);
+ 534   1      }
+ 535          
+ 536          /***************************************************************************************************
+ 537           * 函数名: SSD13XX_DrawRectangle
+ 538           * 描述: 绘制一个矩形框
+ 539           * 输入: x1, y1 - 矩形左上角坐标
+ 540           *       x2, y2 - 矩形右下角坐标
+ 541           *       color - 矩形线条颜色(0=黑色/关闭, 1=白色/点亮)
+ 542           * 输出: 无
+ 543           * 返回: 无
+ 544           * 注意: 绘制矩形的四条边，不填充内部
+ 545           **************************************************************************************************/
+ 546          void SSD13XX_DrawRectangle(unsigned char x1, unsigned char y1, unsigned char x2,
+ 547                                     unsigned char y2, unsigned char color) {
+ 548   1        SSD13XX_DrawLine(x1, y1, x2, y1, color);
+ 549   1        SSD13XX_DrawLine(x2, y1, x2, y2, color);
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 10  
 
- 550   1        SSD13XX_DrawLine(x1, y1, x1, y2, color);
- 551   1      }
- 552          
- 553          /***************************************************************************************************
- 554           * 函数名: SSD13XX_DrawCircle
- 555           * 描述: 绘制一个圆形
- 556           * 输入: x0, y0 - 圆心坐标
- 557           *       r - 圆的半径
- 558           *       color - 圆形线条颜色(0=黑色/关闭, 1=白色/点亮)
- 559           * 输出: 无
- 560           * 返回: 无
- 561           * 注意: 使用中点圆算法绘制圆形，不填充内部
- 562           **************************************************************************************************/
- 563          // void SSD13XX_DrawCircle(unsigned char x0, unsigned char y0, unsigned char r,
- 564          //                         unsigned char color) {
- 565          //   int idata x = 0, y = r, d = 3 - 2 * r;
- 566          //   while (x <= y) {
- 567          //     SSD13XX_DrawPixel(x0 + x, y0 + y, color);
- 568          //     SSD13XX_DrawPixel(x0 + x, y0 - y, color);
- 569          //     SSD13XX_DrawPixel(x0 - x, y0 + y, color);
- 570          //     SSD13XX_DrawPixel(x0 - x, y0 - y, color);
- 571          //     SSD13XX_DrawPixel(x0 + y, y0 + x, color);
- 572          //     SSD13XX_DrawPixel(x0 + y, y0 - x, color);
- 573          //     SSD13XX_DrawPixel(x0 - y, y0 + x, color);
- 574          //     SSD13XX_DrawPixel(x0 - y, y0 - x, color);
- 575          //     if (d < 0)
- 576          //       d += 4 * x + 6;
- 577          //     else {
- 578          //       d += 4 * (x - y) + 10;
- 579          //       y--;
- 580          //     }
- 581          //     x++;
- 582          //   }
- 583          // }
- 584          
- 585          /***************************************************************************************************
- 586           * 函数名: SSD13XX_DrawBitmap
- 587           * 描述: 在指定位置绘制位图
- 588           * 输入: x, y - 位图绘制起始坐标
- 589           *       bitmap - 位图数据指针
- 590           *       width - 位图宽度(像素)
- 591           *       height - 位图高度(像素)
- 592           * 输出: 无
- 593           * 返回: 无
- 594           * 注意: 支持跨页绘制，按页为单位处理位图数据
- 595           **************************************************************************************************/
- 596          // void SSD13XX_DrawBitmap(unsigned char x, unsigned char y,
- 597          //                         const unsigned char *bitmap, unsigned char width,
- 598          //                         unsigned char height) {
- 599          //   unsigned char page, col, row, dat;
- 600          //   unsigned int offset = 0;
- 601          //   for (page = 0; page < (height + 7) / 8; page++) {
- 602          //     for (col = 0; col < width; col++) {
- 603          //       if (x + col >= SSD13XX_WIDTH || y + page * 8 >= SSD13XX_HEIGHT) {
- 604          //         offset++;
- 605          //         continue;
- 606          //       }
- 607          //       dat = bitmap[offset++];
- 608          //       for (row = 0; row < 8; row++) {
- 609          //         if (y + page * 8 + row >= SSD13XX_HEIGHT)
- 610          //           break;
- 611          //         if (dat & (1 << row)) {
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 11  
+ 550   1        SSD13XX_DrawLine(x1, y2, x2, y2, color);
+ 551   1        SSD13XX_DrawLine(x1, y1, x1, y2, color);
+ 552   1      }
+ 553          
+ 554          /***************************************************************************************************
+ 555           * 函数名: SSD13XX_DrawCircle
+ 556           * 描述: 绘制一个圆形
+ 557           * 输入: x0, y0 - 圆心坐标
+ 558           *       r - 圆的半径
+ 559           *       color - 圆形线条颜色(0=黑色/关闭, 1=白色/点亮)
+ 560           * 输出: 无
+ 561           * 返回: 无
+ 562           * 注意: 使用中点圆算法绘制圆形，不填充内部
+ 563           **************************************************************************************************/
+ 564          // void SSD13XX_DrawCircle(unsigned char x0, unsigned char y0, unsigned char r,
+ 565          //                         unsigned char color) {
+ 566          //   int idata x = 0, y = r, d = 3 - 2 * r;
+ 567          //   while (x <= y) {
+ 568          //     SSD13XX_DrawPixel(x0 + x, y0 + y, color);
+ 569          //     SSD13XX_DrawPixel(x0 + x, y0 - y, color);
+ 570          //     SSD13XX_DrawPixel(x0 - x, y0 + y, color);
+ 571          //     SSD13XX_DrawPixel(x0 - x, y0 - y, color);
+ 572          //     SSD13XX_DrawPixel(x0 + y, y0 + x, color);
+ 573          //     SSD13XX_DrawPixel(x0 + y, y0 - x, color);
+ 574          //     SSD13XX_DrawPixel(x0 - y, y0 + x, color);
+ 575          //     SSD13XX_DrawPixel(x0 - y, y0 - x, color);
+ 576          //     if (d < 0)
+ 577          //       d += 4 * x + 6;
+ 578          //     else {
+ 579          //       d += 4 * (x - y) + 10;
+ 580          //       y--;
+ 581          //     }
+ 582          //     x++;
+ 583          //   }
+ 584          // }
+ 585          
+ 586          /***************************************************************************************************
+ 587           * 函数名: SSD13XX_DrawBitmap
+ 588           * 描述: 在指定位置绘制位图
+ 589           * 输入: x, y - 位图绘制起始坐标
+ 590           *       bitmap - 位图数据指针
+ 591           *       width - 位图宽度(像素)
+ 592           *       height - 位图高度(像素)
+ 593           * 输出: 无
+ 594           * 返回: 无
+ 595           * 注意: 支持跨页绘制，按页为单位处理位图数据
+ 596           **************************************************************************************************/
+ 597          // void SSD13XX_DrawBitmap(unsigned char x, unsigned char y,
+ 598          //                         const unsigned char *bitmap, unsigned char width,
+ 599          //                         unsigned char height) {
+ 600          //   unsigned char page, col, row, dat;
+ 601          //   unsigned int offset = 0;
+ 602          //   for (page = 0; page < (height + 7) / 8; page++) {
+ 603          //     for (col = 0; col < width; col++) {
+ 604          //       if (x + col >= SSD13XX_WIDTH || y + page * 8 >= SSD13XX_HEIGHT) {
+ 605          //         offset++;
+ 606          //         continue;
+ 607          //       }
+ 608          //       dat = bitmap[offset++];
+ 609          //       for (row = 0; row < 8; row++) {
+ 610          //         if (y + page * 8 + row >= SSD13XX_HEIGHT)
+ 611          //           break;
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 11  
 
- 612          //           SSD13XX_DrawPixel(x + col, y + page * 8 + row, 1);
- 613          //         }
- 614          //       }
- 615          //     }
- 616          //   }
- 617          // }
- 618          
- 619          // ==================== 文本显示 ====================
- 620          // void SSD1315_WriteChar(unsigned char x, unsigned char y, char c,
- 621          //                        FontSize size) {
- 622          //   unsigned char page, col, i;
- 623          //   const unsigned char *font;
- 624          //   if (size != FONT_8X8)
- 625          //     return;
- 626          //   if (y % 8 != 0)
- 627          //     return;
- 628          //   if (c < ' ' || c > '~')
- 629          //     c = ' ';
- 630          //   page = y / 8;
- 631          //   col = x;
- 632          //   font = SSD1315_Font8x8[c - ' '];
- 633          
- 634          //   SSD1315_WriteCommand(0xB0 | page);
- 635          //   SSD1315_WriteCommand(col & 0x0F);
- 636          //   SSD1315_WriteCommand(0x10 | (col >> 4));
- 637          //   for (i = 0; i < 8; i++) {
- 638          //     SSD1315_WriteData(font[i]);
- 639          //   }
- 640          // }
- 641          /***************************************************************************************************
- 642           * 函数名: SSD13XX_WriteChar
- 643           * 描述: 在指定位置显示单个字符
- 644           * 输入: x, y - 字符显示起始坐标
- 645           *       c - 要显示的字符
- 646           *       size - 字符大小(FONT_8X8或FONT_16X16)
- 647           * 输出: 无
- 648           * 返回: 无
- 649           * 注意: 支持8x8和16x16两种字体大小，自动处理跨页显示
- 650           **************************************************************************************************/
- 651          void SSD13XX_WriteChar(unsigned char x, unsigned char y, char c,
- 652                                 FontSize size) {
- 653   1        unsigned char page, col, i;
- 654   1        const unsigned char *font;
- 655   1        if (c < ' ' || c > '~')
- 656   1          c = ' ';
- 657   1      
- 658   1        if (size == FONT_8X8) {
- 659   2          if (y % 8 != 0)
- 660   2            return; // 必须页对齐
- 661   2          page = y / 8;
- 662   2          col = x;
- 663   2          font = SSD13xx_Font8x8[c - ' '];
- 664   2          SSD13XX_WriteCommand(0xB0 | page);
- 665   2          SSD13XX_WriteCommand(col & 0x0F);
- 666   2          SSD13XX_WriteCommand(0x10 | (col >> 4));
- 667   2          for (i = 0; i < 8; i++) {
- 668   3            SSD13XX_WriteData(font[i]);
- 669   3          }
- 670   2        } else if (size == FONT_16X16) {
- 671   2          if (y % 8 != 0)
- 672   2            return; // 16x16 也要求页对齐，避免跨更多页
- 673   2          page = y / 8;
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 12  
+ 612          //         if (dat & (1 << row)) {
+ 613          //           SSD13XX_DrawPixel(x + col, y + page * 8 + row, 1);
+ 614          //         }
+ 615          //       }
+ 616          //     }
+ 617          //   }
+ 618          // }
+ 619          
+ 620          // ==================== 文本显示 ====================
+ 621          // void SSD1315_WriteChar(unsigned char x, unsigned char y, char c,
+ 622          //                        FontSize size) {
+ 623          //   unsigned char page, col, i;
+ 624          //   const unsigned char *font;
+ 625          //   if (size != FONT_8X8)
+ 626          //     return;
+ 627          //   if (y % 8 != 0)
+ 628          //     return;
+ 629          //   if (c < ' ' || c > '~')
+ 630          //     c = ' ';
+ 631          //   page = y / 8;
+ 632          //   col = x;
+ 633          //   font = SSD1315_Font8x8[c - ' '];
+ 634          
+ 635          //   SSD1315_WriteCommand(0xB0 | page);
+ 636          //   SSD1315_WriteCommand(col & 0x0F);
+ 637          //   SSD1315_WriteCommand(0x10 | (col >> 4));
+ 638          //   for (i = 0; i < 8; i++) {
+ 639          //     SSD1315_WriteData(font[i]);
+ 640          //   }
+ 641          // }
+ 642          /***************************************************************************************************
+ 643           * 函数名: SSD13XX_WriteChar
+ 644           * 描述: 在指定位置显示单个字符
+ 645           * 输入: x, y - 字符显示起始坐标
+ 646           *       c - 要显示的字符
+ 647           *       size - 字符大小(FONT_8X8或FONT_16X16)
+ 648           * 输出: 无
+ 649           * 返回: 无
+ 650           * 注意: 支持8x8和16x16两种字体大小，自动处理跨页显示
+ 651           **************************************************************************************************/
+ 652          void SSD13XX_WriteChar(unsigned char x, unsigned char y, char c,
+ 653                                 FontSize size) {
+ 654   1        unsigned char page, col, i;
+ 655   1        const unsigned char *font;
+ 656   1        if (c < ' ' || c > '~')
+ 657   1          c = ' ';
+ 658   1      
+ 659   1        if (size == FONT_8X8) {
+ 660   2          if (y % 8 != 0)
+ 661   2            return; // 必须页对齐
+ 662   2          page = y / 8;
+ 663   2          col = x;
+ 664   2          font = SSD13xx_Font8x8[c - ' '];
+ 665   2          SSD13XX_WriteCommand(0xB0 | page);
+ 666   2          SSD13XX_WriteCommand(col & 0x0F);
+ 667   2          SSD13XX_WriteCommand(0x10 | (col >> 4));
+ 668   2          for (i = 0; i < 8; i++) {
+ 669   3            SSD13XX_WriteData(font[i]);
+ 670   3          }
+ 671   2        } else if (size == FONT_16X16) {
+ 672   2          if (y % 8 != 0)
+ 673   2            return; // 16x16 也要求页对齐，避免跨更多页
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 12  
 
- 674   2          col = x;
- 675   2          // font = SSD13xx_Font16x16[c - ' '];
- 676   2          font = SSD13xx_Font8x8[c - ' '];
- 677   2          // 失能16x16字体，使用8x8字体显示 优化空间
- 678   2          //  发送上半部分（第 0 ~ 7 行）
- 679   2          SSD13XX_WriteCommand(0xB0 | page);
- 680   2          SSD13XX_WriteCommand(col & 0x0F);
- 681   2          SSD13XX_WriteCommand(0x10 | (col >> 4));
- 682   2          for (i = 0; i < 8; i++) {
- 683   3            SSD13XX_WriteData(font[i]);
- 684   3          }
- 685   2          // 发送下半部分（第 8 ~ 15 行）
- 686   2          SSD13XX_WriteCommand(0xB0 | (page + 1));
- 687   2          SSD13XX_WriteCommand(col & 0x0F);
- 688   2          SSD13XX_WriteCommand(0x10 | (col >> 4));
- 689   2          for (i = 8; i < 16; i++) {
- 690   3            SSD13XX_WriteData(font[i]);
- 691   3          }
- 692   2        }
- 693   1      }
- 694          // void SSD1315_WriteString(unsigned char x, unsigned char y, char *str,
- 695          // FontSize size) {
- 696          
- 697          //     unsigned char cx = x, cy = y;
- 698          //  if (size != FONT_8X8) return;
- 699          //     while (*str) {
- 700          //         if (cx + 8 > SSD1315_WIDTH) {
- 701          //             cx = 0;
- 702          //             cy += 8;
- 703          //             if (cy + 8 > SSD1315_HEIGHT) break;
- 704          //         }
- 705          //         SSD1315_WriteChar(cx, cy, *str, FONT_8X8);
- 706          //         cx += 8;
- 707          //         str++;
- 708          //     }
- 709          // }
- 710          
- 711          /***************************************************************************************************
- 712           * 函数名: SSD13XX_WriteString
- 713           * 描述: 在指定位置显示字符串
- 714           * 输入: x, y - 字符串显示起始坐标
- 715           *       str - 要显示的字符串指针
- 716           *       size - 字符大小(FONT_8X8或FONT_16X16)
- 717           * 输出: 无
- 718           * 返回: 无
- 719           * 注意: 自动处理换行，支持8x8和16x16字体
- 720           **************************************************************************************************/
- 721          void SSD13XX_WriteString(unsigned char x, unsigned char y, char *str,
- 722                                   FontSize size) {
- 723   1        unsigned char cx = x, cy = y;
- 724   1        unsigned char char_width = (size == FONT_8X8) ? 8 : 16;
- 725   1        unsigned char char_height = (size == FONT_8X8) ? 8 : 16;
- 726   1      
- 727   1        if (y % 8 != 0)
- 728   1          return; // 简化：要求起始坐标页对齐
- 729   1      
- 730   1        while (*str) {
- 731   2          if (cx + char_width > SSD13XX_WIDTH) {
- 732   3            cx = 0;
- 733   3            cy += char_height;
- 734   3            if (cy + char_height > SSD13XX_HEIGHT)
- 735   3              break;
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 13  
+ 674   2          page = y / 8;
+ 675   2          col = x;
+ 676   2          // font = SSD13xx_Font16x16[c - ' '];
+ 677   2          font = SSD13xx_Font8x8[c - ' '];
+ 678   2          // 失能16x16字体，使用8x8字体显示 优化空间
+ 679   2          //  发送上半部分（第 0 ~ 7 行）
+ 680   2          SSD13XX_WriteCommand(0xB0 | page);
+ 681   2          SSD13XX_WriteCommand(col & 0x0F);
+ 682   2          SSD13XX_WriteCommand(0x10 | (col >> 4));
+ 683   2          for (i = 0; i < 8; i++) {
+ 684   3            SSD13XX_WriteData(font[i]);
+ 685   3          }
+ 686   2          // 发送下半部分（第 8 ~ 15 行）
+ 687   2          SSD13XX_WriteCommand(0xB0 | (page + 1));
+ 688   2          SSD13XX_WriteCommand(col & 0x0F);
+ 689   2          SSD13XX_WriteCommand(0x10 | (col >> 4));
+ 690   2          for (i = 8; i < 16; i++) {
+ 691   3            SSD13XX_WriteData(font[i]);
+ 692   3          }
+ 693   2        }
+ 694   1      }
+ 695          // void SSD1315_WriteString(unsigned char x, unsigned char y, char *str,
+ 696          // FontSize size) {
+ 697          
+ 698          //     unsigned char cx = x, cy = y;
+ 699          //  if (size != FONT_8X8) return;
+ 700          //     while (*str) {
+ 701          //         if (cx + 8 > SSD1315_WIDTH) {
+ 702          //             cx = 0;
+ 703          //             cy += 8;
+ 704          //             if (cy + 8 > SSD1315_HEIGHT) break;
+ 705          //         }
+ 706          //         SSD1315_WriteChar(cx, cy, *str, FONT_8X8);
+ 707          //         cx += 8;
+ 708          //         str++;
+ 709          //     }
+ 710          // }
+ 711          
+ 712          /***************************************************************************************************
+ 713           * 函数名: SSD13XX_WriteString
+ 714           * 描述: 在指定位置显示字符串
+ 715           * 输入: x, y - 字符串显示起始坐标
+ 716           *       str - 要显示的字符串指针
+ 717           *       size - 字符大小(FONT_8X8或FONT_16X16)
+ 718           * 输出: 无
+ 719           * 返回: 无
+ 720           * 注意: 自动处理换行，支持8x8和16x16字体
+ 721           **************************************************************************************************/
+ 722          void SSD13XX_WriteString(unsigned char x, unsigned char y, char *str,
+ 723                                   FontSize size) {
+ 724   1        unsigned char cx = x, cy = y;
+ 725   1        unsigned char char_width = (size == FONT_8X8) ? 8 : 16;
+ 726   1        unsigned char char_height = (size == FONT_8X8) ? 8 : 16;
+ 727   1      
+ 728   1        if (y % 8 != 0)
+ 729   1          return; // 简化：要求起始坐标页对齐
+ 730   1      
+ 731   1        while (*str) {
+ 732   2          if (cx + char_width > SSD13XX_WIDTH) {
+ 733   3            cx = 0;
+ 734   3            cy += char_height;
+ 735   3            if (cy + char_height > SSD13XX_HEIGHT)
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 13  
 
- 736   3          }
- 737   2          SSD13XX_WriteChar(cx, cy, *str, size);
- 738   2          cx += char_width;
- 739   2          str++;
- 740   2        }
- 741   1      }
- 742          
- 743          /***************************************************************************************************
- 744           * 函数名: SSD13XX_Init
- 745           * 描述: 初始化SSD13XX OLED显示屏
- 746           * 输入: 无
- 747           * 输出: 无
- 748           * 返回: 无
- 749           * 注意: 配置显示参数，设置默认显示模式
- 750           **************************************************************************************************/
- 751          void SSD13XX_Init(void) {
- 752   1        unsigned int i;
- 753   1        I2C_Init();
- 754   1        for (i = 0; i < 100; i++)
- 755   1          I2C_Delay();
- 756   1      
- 757   1        SSD13XX_WriteCommand(SSD13XX_CMD_DISPLAY_OFF);
- 758   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_DISPLAY_CLOCK_DIV);
- 759   1        SSD13XX_WriteCommand(0x80);
- 760   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_MULTIPLEX);
- 761   1        SSD13XX_WriteCommand(SSD13XX_HEIGHT - 1);
- 762   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_DISPLAY_OFFSET);
- 763   1        SSD13XX_WriteCommand(0x00);
- 764   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_START_LINE | 0x00);
- 765   1        SSD13XX_WriteCommand(SSD13XX_CMD_CHARGE_PUMP);
- 766   1        SSD13XX_WriteCommand(0x14);
- 767   1        SSD13XX_WriteCommand(SSD13XX_CMD_MEMORY_MODE);
- 768   1        SSD13XX_WriteCommand(0x00);
- 769   1        SSD13XX_WriteCommand(SSD13XX_CMD_SEGREMAP);
- 770   1        SSD13XX_WriteCommand(SSD13XX_CMD_COMSCAN_DEC);
- 771   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_COMPINS);
- 772   1        SSD13XX_WriteCommand(0x12);
- 773   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_CONTRAST);
- 774   1        SSD13XX_WriteCommand(0xCF);
- 775   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_PRECHARGE);
- 776   1        SSD13XX_WriteCommand(0xF1);
- 777   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_VCOMDETECT);
- 778   1        SSD13XX_WriteCommand(0x40);
- 779   1        SSD13XX_WriteCommand(SSD13XX_CMD_DISPLAYALLON_RESUME);
- 780   1        SSD13XX_WriteCommand(SSD13XX_CMD_NORMAL_DISPLAY);
- 781   1        SSD13XX_WriteCommand(SSD13XX_CMD_DEACTIVATE_SCROLL);
- 782   1        SSD13XX_WriteCommand(SSD13XX_CMD_DISPLAY_ON);
- 783   1      
- 784   1        I2C_Delay();
- 785   1        SSD13XX_Clear();
- 786   1      }
- 787          
- 788          /*固有组件*/
- 789          /**
- 790           * @brief 绘制一个进度条组件（占用一个Page，高度8像素）
- 791           * @param x        组件左上角X坐标（通常为0）
- 792           * @param y        组件左上角Y坐标（必须是8的倍数）
- 793           * @param width    组件总宽度（像素）
- 794           * @param left_str 左侧显示的字符串（如 "CPU"）
- 795           * @param right_str 右侧显示的字符串（如 "67%"），可为NULL
- 796           * @param percent  进度百分比（0~100）
- 797           */
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 14  
+ 736   3              break;
+ 737   3          }
+ 738   2          SSD13XX_WriteChar(cx, cy, *str, size);
+ 739   2          cx += char_width;
+ 740   2          str++;
+ 741   2        }
+ 742   1      }
+ 743          
+ 744          /***************************************************************************************************
+ 745           * 函数名: SSD13XX_Init
+ 746           * 描述: 初始化SSD13XX OLED显示屏
+ 747           * 输入: 无
+ 748           * 输出: 无
+ 749           * 返回: 无
+ 750           * 注意: 配置显示参数，设置默认显示模式
+ 751           **************************************************************************************************/
+ 752          void SSD13XX_Init(void) {
+ 753   1        unsigned int i;
+ 754   1        I2C_Init();
+ 755   1        for (i = 0; i < 100; i++)
+ 756   1          I2C_Delay();
+ 757   1      
+ 758   1        SSD13XX_WriteCommand(SSD13XX_CMD_DISPLAY_OFF);
+ 759   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_DISPLAY_CLOCK_DIV);
+ 760   1        SSD13XX_WriteCommand(0x80);
+ 761   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_MULTIPLEX);
+ 762   1        SSD13XX_WriteCommand(SSD13XX_HEIGHT - 1);
+ 763   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_DISPLAY_OFFSET);
+ 764   1        SSD13XX_WriteCommand(0x00);
+ 765   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_START_LINE | 0x00);
+ 766   1        SSD13XX_WriteCommand(SSD13XX_CMD_CHARGE_PUMP);
+ 767   1        SSD13XX_WriteCommand(0x14);
+ 768   1        SSD13XX_WriteCommand(SSD13XX_CMD_MEMORY_MODE);
+ 769   1        SSD13XX_WriteCommand(0x00);
+ 770   1        SSD13XX_WriteCommand(SSD13XX_CMD_SEGREMAP);
+ 771   1        SSD13XX_WriteCommand(SSD13XX_CMD_COMSCAN_DEC);
+ 772   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_COMPINS);
+ 773   1        SSD13XX_WriteCommand(0x12);
+ 774   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_CONTRAST);
+ 775   1        SSD13XX_WriteCommand(0xCF);
+ 776   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_PRECHARGE);
+ 777   1        SSD13XX_WriteCommand(0xF1);
+ 778   1        SSD13XX_WriteCommand(SSD13XX_CMD_SET_VCOMDETECT);
+ 779   1        SSD13XX_WriteCommand(0x40);
+ 780   1        SSD13XX_WriteCommand(SSD13XX_CMD_DISPLAYALLON_RESUME);
+ 781   1        SSD13XX_WriteCommand(SSD13XX_CMD_NORMAL_DISPLAY);
+ 782   1        SSD13XX_WriteCommand(SSD13XX_CMD_DEACTIVATE_SCROLL);
+ 783   1        SSD13XX_WriteCommand(SSD13XX_CMD_DISPLAY_ON);
+ 784   1      
+ 785   1        I2C_Delay();
+ 786   1        SSD13XX_Clear();
+ 787   1      }
+ 788          
+ 789          /*固有组件*/
+ 790          /**
+ 791           * @brief 绘制一个进度条组件（占用一个Page，高度8像素）
+ 792           * @param x        组件左上角X坐标（通常为0）
+ 793           * @param y        组件左上角Y坐标（必须是8的倍数）
+ 794           * @param width    组件总宽度（像素）
+ 795           * @param left_str 左侧显示的字符串（如 "CPU"）
+ 796           * @param right_str 右侧显示的字符串（如 "67%"），可为NULL
+ 797           * @param percent  进度百分比（0~100）
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 14  
 
- 798          // void Draw_ProgressBar_Component(unsigned char x, unsigned char y,
- 799          //                                 unsigned char width, char *left_str,
- 800          //                                 char *right_str, unsigned char percent) {
- 801          //   unsigned char left_width, right_width, remaining_width, fill_width;
- 802          //   unsigned char bar_start_x, bar_end_x;
- 803          //   unsigned char i;
- 804          
- 805          //   // 参数检查：y必须为8的倍数，否则文本无法显示
- 806          //   if (y % 8 != 0)
- 807          //     return;
- 808          //   if (percent > 100)
- 809          //     percent = 100;
- 810          //   if (width < 20)
- 811          //     return; // 太窄无法绘制
- 812          
- 813          //   // 计算左右文本占据的像素宽度（每个字符8像素）
- 814          //   left_width = (left_str != NULL) ? (strlen(left_str) * 8) : 0;
- 815          //   right_width = (right_str != NULL) ? (strlen(right_str) * 8) : 0;
- 816          
- 817          //   // 剩余宽度用于进度条（左右各留1像素边距）
- 818          //   remaining_width = width - left_width - right_width - 2; // 减2是两侧留白
- 819          //   if (remaining_width < 10)
- 820          //     remaining_width = 10; // 最小宽度
- 821          
- 822          //   // 进度条填充宽度
- 823          //   fill_width = (remaining_width * percent) / 100;
- 824          //   if (fill_width < 0)
- 825          //     fill_width = 0;
- 826          //   if (fill_width > remaining_width)
- 827          //     fill_width = remaining_width;
- 828          
- 829          //   // 计算进度条的起始和结束坐标
- 830          //   bar_start_x = x + left_width + 1;        // 左侧文本后空1像素
- 831          //   bar_end_x = x + width - right_width - 1; // 右侧文本前空1像素
- 832          
- 833          //   // 绘制进度条外框（高度4px，从 y+2 到 y+5）
- 834          //   SSD13XX_DrawRectangle(bar_start_x, y + 2, bar_end_x, y + 5, 1);
- 835          
- 836          //   // 绘制填充部分（内部用横线填充，填充区域为 bar_start_x+1 到
- 837          //   // bar_start_x+fill_width，行范围为 y+2+1 到 y+5-1）
- 838          //   if (fill_width > 0) {
- 839          //     for (i = y + 3; i <= y + 4;
- 840          //          i++) { // 绘制两行横线，使4px高度有较好的填充效果
- 841          //       SSD13XX_DrawLine(bar_start_x + 1, i, bar_start_x + fill_width, i, 1);
- 842          //     }
- 843          //   }
- 844          
- 845          //   if (left_str != NULL) {
- 846          //     SSD13XX_WriteString(x, y, left_str, FONT_8X8);
- 847          //   }
- 848          
- 849          //   if (right_str != NULL) {
- 850          //     unsigned char right_text_x = x + width - right_width;
- 851          //     SSD13XX_WriteString(right_text_x, y, right_str, FONT_8X8);
- 852          //   }
- 853          // }
- 854          // 测试
- 855          
- 856          // void SSD13XX_ShowAllChars(void) {
- 857          //   unsigned char x, y;
- 858          //   unsigned char ch;
- 859          
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 15  
+ 798           */
+ 799          // void Draw_ProgressBar_Component(unsigned char x, unsigned char y,
+ 800          //                                 unsigned char width, char *left_str,
+ 801          //                                 char *right_str, unsigned char percent) {
+ 802          //   unsigned char left_width, right_width, remaining_width, fill_width;
+ 803          //   unsigned char bar_start_x, bar_end_x;
+ 804          //   unsigned char i;
+ 805          
+ 806          //   // 参数检查：y必须为8的倍数，否则文本无法显示
+ 807          //   if (y % 8 != 0)
+ 808          //     return;
+ 809          //   if (percent > 100)
+ 810          //     percent = 100;
+ 811          //   if (width < 20)
+ 812          //     return; // 太窄无法绘制
+ 813          
+ 814          //   // 计算左右文本占据的像素宽度（每个字符8像素）
+ 815          //   left_width = (left_str != NULL) ? (strlen(left_str) * 8) : 0;
+ 816          //   right_width = (right_str != NULL) ? (strlen(right_str) * 8) : 0;
+ 817          
+ 818          //   // 剩余宽度用于进度条（左右各留1像素边距）
+ 819          //   remaining_width = width - left_width - right_width - 2; // 减2是两侧留白
+ 820          //   if (remaining_width < 10)
+ 821          //     remaining_width = 10; // 最小宽度
+ 822          
+ 823          //   // 进度条填充宽度
+ 824          //   fill_width = (remaining_width * percent) / 100;
+ 825          //   if (fill_width < 0)
+ 826          //     fill_width = 0;
+ 827          //   if (fill_width > remaining_width)
+ 828          //     fill_width = remaining_width;
+ 829          
+ 830          //   // 计算进度条的起始和结束坐标
+ 831          //   bar_start_x = x + left_width + 1;        // 左侧文本后空1像素
+ 832          //   bar_end_x = x + width - right_width - 1; // 右侧文本前空1像素
+ 833          
+ 834          //   // 绘制进度条外框（高度4px，从 y+2 到 y+5）
+ 835          //   SSD13XX_DrawRectangle(bar_start_x, y + 2, bar_end_x, y + 5, 1);
+ 836          
+ 837          //   // 绘制填充部分（内部用横线填充，填充区域为 bar_start_x+1 到
+ 838          //   // bar_start_x+fill_width，行范围为 y+2+1 到 y+5-1）
+ 839          //   if (fill_width > 0) {
+ 840          //     for (i = y + 3; i <= y + 4;
+ 841          //          i++) { // 绘制两行横线，使4px高度有较好的填充效果
+ 842          //       SSD13XX_DrawLine(bar_start_x + 1, i, bar_start_x + fill_width, i, 1);
+ 843          //     }
+ 844          //   }
+ 845          
+ 846          //   if (left_str != NULL) {
+ 847          //     SSD13XX_WriteString(x, y, left_str, FONT_8X8);
+ 848          //   }
+ 849          
+ 850          //   if (right_str != NULL) {
+ 851          //     unsigned char right_text_x = x + width - right_width;
+ 852          //     SSD13XX_WriteString(right_text_x, y, right_str, FONT_8X8);
+ 853          //   }
+ 854          // }
+ 855          // 测试
+ 856          
+ 857          // void SSD13XX_ShowAllChars(void) {
+ 858          //   unsigned char x, y;
+ 859          //   unsigned char ch;
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 15  
 
- 860          //   SSD13XX_Clear();
- 861          
- 862          //   for (ch = 32; ch <= 127; ch++) {
- 863          
- 864          //     x = (ch - 32) % 16 * 8;
- 865          //     y = (ch - 32) / 16 * 8;
- 866          //     SSD13XX_WriteChar(x, y, ch, FONT_8X8);
- 867          //   }
- 868          // }
- 869          
- 870          /**
- 871           * @brief 双行进度条组件（占用2个Page，高度16像素）
- 872           * @param x         左上角X坐标（通常为0）
- 873           * @param y         左上角Y坐标（必须是8的倍数）
- 874           * @param width     组件总宽度（像素）
- 875           * @param title     第一行左侧标题字符串
- 876           * @param title_right 第一行右侧字符串（可为NULL）
- 877           * @param label     第二行左侧标签（可为NULL）
- 878           * @param percent   第二行右侧显示的百分比数值（0-100）
- 879           */
- 880          void Draw_ProgressBar_Double(unsigned char x, unsigned char y,
- 881                                       unsigned char width, char *title,
- 882                                       char *title_right, char *label,
- 883                                       unsigned char percent) {
- 884   1        unsigned char title_right_width, percent_str_width;
- 885   1        unsigned char left_label_width;
- 886   1        unsigned char bar_start_x, bar_end_x, bar_width, fill_width;
- 887   1        unsigned char i;
- 888   1        char percent_str[5];
- 889   1        unsigned char second_y;
- 890   1      
- 891   1        // 必须页对齐
- 892   1        if (y % 8 != 0)
- 893   1          return;
- 894   1        if (percent > 100)
- 895   1          percent = 100;
- 896   1        if (width < 30)
- 897   1          return;
- 898   1      
- 899   1        // ========== 第一行（Page y/8）==========
- 900   1        if (title != NULL) {
- 901   2          SSD13XX_WriteString(x, y, title, FONT_8X8);
- 902   2        }
- 903   1        if (title_right != NULL) {
- 904   2          title_right_width = strlen(title_right) * 8;
- 905   2          SSD13XX_WriteString(x + width - title_right_width, y, title_right,
- 906   2                              FONT_8X8);
- 907   2        }
- 908   1      
- 909   1        // ========== 第二行（Page y/8 + 1）==========
- 910   1        second_y = y + 8;
- 911   1      
- 912   1        // 左侧标签宽度
- 913   1        left_label_width = (label != NULL) ? (strlen(label) * 8) : 0;
- 914   1        if (label != NULL) {
- 915   2          SSD13XX_WriteString(x, second_y, label, FONT_8X8);
- 916   2        }
- 917   1      
- 918   1        // 生成百分比字符串
- 919   1        if (percent >= 100) {
- 920   2          percent_str[0] = '1';
- 921   2          percent_str[1] = '0';
-C51 COMPILER V9.59.0.0   SSD13XX                                                           07/03/2026 14:12:10 PAGE 16  
+ 860          
+ 861          //   SSD13XX_Clear();
+ 862          
+ 863          //   for (ch = 32; ch <= 127; ch++) {
+ 864          
+ 865          //     x = (ch - 32) % 16 * 8;
+ 866          //     y = (ch - 32) / 16 * 8;
+ 867          //     SSD13XX_WriteChar(x, y, ch, FONT_8X8);
+ 868          //   }
+ 869          // }
+ 870          
+ 871          /**
+ 872           * @brief 双行进度条组件（占用2个Page，高度16像素）
+ 873           * @param x         左上角X坐标（通常为0）
+ 874           * @param y         左上角Y坐标（必须是8的倍数）
+ 875           * @param width     组件总宽度（像素）
+ 876           * @param title     第一行左侧标题字符串
+ 877           * @param title_right 第一行右侧字符串（可为NULL）
+ 878           * @param label     第二行左侧标签（可为NULL）
+ 879           * @param percent   第二行右侧显示的百分比数值（0-100）
+ 880           *
+ 881           * ★ 重写v2：全部用WriteString和直接写数据实现
+ 882           */
+ 883          void Draw_ProgressBar_Double(unsigned char x, unsigned char y,
+ 884                                       unsigned char width, char *title,
+ 885                                       char *title_right, char *label,
+ 886                                       unsigned char percent) {
+ 887   1        unsigned char col;
+ 888   1        unsigned char bar_start, bar_end, fill_len;
+ 889   1        unsigned char p_page, second_y;
+ 890   1        unsigned char label_len;
+ 891   1      
+ 892   1        // 必须页对齐
+ 893   1        if (y % 8 != 0)
+ 894   1          return;
+ 895   1        if (percent > 100)
+ 896   1          percent = 100;
+ 897   1        if (width < 30)
+ 898   1          return;
+ 899   1      
+ 900   1        second_y = y + 8;
+ 901   1      
+ 902   1        // ====== ★ 自动页刷新：先清除占用的2个页 ======
+ 903   1        SSD13XX_ClearPage(y / 8);
+ 904   1        SSD13XX_ClearPage(second_y / 8);
+ 905   1      
+ 906   1        // ====== 第一行文本 ======
+ 907   1        if (title != NULL)
+ 908   1          SSD13XX_WriteString(x, y, title, FONT_8X8);
+ 909   1        if (title_right != NULL) {
+ 910   2          unsigned char tr_len = 0;
+ 911   2          char *p = title_right;
+ 912   2          while (*p) {
+ 913   3            tr_len++;
+ 914   3            p++;
+ 915   3          }
+ 916   2          SSD13XX_WriteString(x + width - tr_len * 8, y, title_right, FONT_8X8);
+ 917   2        }
+ 918   1      
+ 919   1        // ====== 第二行左侧标签 ======
+ 920   1        if (label != NULL)
+ 921   1          SSD13XX_WriteString(x, second_y, label, FONT_8X8);
+C51 COMPILER V9.59.0.0   SSD13XX                                                           07/19/2026 19:31:00 PAGE 16  
 
- 922   2          percent_str[2] = '0';
- 923   2          percent_str[3] = '%';
- 924   2          percent_str[4] = '\0';
- 925   2        } else if (percent >= 10) {
- 926   2          percent_str[0] = (percent / 10) + '0';
- 927   2          percent_str[1] = (percent % 10) + '0';
- 928   2          percent_str[2] = '%';
- 929   2          percent_str[3] = '\0';
- 930   2        } else {
- 931   2          percent_str[0] = (percent % 10) + '0';
- 932   2          percent_str[1] = '%';
- 933   2          percent_str[2] = '\0';
- 934   2        }
- 935   1        percent_str_width = strlen(percent_str) * 8;
- 936   1      
- 937   1        // 进度条左右边界（左右各留3像素边距，左对齐）
- 938   1        bar_start_x = x + left_label_width + 3;
- 939   1        bar_start_x = x + 3; // 紧贴左侧标签，空3像素
- 940   1        bar_end_x =
- 941   1            x + width - percent_str_width - 3; // 右侧紧贴百分比文本前，空3像素
- 942   1        if (bar_end_x <= bar_start_x) {
- 943   2          // 空间不足，不绘制进度条
- 944   2          return;
- 945   2        }
- 946   1        bar_width = bar_end_x - bar_start_x; // 实际可用宽度
- 947   1      
- 948   1        fill_width = (bar_width * percent) / 100;
- 949   1        if (fill_width > bar_width)
- 950   1          fill_width = bar_width;
- 951   1        if (fill_width < 0)
- 952   1          fill_width = 0;
- 953   1      
- 954   1        // 绘制进度条外框（高度4px，位于第二行垂直居中：y+2 到 y+5）
- 955   1        SSD13XX_DrawRectangle(bar_start_x, second_y + 2, bar_end_x, second_y + 5, 1);
- 956   1      
- 957   1        // 绘制填充部分（两行横线，使4px高度饱满）
- 958   1        if (fill_width > 0) {
- 959   2          for (i = second_y + 3; i <= second_y + 4; i++) {
- 960   3            SSD13XX_DrawLine(bar_start_x + 1, i, bar_start_x + fill_width, i, 1);
- 961   3          }
- 962   2        }
- 963   1      
- 964   1        // 显示右侧百分比（右对齐，紧贴右边距3像素）
- 965   1        if (percent_str[0] != '\0') {
- 966   2          SSD13XX_WriteString(x + width - percent_str_width, second_y, percent_str,
- 967   2                              FONT_8X8);
+ 922   1      
+ 923   1        // ====== 百分比字符串（右对齐，统一3位格式：百十个%或 空格十%） ======
+ 924   1        if (percent >= 100) {
+ 925   2          SSD13XX_WriteChar(x + width - 32, second_y, '0' + (percent / 100) % 10,
+ 926   2                            FONT_8X8);
+ 927   2          SSD13XX_WriteChar(x + width - 24, second_y, '0' + (percent / 10) % 10,
+ 928   2                            FONT_8X8);
+ 929   2          SSD13XX_WriteChar(x + width - 16, second_y, '0' + (percent % 10), FONT_8X8);
+ 930   2          SSD13XX_WriteChar(x + width - 8, second_y, '%', FONT_8X8);
+ 931   2          bar_end = x + width - 32;
+ 932   2        } else if (percent >= 10) {
+ 933   2          SSD13XX_WriteChar(x + width - 32, second_y, ' ', FONT_8X8);
+ 934   2          SSD13XX_WriteChar(x + width - 24, second_y, '0' + (percent / 10), FONT_8X8);
+ 935   2          SSD13XX_WriteChar(x + width - 16, second_y, '0' + (percent % 10), FONT_8X8);
+ 936   2          SSD13XX_WriteChar(x + width - 8, second_y, '%', FONT_8X8);
+ 937   2          bar_end = x + width - 32;
+ 938   2        } else {
+ 939   2          SSD13XX_WriteChar(x + width - 32, second_y, ' ', FONT_8X8);
+ 940   2          SSD13XX_WriteChar(x + width - 24, second_y, ' ', FONT_8X8);
+ 941   2          SSD13XX_WriteChar(x + width - 16, second_y, '0' + percent, FONT_8X8);
+ 942   2          SSD13XX_WriteChar(x + width - 8, second_y, '%', FONT_8X8);
+ 943   2          bar_end = x + width - 32;
+ 944   2        }
+ 945   1      
+ 946   1        // ====== 进度条：直接写像素数据 ======
+ 947   1        bar_start = x + 3;
+ 948   1        if (bar_end <= bar_start + 4)
+ 949   1          return;
+ 950   1      
+ 951   1        fill_len = ((bar_end - bar_start) * percent) / 100;
+ 952   1      
+ 953   1        // 设置OLED页地址到第二行所在的页
+ 954   1        p_page = second_y / 8;
+ 955   1        SSD13XX_WriteCommand(0xB0 | p_page);
+ 956   1        SSD13XX_WriteCommand(bar_start & 0x0F);
+ 957   1        SSD13XX_WriteCommand(0x10 | (bar_start >> 4));
+ 958   1      
+ 959   1        // 逐列写入进度条数据
+ 960   1        for (col = bar_start; col < bar_end; col++) {
+ 961   2          unsigned char pixel;
+ 962   2          if ((col - bar_start) < fill_len) {
+ 963   3            pixel = 0x3C;
+ 964   3          } else {
+ 965   3            pixel = 0x24;
+ 966   3          }
+ 967   2          SSD13XX_WriteData(pixel);
  968   2        }
  969   1      }
+*** WARNING C280 IN LINE 890 OF DRIVER\ssd13xx.c: 'label_len': unreferenced local variable
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   2062    ----
+   CODE SIZE        =   2097    ----
    CONSTANT SIZE    =    760    ----
-   XDATA SIZE       =    128      54
+   XDATA SIZE       =    128      51
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----      18
@@ -1021,4 +1022,4 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
 END OF MODULE INFORMATION.
 
 
-C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)

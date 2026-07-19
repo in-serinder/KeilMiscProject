@@ -1,102 +1,201 @@
 #include "BAT.h"
+#include "delay.h"
+#include <intrins.h>
 
-#define REF_VOLTAGE 5.0f       // 5V参考电压
-#define ADC_RESOLUTION 1024.0f // 10位ADC分辨率
+#define REF_VOLTAGE 5.0f
+#define ADC_RESOLUTION 1024.0f
 
-#define BAT_CH1 P10 // ADC0
-#define BAT_CH2 P11 // ADC1
-#define BAT_CH3 P12 // ADC2
-#define BAT_CH4 P13 // ADC3
+sfr ADCCFG = 0xDE;
+sfr ADCTIM = 0xDF;
 
 /**
- * @brief ADC初始化函数
- * @note 配置P10-P13为模拟输入，使能ADC模块
+ * @brief 官方ADC速度配置 50KSPS@11.0592MHz
+ */
+void AdcSetRate(void) {
+  ADCCFG &= ~0x0f;
+  ADCCFG |= 0x02;
+  ADCTIM = 0x35;
+}
+
+/**
+ * @brief ADC初始化
  */
 void BAT_ADC_Init(void) {
-  // 设置P10-P13为高阻输入模式（模拟输入）
-  P1M0 &= ~(0x0F); // P10-P13设置为高阻输入
+  uint8_t i;
+  uint16_t dummy;
+
+  // 1. P10-P13 高阻输入
+  P1M0 &= ~0x0F;
   P1M1 |= 0x0F;
 
-  // 设置ADC时钟分频，ADC时钟 = Fosc / (ADC_CLK + 1)
-  // 建议ADC时钟在500kHz ~ 1.5MHz之间
-  CLK_DIV &= ~(0x07); // 清除ADC时钟分频位
-  CLK_DIV |= 0x03;    // ADC_CLK = 3, ADC时钟 = Fosc/4
+  // 2. 使能模拟输入
+  P1ASF |= 0x0F;
 
-  // 使能ADC电源
-  ADC_CONTR |= 0x80; // ADC_POWER = 1
+  // 3. 结果右对齐 ADRJ=1（对照教程）
+  AUXR |= 0x01;
 
-  // 延时等待ADC稳定
-  // 实际应用中可添加适当延时
+  // 4. 速度配置
+  AdcSetRate();
+
+  // 5. 打开ADC电源
+  ADC_CONTR = 0x80;
+
+  // ★ 延长等待时间，确保冷启动时ADC模块完全建立
+  for (i = 0; i < 200; i++)
+    delay_ms(1); // 约200ms
+
+  // 6. 预热——多读几次让ADC稳定，不管结果
+  for (i = 0; i < 10; i++) {
+    dummy = BAT_ADC_Read((BAT_Channel)0);
+    (void)dummy;
+  }
 }
 
 /**
- * @brief 读取指定通道的ADC原始值
- * @param ch: ADC通道 (BAT_CH1 ~ BAT_CH4)
- * @return 10位ADC值 (0 ~ 1023)
+ * @brief 读取ADC原始值 ★ 完全参照教程查询方式
+ *        ADC_FLAG 在 bit4 (0x10)，不是 bit5!
+ *        结果右对齐：ADC_RES(高8位) + ADC_RESL(低2位)
+ * @param ch: 0=P10, 1=P11, 2=P12, 3=P13
+ * @return 10位ADC值 0-1023（超时返回0）
  */
 uint16_t BAT_ADC_Read(BAT_Channel ch) {
-  uint16_t adc_value;
+  uint8_t ch_num = (uint8_t)ch & 0x07;
+  uint16_t timeout;
 
-  // 选择ADC通道
-  ADC_CONTR &= ~(0x0F);     // 清除通道选择位
-  ADC_CONTR |= (ch & 0x0F); // 设置通道号
+  // ★ 启动：POWER=1, START=1, SPEED=540clk, CHS=ch
+  ADC_CONTR = 0x88 | ch_num;
+  _nop_();
+  _nop_();
+  _nop_();
+  _nop_();
 
-  // 启动ADC转换
-  ADC_CONTR |= 0x40; // ADC_START = 1
+  // ★ 等待 ADC_FLAG (bit4)，超时保护
+  timeout = 0;
+  while (!(ADC_CONTR & 0x10)) {
+    if (++timeout > 30000) {
+      ADC_CONTR = 0x80 | ch_num; // 超时停止
+      return 0;
+    }
+  }
 
-  // 等待转换完成
-  while (!(ADC_CONTR & 0x20))
-    ; // 等待ADC_FLAG = 1
+  // ★ 清FLAG并停止（写0到bit4，保持POWER=1）
+  ADC_CONTR = 0x80 | ch_num;
 
-  // 读取ADC结果
-  adc_value = (uint16_t)ADC_RES << 2;
-  adc_value |= (ADC_RESL & 0x03);
-
-  // 清除转换完成标志
-  ADC_CONTR &= ~(0x20); // ADC_FLAG = 0
-
-  return adc_value;
+  // ★ 读取结果（右对齐）：ADC_RES*4 + ADC_RESL
+  return ((uint16_t)ADC_RES << 2) | (ADC_RESL & 0x03);
 }
 
 /**
- * @brief 读取指定通道的电压值
- * @param ch: ADC通道 (BAT_CH1 ~ BAT_CH4)
- * @return 电压值，单位为伏特(V)
+ * @brief 读取电压值
+ *        采样10次→排序→去最大最小→剩余8个再去偏离中位数超30LSB的异常值→取平均
+ * @param ch: ADC通道
+ * @return 电池实际电压(V)
  */
 float BAT_ADC_ReadVoltage(BAT_Channel ch) {
-  uint16_t adc_value = BAT_ADC_Read(ch);
-  // 电压 = (ADC值 / 分辨率) * 参考电压
-  return (adc_value / ADC_RESOLUTION) * REF_VOLTAGE;
+  uint8_t i, j, t;
+  uint16_t buf[10];
+  uint16_t tmp;
+  uint32_t sum;
+  uint16_t mid;
+  float v;
+
+  // 第一步：连续采样10次
+  for (i = 0; i < 10; i++)
+    buf[i] = BAT_ADC_Read(ch);
+
+  // 第二步：冒泡排序（小到大）
+  for (i = 0; i < 9; i++) {
+    for (j = 0; j < 9 - i; j++) {
+      if (buf[j] > buf[j + 1]) {
+        tmp = buf[j];
+        buf[j] = buf[j + 1];
+        buf[j + 1] = tmp;
+      }
+    }
+  }
+
+  // 第三步：去掉最大最小各1个，剩中间8个 [1..8]
+  //         取这8个的中位数作为基准
+  mid = (buf[4] + buf[5]) / 2;
+
+  // 第四步：从中间8个中去掉偏离mid超过30 LSB的异常值
+  sum = 0;
+  t = 0;
+  for (i = 1; i <= 8; i++) {
+    if (buf[i] >= mid - 30 && buf[i] <= mid + 30) {
+      sum += buf[i];
+      t++;
+    }
+  }
+
+  // 第五步：求平均并换算电压
+  if (t == 0) {
+    // 极端情况：所有值都被过滤，直接用中位数
+    v = ((float)mid / ADC_RESOLUTION) * REF_VOLTAGE;
+  } else {
+    v = ((float)sum / (float)t / ADC_RESOLUTION) * REF_VOLTAGE;
+  }
+  return v;
 }
 
-// 电量估算
-float VoltageToSOC(float ocv) {
-  uint8_t i, s1, s2;
-  float v1, v2, ratio, soc;
-  // SOC数组
-  float v_table[] = {4.20f, 4.06f, 3.98f, 3.92f, 3.87f, 3.82f,
-                     3.79f, 3.77f, 3.74f, 3.68f, 3.45f, 3.00f};
-  uint8_t soc_table[] = {100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 5, 0};
-  uint8_t len = sizeof(v_table) / sizeof(float);
+/**
+ * @brief 电压转SOC（整数运算，用mV避免float精度问题）
+ * @param ocv: 电压(V)
+ * @return SOC (0~100)
+ *
+ * LiFePO4/锂电压典型曲线(简化)：
+ *   4200mV → 100%
+ *   4100mV → 90%
+ *   4000mV → 75%
+ *   3900mV → 55%
+ *   3800mV → 40%
+ *   3700mV → 30%
+ *   3600mV → 20%
+ *   3500mV → 12%
+ *   3400mV → 7%
+ *   3300mV → 3%
+ *   3000mV → 0%
+ */
+uint8_t VoltageToSOC(float ocv) {
+  uint16_t mv; // 电压(mV)
+  uint8_t i;
+  uint16_t v1, v2; // 区间两端电压(mV)
+  uint8_t s1, s2;  // 区间两端SOC(%)
+  uint16_t vd, sd; // 区间差值
+  uint32_t tmp;
 
-  // 满电/亏电边界
-  if (ocv >= 4.20f)
+  // 将 V 转为 mV（四舍五入）
+  mv = (uint16_t)(ocv * 1000.0f + 0.5f);
+
+  // 边界保护
+  if (mv >= 4200)
     return 100;
-  if (ocv <= 3.00f)
+  if (mv <= 3000)
     return 0;
 
-  // 查找区间
-  for (i = 0; i < len - 1; i++) {
-    v1 = v_table[i];
-    v2 = v_table[i + 1];
-    s1 = soc_table[i];
-    s2 = soc_table[i + 1];
+  // 简化查表（12个点）
+  {
+    uint16_t code v_tb[12] = {4200, 4100, 4000, 3900, 3800, 3700,
+                              3600, 3500, 3400, 3300, 3200, 3000};
+    uint8_t code s_tb[12] = {100, 90, 75, 55, 40, 30, 20, 12, 7, 3, 1, 0};
 
-    if (ocv <= v1 && ocv >= v2) {
-      // 线性插值
-      ratio = (v1 - ocv) / (v1 - v2);
-      soc = s1 - ratio * (s1 - s2);
-      return (uint8_t)(soc + 0.5f);
+    for (i = 0; i < 11; i++) {
+      v1 = v_tb[i];
+      v2 = v_tb[i + 1];
+      s1 = s_tb[i];
+      s2 = s_tb[i + 1];
+
+      // mv 在 [v2, v1] 区间内？
+      if (mv <= v1 && mv >= v2) {
+        // 线性插值：SOC = s1 - (s1 - s2) * (v1 - mv) / (v1 - v2)
+        vd = v1 - v2;
+        sd = s1 - s2;
+        if (vd == 0)
+          return s1;
+        tmp = (uint32_t)(v1 - mv) * sd;
+        tmp = tmp / vd;
+        return (uint8_t)(s1 - tmp);
+      }
     }
   }
   return 0;

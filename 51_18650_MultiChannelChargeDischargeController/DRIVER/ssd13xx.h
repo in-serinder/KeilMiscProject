@@ -5,8 +5,8 @@
 #include <string.h>
 
 // I2C引脚定义
-#define SDA P07
-#define SCL P06
+#define SDA P36
+#define SCL P37
 
 // OLED屏幕参数
 #define SSD13XX_WIDTH 128
@@ -67,11 +67,12 @@ void SSD13XX_ClearPage(unsigned char page); // 清空指定页（全0）
 void SSD13XX_Clear(void);                   // 清空所有页
 
 // 图形绘制（自动跨页）
-void SSD13XX_DrawPixel(unsigned char x, unsigned char y, unsigned char color);
+// void SSD13XX_DrawPixel(unsigned char x, unsigned char y, unsigned char
+// color);
 void SSD13XX_DrawLine(unsigned char x1, unsigned char y1, unsigned char x2,
                       unsigned char y2, unsigned char color);
 void SSD13XX_DrawRectangle(unsigned char x1, unsigned char y1, unsigned char x2,
-                           unsigned char y2, unsigned char color);
+                           unsigned char y2, unsigned char coslor);
 void SSD13XX_DrawCircle(unsigned char x0, unsigned char y0, unsigned char r,
                         unsigned char color);
 void SSD13XX_DrawBitmap(unsigned char x, unsigned char y,

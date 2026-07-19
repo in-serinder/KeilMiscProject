@@ -38,10 +38,11 @@
         {
             "name": "Target 1",
             "includePath": [
-                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_18650bsmb\\DRIVER",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_18650_MultiChannelChargeDischargeController\\DRIVER",
                 "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_18650bsmb",
-                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_18650bsmb\\SYS",
-                "D:\\Keil_v5\\C51\\INC"
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_18650_MultiChannelChargeDischargeController\\SYS",
+                "D:\\Keil_v5\\C51\\INC",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_18650_MultiChannelChargeDischargeController"
             ],
             "defines": [
                 "__C51__",

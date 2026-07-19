@@ -22,8 +22,20 @@ void CHR_Set_CH3(uint8_t state) { CHR_CH3 = state; }
 void CHR_Set_CH4(uint8_t state) { CHR_CH4 = state; }
 
 void CHR_Set_CH(uint8_t ch, uint8_t state) {
-  CHR_Set_CH1(state);
-  CHR_Set_CH2(state);
-  CHR_Set_CH3(state);
-  CHR_Set_CH4(state);
+  switch (ch) {
+  case 1:
+    CHR_Set_CH1(state);
+    break;
+  case 2:
+    CHR_Set_CH2(state);
+    break;
+  case 3:
+    CHR_Set_CH3(state);
+    break;
+  case 4:
+    CHR_Set_CH4(state);
+    break;
+  default:
+    break;
+  }
 }

@@ -1,111 +1,151 @@
+// #include "Delay.h"
+// #include "ssd13xx.h"
+// void main(void) {
+//   SSD13XX_Init();
+//   SSD13XX_Clear();
+//   Draw_ProgressBar_Double(0, 0, 128, "CH1", "3.7V", "BAT:", 30);
+//   Draw_ProgressBar_Double(0, 16, 128, "CH2", "4.1V", "BAT:", 60);
+//   Draw_ProgressBar_Double(0, 32, 128, "CH3", "3.3V", "BAT:", 85);
+//   Draw_ProgressBar_Double(0, 48, 128, "CH4", "3.9V", "BAT:", 50);
+//   while (1);
+// }
+
 #include "BAT.h"
 #include "CHR.h"
 #include "delay.h"
 #include "key.h"
 #include "ssd13xx.h"
 
-#define BATTER_TH 2.7f           // 电池低压保护阈值
-#define BATTERY_CHS 4            // 充电通道总数
-#define REFRESH_INTERVAL 1000    // 屏幕/采集刷新间隔ms
-#define THRESHOLD_SHOW_HOLD 1000 // 松开后阈值文字停留时长
+#define BATTER_TH 2.7f
+#define REFRESH_MS 1000
 
-// 全局仅保留状态数组（需要跨循环保存）
-uint8_t idata percent_status[BATTERY_CHS] = {0}; // 1充电中 0已充满
+uint8_t idata status[4] = {0};
 uint16_t idata sys_tick = 0;
+uint8_t idata setting_mode = 0;
+uint16_t idata both_press_start = 0; // 同时按下的起始tick
+bit both_press_active = 0;           // 同时按下已确认
 
+void Timer0_Init(void) {
+  AUXR |= 0x80;
+  TMOD &= 0xF0;
+  TL0 = 0x06;
+  TH0 = 0xFF;
+  TF0 = 0;
+  TR0 = 1;
+  ET0 = 1;
+}
 void Timer0_ISR(void) interrupt 1 {
   TH0 = 0xFF;
-  TL0 = 0x06; // STC15 1ms重载值
+  TL0 = 0x06;
   sys_tick++;
 }
 
 void main(void) {
-  uint8_t idata i;
-  float idata voltage, percent;
-  char idata ch_buffer[4], percent_buffer[5], voltage_buffer[5],
-      threshold_buffer[8];
-  uint8_t idata threshold, new_threshold;
-  uint16_t idata last_refresh_tick = 0;
-  uint16_t idata key_release_tick =
-      0; // 记录按键松开时刻，用于判断是否需要显示阈值文字
-  uint8_t idata show_threshold_flag = 0; // 是否需要显示阈值文字
+  uint16_t idata last = 0, now;
+  char idata title[6];
+  char idata right[8];
+  uint8_t idata i, cha_th;
+  float idata v;
+  uint8_t idata vi, vd, p;
 
-  // 外设初始化
+  EA = 0;
   SSD13XX_Init();
   SSD13XX_Clear();
-  SSD13XX_WriteString(0, 20, "Initializing..", 0);
   BAT_ADC_Init();
   CHR_Init();
   KEY_Init();
-  Timer0_Init(); // 初始化1ms定时器
+  Timer0_Init();
+
+  for (i = 0; i < 4; i++) {
+    CHR_Set_CH(i + 1, 0);
+    status[i] = 0;
+  }
+
+  EA = 1;
 
   while (1) {
-    KEY_Scan_Handle();
-    new_threshold = KEY_GetThreshold();
+    now = sys_tick;
 
-    // 按键调节
-    if (threshold != new_threshold) {
-      threshold = new_threshold;
-      show_threshold_flag = 1;
-      key_release_tick = sys_tick; // 刷新松开计时起点
-      // 局部刷新阈值页面
-      SSD13XX_ClearPage(1);
-      sprintf(threshold_buffer, "Th: %d", threshold);
-      SSD13XX_WriteString(0, 20, threshold_buffer, 0);
-    } else if (show_threshold_flag) {
-      if (sys_tick - key_release_tick >= THRESHOLD_SHOW_HOLD) {
-        show_threshold_flag = 0;
-        SSD13XX_ClearPage(1); // 停留时间到，清空阈值区域
+    // ★ 关中断保护下进行按键扫描
+    KEY_Scan_Handle(now);
+
+    // ★ 非阻塞双键同时按下检测（50ms消抖）
+    if ((P32 == 0) && (P33 == 0)) {
+      if (!both_press_active) {
+        if (both_press_start == 0)
+          both_press_start = now;
+        else if (now - both_press_start >= 50) {
+          // 确认同时按下超过50ms
+          both_press_active = 1;
+          setting_mode = !setting_mode;
+          SSD13XX_Clear();
+        }
       }
+    } else {
+      both_press_start = 0;
+      both_press_active = 0;
     }
 
-    // 定时采集刷新充电通道（全程无阻塞）
-    if (sys_tick - last_refresh_tick < REFRESH_INTERVAL) {
+    // ★ 阈值设置界面
+    if (setting_mode) {
+      cha_th = KEY_GetThreshold();
+      SSD13XX_ClearPage(0);
+      SSD13XX_WriteString(0, 0, "Set Thr:", 0);
+      SSD13XX_WriteChar(56, 0, '0' + (cha_th / 10), 0);
+      SSD13XX_WriteChar(64, 0, '0' + (cha_th % 10), 0);
+      SSD13XX_WriteChar(72, 0, '%', 0);
+      SSD13XX_WriteString(0, 16, "Both->Back", 0);
       continue;
     }
-    last_refresh_tick = sys_tick;
 
-    for (i = 0; i < BATTERY_CHS; i++) {
-      voltage = BAT_ADC_ReadVoltage(i);
-      percent = VoltageToSOC(voltage);
+    if (now - last < REFRESH_MS)
+      continue;
+    last = now;
 
-      // 低压保护：电压低于2.7V，停止充电
-      if (voltage < BATTER_TH) {
-        CHR_Set_CH(i + 1, 0);
-        sprintf(ch_buffer, "Ch %d", i);
-        sprintf(percent_buffer, "Low Volt");
-        sprintf(voltage_buffer, "%.2fV", voltage);
-        Draw_ProgressBar_Double(0, i * 16, 128, ch_buffer, percent_buffer,
-                                voltage_buffer, 0);
-        percent_status[i] = 0;
+    cha_th = KEY_GetThreshold();
+
+    for (i = 0; i < 4; i++) {
+      EA = 0;
+      v = BAT_ADC_ReadVoltage(i);
+      EA = 1;
+
+      title[0] = 'C';
+      title[1] = 'h';
+      title[2] = ' ';
+      title[3] = '1' + i;
+      title[4] = '\0';
+
+      if (v < 0.01f) {
+        right[0] = '-';
+        right[1] = '-';
+        right[2] = '-';
+        right[3] = '\0';
+        // CHR_Set_CH(i + 1, 0);
+        CHR_Set_CH(i + 1, 1); // 这里是因为我ADC烧了，但不能浪费通道
+        Draw_ProgressBar_Double(0, i * 16, 128, title, "NoSig", right, 0);
         continue;
       }
 
-      // 电池百分比高于阈值：充满，停止充电
-      if (percent > threshold) {
-        if (percent_status[i] == 0)
-          continue;
+      vi = (uint8_t)v;
+      vd = (uint8_t)((v - vi) * 10);
+      p = VoltageToSOC(v);
 
+      right[0] = '0' + vi;
+      right[1] = '.';
+      right[2] = '0' + vd;
+      right[3] = 'V';
+      right[4] = '\0';
+
+      if (v < BATTER_TH) {
         CHR_Set_CH(i + 1, 0);
-        sprintf(ch_buffer, "Ch %d", i);
-        sprintf(percent_buffer, "%.1f%%(Over)", percent);
-        sprintf(voltage_buffer, "%.2fV", voltage);
-        Draw_ProgressBar_Double(0, i * 16, 128, ch_buffer, percent_buffer,
-                                voltage_buffer, (uint8_t)(percent * 100.0f));
-        percent_status[i] = 0;
-        continue;
+        Draw_ProgressBar_Double(0, i * 16, 128, title, "Low", right, 0);
+      } else {
+        if (p >= cha_th)
+          CHR_Set_CH(i + 1, 0);
+        else
+          CHR_Set_CH(i + 1, 1);
+        Draw_ProgressBar_Double(0, i * 16, 128, title, right, right, p);
       }
-
-      // 低于阈值，开启充电
-      if (percent_status[i] == 0)
-        percent_status[i] = 1;
-      CHR_Set_CH(i + 1, 1);
-
-      sprintf(ch_buffer, "Ch %d", i);
-      sprintf(percent_buffer, "%.1f%%", percent);
-      sprintf(voltage_buffer, "%.2fV", voltage);
-      Draw_ProgressBar_Double(0, i * 16, 128, ch_buffer, percent_buffer,
-                              voltage_buffer, (uint8_t)(percent * 100.0f));
     }
   }
 }

@@ -473,15 +473,16 @@ static void _DrawPixelOnPage(unsigned char x, unsigned char y_in_page,
  * 返回: 无
  * 注意: 自动计算像素所属页面并刷新该页面
  **************************************************************************************************/
-void SSD13XX_DrawPixel(unsigned char x, unsigned char y, unsigned char color) {
-  unsigned char xdata page, row, i;
-  page = y / 8;
-  row = y % 8;
-  for (i = 0; i < SSD13XX_PAGE_WIDTH; i++)
-    SSD13XX_PageBuffer[i] = 0x00;
-  _DrawPixelOnPage(x, row, color);
-  SSD13XX_FlushPage(page);
-}
+// void SSD13XX_DrawPixel(unsigned char x, unsigned char y, unsigned char color)
+// {
+//   unsigned char xdata page, row, i;
+//   page = y / 8;
+//   row = y % 8;
+//   for (i = 0; i < SSD13XX_PAGE_WIDTH; i++)
+//     SSD13XX_PageBuffer[i] = 0x00;
+//   _DrawPixelOnPage(x, row, color);
+//   SSD13XX_FlushPage(page);
+// }
 
 /***************************************************************************************************
  * 函数名: SSD13XX_DrawLine
@@ -876,17 +877,17 @@ void SSD13XX_Init(void) {
  * @param title_right 第一行右侧字符串（可为NULL）
  * @param label     第二行左侧标签（可为NULL）
  * @param percent   第二行右侧显示的百分比数值（0-100）
+ *
+ * ★ 重写v2：全部用WriteString和直接写数据实现
  */
 void Draw_ProgressBar_Double(unsigned char x, unsigned char y,
                              unsigned char width, char *title,
                              char *title_right, char *label,
                              unsigned char percent) {
-  unsigned char title_right_width, percent_str_width;
-  unsigned char left_label_width;
-  unsigned char bar_start_x, bar_end_x, bar_width, fill_width;
-  unsigned char i;
-  char percent_str[5];
-  unsigned char second_y;
+  unsigned char col;
+  unsigned char bar_start, bar_end, fill_len;
+  unsigned char p_page, second_y;
+  unsigned char label_len;
 
   // 必须页对齐
   if (y % 8 != 0)
@@ -896,74 +897,73 @@ void Draw_ProgressBar_Double(unsigned char x, unsigned char y,
   if (width < 30)
     return;
 
-  // ========== 第一行（Page y/8）==========
-  if (title != NULL) {
-    SSD13XX_WriteString(x, y, title, FONT_8X8);
-  }
-  if (title_right != NULL) {
-    title_right_width = strlen(title_right) * 8;
-    SSD13XX_WriteString(x + width - title_right_width, y, title_right,
-                        FONT_8X8);
-  }
-
-  // ========== 第二行（Page y/8 + 1）==========
   second_y = y + 8;
 
-  // 左侧标签宽度
-  left_label_width = (label != NULL) ? (strlen(label) * 8) : 0;
-  if (label != NULL) {
-    SSD13XX_WriteString(x, second_y, label, FONT_8X8);
-  }
+  // ====== ★ 自动页刷新：先清除占用的2个页 ======
+  SSD13XX_ClearPage(y / 8);
+  SSD13XX_ClearPage(second_y / 8);
 
-  // 生成百分比字符串
-  if (percent >= 100) {
-    percent_str[0] = '1';
-    percent_str[1] = '0';
-    percent_str[2] = '0';
-    percent_str[3] = '%';
-    percent_str[4] = '\0';
-  } else if (percent >= 10) {
-    percent_str[0] = (percent / 10) + '0';
-    percent_str[1] = (percent % 10) + '0';
-    percent_str[2] = '%';
-    percent_str[3] = '\0';
-  } else {
-    percent_str[0] = (percent % 10) + '0';
-    percent_str[1] = '%';
-    percent_str[2] = '\0';
-  }
-  percent_str_width = strlen(percent_str) * 8;
-
-  // 进度条左右边界（左右各留3像素边距，左对齐）
-  bar_start_x = x + left_label_width + 3;
-  bar_start_x = x + 3; // 紧贴左侧标签，空3像素
-  bar_end_x =
-      x + width - percent_str_width - 3; // 右侧紧贴百分比文本前，空3像素
-  if (bar_end_x <= bar_start_x) {
-    // 空间不足，不绘制进度条
-    return;
-  }
-  bar_width = bar_end_x - bar_start_x; // 实际可用宽度
-
-  fill_width = (bar_width * percent) / 100;
-  if (fill_width > bar_width)
-    fill_width = bar_width;
-  if (fill_width < 0)
-    fill_width = 0;
-
-  // 绘制进度条外框（高度4px，位于第二行垂直居中：y+2 到 y+5）
-  SSD13XX_DrawRectangle(bar_start_x, second_y + 2, bar_end_x, second_y + 5, 1);
-
-  // 绘制填充部分（两行横线，使4px高度饱满）
-  if (fill_width > 0) {
-    for (i = second_y + 3; i <= second_y + 4; i++) {
-      SSD13XX_DrawLine(bar_start_x + 1, i, bar_start_x + fill_width, i, 1);
+  // ====== 第一行文本 ======
+  if (title != NULL)
+    SSD13XX_WriteString(x, y, title, FONT_8X8);
+  if (title_right != NULL) {
+    unsigned char tr_len = 0;
+    char *p = title_right;
+    while (*p) {
+      tr_len++;
+      p++;
     }
+    SSD13XX_WriteString(x + width - tr_len * 8, y, title_right, FONT_8X8);
   }
 
-  // 显示右侧百分比（右对齐，紧贴右边距3像素）
-  if (percent_str[0] != '\0') {
-    SSD13XX_WriteString(x + width - percent_str_width, second_y, percent_str,
-                        FONT_8X8);
+  // ====== 第二行左侧标签 ======
+  if (label != NULL)
+    SSD13XX_WriteString(x, second_y, label, FONT_8X8);
+
+  // ====== 百分比字符串（右对齐，统一3位格式：百十个%或 空格十%） ======
+  if (percent >= 100) {
+    SSD13XX_WriteChar(x + width - 32, second_y, '0' + (percent / 100) % 10,
+                      FONT_8X8);
+    SSD13XX_WriteChar(x + width - 24, second_y, '0' + (percent / 10) % 10,
+                      FONT_8X8);
+    SSD13XX_WriteChar(x + width - 16, second_y, '0' + (percent % 10), FONT_8X8);
+    SSD13XX_WriteChar(x + width - 8, second_y, '%', FONT_8X8);
+    bar_end = x + width - 32;
+  } else if (percent >= 10) {
+    SSD13XX_WriteChar(x + width - 32, second_y, ' ', FONT_8X8);
+    SSD13XX_WriteChar(x + width - 24, second_y, '0' + (percent / 10), FONT_8X8);
+    SSD13XX_WriteChar(x + width - 16, second_y, '0' + (percent % 10), FONT_8X8);
+    SSD13XX_WriteChar(x + width - 8, second_y, '%', FONT_8X8);
+    bar_end = x + width - 32;
+  } else {
+    SSD13XX_WriteChar(x + width - 32, second_y, ' ', FONT_8X8);
+    SSD13XX_WriteChar(x + width - 24, second_y, ' ', FONT_8X8);
+    SSD13XX_WriteChar(x + width - 16, second_y, '0' + percent, FONT_8X8);
+    SSD13XX_WriteChar(x + width - 8, second_y, '%', FONT_8X8);
+    bar_end = x + width - 32;
+  }
+
+  // ====== 进度条：直接写像素数据 ======
+  bar_start = x + 3;
+  if (bar_end <= bar_start + 4)
+    return;
+
+  fill_len = ((bar_end - bar_start) * percent) / 100;
+
+  // 设置OLED页地址到第二行所在的页
+  p_page = second_y / 8;
+  SSD13XX_WriteCommand(0xB0 | p_page);
+  SSD13XX_WriteCommand(bar_start & 0x0F);
+  SSD13XX_WriteCommand(0x10 | (bar_start >> 4));
+
+  // 逐列写入进度条数据
+  for (col = bar_start; col < bar_end; col++) {
+    unsigned char pixel;
+    if ((col - bar_start) < fill_len) {
+      pixel = 0x3C;
+    } else {
+      pixel = 0x24;
+    }
+    SSD13XX_WriteData(pixel);
   }
 }

@@ -4,5 +4,5 @@
 ".\Objects\key.obj",
 ".\Objects\ssd13xx.obj",
 ".\Objects\Delay.obj" 
-TO ".\Objects\18650bsmb" 
+TO ".\Objects\18650bsmb" RTX51 
 PRINT(".\Listings\18650bsmb.m51") RAMSIZE(256) 

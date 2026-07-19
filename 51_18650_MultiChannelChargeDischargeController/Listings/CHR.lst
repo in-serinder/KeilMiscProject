@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   CHR                                                               07/03/2026 14:12:09 PAGE 1   
+C51 COMPILER V9.59.0.0   CHR                                                               07/19/2026 20:13:36 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE CHR
 OBJECT MODULE PLACED IN .\Objects\CHR.obj
-COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE DRIVER\CHR.c LARGE OPTIMIZE(9,SIZE) BROWSE INCDIR(.\DRIVER;..\51_18650bs
-                    -mb;.\SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\CHR.lst) TABS(2) OBJECT(.\Objects\CHR.obj)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE DRIVER\CHR.c LARGE RTX51 OPTIMIZE(9,SIZE) BROWSE INCDIR(.\DRIVER;..\51_1
+                    -8650bsmb;.\SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\CHR.lst) TABS(2) OBJECT(.\Objects\CHR.obj)
 
 line level    source
 
@@ -32,18 +32,29 @@ line level    source
   22          void CHR_Set_CH4(uint8_t state) { CHR_CH4 = state; }
   23          
   24          void CHR_Set_CH(uint8_t ch, uint8_t state) {
-  25   1        CHR_Set_CH1(state);
-  26   1        CHR_Set_CH2(state);
-  27   1        CHR_Set_CH3(state);
-  28   1        CHR_Set_CH4(state);
-  29   1      }
-*** WARNING C280 IN LINE 24 OF DRIVER\CHR.c: 'ch': unreferenced local variable
+  25   1        switch (ch) {
+  26   2        case 1:
+  27   2          CHR_Set_CH1(state);
+  28   2          break;
+  29   2        case 2:
+  30   2          CHR_Set_CH2(state);
+  31   2          break;
+  32   2        case 3:
+  33   2          CHR_Set_CH3(state);
+  34   2          break;
+  35   2        case 4:
+  36   2          CHR_Set_CH4(state);
+  37   2          break;
+  38   2        default:
+  39   2          break;
+  40   2        }
+  41   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     52    ----
+   CODE SIZE        =     69    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----       1
+   XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
@@ -51,4 +62,4 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
 END OF MODULE INFORMATION.
 
 
-C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

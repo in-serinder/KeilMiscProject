@@ -9,7 +9,7 @@
  * @note 配置外部中断0(P32)和外部中断1(P33)为下降沿触发
  */
 void KEY_Init(void);
-void KEY_Scan_Handle(void);
+bit KEY_Scan_Handle(uint16_t now_tick);
 uint8_t KEY_GetThreshold(void);
 /**
  * @brief 外部中断0服务函数(THRESHOLD_SUB按键)
