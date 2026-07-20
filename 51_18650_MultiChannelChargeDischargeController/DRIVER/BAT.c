@@ -24,26 +24,23 @@ void BAT_ADC_Init(void) {
   uint8_t i;
   uint16_t dummy;
 
-  // 1. P10-P13 高阻输入
+  CH1_PIN = 0;
+  CH2_PIN = 0;
+  CH3_PIN = 0;
+  CH4_PIN = 0;
+
   P1M0 &= ~0x0F;
   P1M1 |= 0x0F;
-
-  // 2. 使能模拟输入
   P1ASF |= 0x0F;
-
-  // 3. 结果右对齐 ADRJ=1（对照教程）
   AUXR |= 0x01;
 
-  // 4. 速度配置
   AdcSetRate();
 
-  // 5. 打开ADC电源
   ADC_CONTR = 0x80;
 
   for (i = 0; i < 200; i++)
     delay_ms(1); // 约200ms
 
-  // 6. 预热——多读几次让ADC稳定，不管结果
   for (i = 0; i < 10; i++) {
     dummy = BAT_ADC_Read((BAT_Channel)0);
     (void)dummy;

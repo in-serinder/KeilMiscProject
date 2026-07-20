@@ -8,6 +8,13 @@
 //   如果电池直接连ADC，分压比=1.0
 #define BAT_DIVIDER_RATIO 1.0f
 
+#define CH1_PIN P10
+#define CH2_PIN P11
+#define CH3_PIN P12
+#define CH4_PIN P13
+
+
+
 /**
  * @brief ADC通道枚举
  */
