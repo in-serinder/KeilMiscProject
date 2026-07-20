@@ -3,7 +3,7 @@
 #ifndef __BAT_H__
 #define __BAT_H__
 
-// ★ 分压比 = (R1+R2)/R2，用于将ADC测量电压换算回电池实际电压
+// 分压比 = (R1+R2)/R2，用于将ADC测量电压换算回电池实际电压
 //   如果电池通过10K+10K分压，则分压比=2.0
 //   如果电池直接连ADC，分压比=1.0
 #define BAT_DIVIDER_RATIO 1.0f

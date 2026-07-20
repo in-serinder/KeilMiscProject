@@ -16,13 +16,13 @@
         {
             "name": "Target 1",
             "includePath": [
-                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\Display",
-                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\FakeLoad",
-                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\Key",
-                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\System",
-                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\Utility",
+                "d:\\SysFile\\Desktop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\Display",
+                "d:\\SysFile\\Desktop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\FakeLoad",
+                "d:\\SysFile\\Desktop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\Key",
+                "d:\\SysFile\\Desktop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\System",
+                "d:\\SysFile\\Desktop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload\\Utility",
                 "D:\\Keil_v5\\C51\\INC",
-                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload"
+                "d:\\SysFile\\Desktop\\Misc.Git\\KeilMiscProject\\51_Rexhaustive_fakeload"
             ],
             "defines": [
                 "__C51__",

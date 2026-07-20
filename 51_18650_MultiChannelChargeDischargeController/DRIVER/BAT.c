@@ -9,7 +9,7 @@ sfr ADCCFG = 0xDE;
 sfr ADCTIM = 0xDF;
 
 /**
- * @brief 官方ADC速度配置 50KSPS@11.0592MHz
+ * @brief 50KSPS@11.0592MHz
  */
 void AdcSetRate(void) {
   ADCCFG &= ~0x0f;
@@ -40,7 +40,6 @@ void BAT_ADC_Init(void) {
   // 5. 打开ADC电源
   ADC_CONTR = 0x80;
 
-  // ★ 延长等待时间，确保冷启动时ADC模块完全建立
   for (i = 0; i < 200; i++)
     delay_ms(1); // 约200ms
 
@@ -51,25 +50,18 @@ void BAT_ADC_Init(void) {
   }
 }
 
-/**
- * @brief 读取ADC原始值 ★ 完全参照教程查询方式
- *        ADC_FLAG 在 bit4 (0x10)，不是 bit5!
- *        结果右对齐：ADC_RES(高8位) + ADC_RESL(低2位)
- * @param ch: 0=P10, 1=P11, 2=P12, 3=P13
- * @return 10位ADC值 0-1023（超时返回0）
- */
+
 uint16_t BAT_ADC_Read(BAT_Channel ch) {
   uint8_t ch_num = (uint8_t)ch & 0x07;
   uint16_t timeout;
 
-  // ★ 启动：POWER=1, START=1, SPEED=540clk, CHS=ch
+  // POWER=1, START=1, SPEED=540clk, CHS=ch
   ADC_CONTR = 0x88 | ch_num;
   _nop_();
   _nop_();
   _nop_();
   _nop_();
 
-  // ★ 等待 ADC_FLAG (bit4)，超时保护
   timeout = 0;
   while (!(ADC_CONTR & 0x10)) {
     if (++timeout > 30000) {
@@ -78,10 +70,9 @@ uint16_t BAT_ADC_Read(BAT_Channel ch) {
     }
   }
 
-  // ★ 清FLAG并停止（写0到bit4，保持POWER=1）
   ADC_CONTR = 0x80 | ch_num;
 
-  // ★ 读取结果（右对齐）：ADC_RES*4 + ADC_RESL
+  // 右对齐：ADC_RES*4 + ADC_RESL
   return ((uint16_t)ADC_RES << 2) | (ADC_RESL & 0x03);
 }
 
@@ -99,11 +90,9 @@ float BAT_ADC_ReadVoltage(BAT_Channel ch) {
   uint16_t mid;
   float v;
 
-  // 第一步：连续采样10次
   for (i = 0; i < 10; i++)
     buf[i] = BAT_ADC_Read(ch);
 
-  // 第二步：冒泡排序（小到大）
   for (i = 0; i < 9; i++) {
     for (j = 0; j < 9 - i; j++) {
       if (buf[j] > buf[j + 1]) {
@@ -114,11 +103,10 @@ float BAT_ADC_ReadVoltage(BAT_Channel ch) {
     }
   }
 
-  // 第三步：去掉最大最小各1个，剩中间8个 [1..8]
-  //         取这8个的中位数作为基准
+
   mid = (buf[4] + buf[5]) / 2;
 
-  // 第四步：从中间8个中去掉偏离mid超过30 LSB的异常值
+
   sum = 0;
   t = 0;
   for (i = 1; i <= 8; i++) {
@@ -128,7 +116,6 @@ float BAT_ADC_ReadVoltage(BAT_Channel ch) {
     }
   }
 
-  // 第五步：求平均并换算电压
   if (t == 0) {
     // 极端情况：所有值都被过滤，直接用中位数
     v = ((float)mid / ADC_RESOLUTION) * REF_VOLTAGE;
