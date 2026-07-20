@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              07/19/2026 20:52:47 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              07/20/2026 21:06:12 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -26,152 +26,269 @@ line level    source
   16          #include "key.h"
   17          #include "ssd13xx.h"
   18          
-  19          #define BATTER_TH 2.7f
-  20          #define REFRESH_MS 1000
-  21          
-  22          uint8_t idata status[4] = {0};
-  23          uint16_t idata sys_tick = 0;
-  24          uint8_t idata setting_mode = 0;
-  25          uint16_t idata both_press_start = 0; // 同时按下的起始tick
-  26          bit both_press_active = 0;           // 同时按下已确认
-  27          
-  28          void Timer0_Init(void) {
-  29   1        AUXR |= 0x80;
-  30   1        TMOD &= 0xF0;
-  31   1        TL0 = 0x06;
-  32   1        TH0 = 0xFF;
-  33   1        TF0 = 0;
-  34   1        TR0 = 1;
-  35   1        ET0 = 1;
-  36   1      }
-  37          void Timer0_ISR(void) interrupt 1 {
-  38   1        TH0 = 0xFF;
-  39   1        TL0 = 0x06;
-  40   1        sys_tick++;
-  41   1      }
-  42          
-  43          void main(void) {
-  44   1        uint16_t idata last = 0, now;
-  45   1        char idata title[6];
-  46   1        char idata right[8];
-  47   1        uint8_t idata i, cha_th;
-  48   1        float idata v;
-  49   1        uint8_t idata vi, vd, p;
-  50   1      
-  51   1        EA = 0;
-  52   1        SSD13XX_Init();
-  53   1        SSD13XX_Clear();
-  54   1        BAT_ADC_Init();
-C51 COMPILER V9.59.0.0   MAIN                                                              07/19/2026 20:52:47 PAGE 2   
+  19          #define BATTER_TH 2.7f      // 电池检测阈值(V)
+  20          #define STOP_SOC 65         // 停止充电电量(%)
+  21          #define RESUME_SOC 58       // 恢复充电电量(%)
+  22          #define REFRESH_MS 1000     // 主循环检测周期(ms)
+  23          #define MEASURE_DELAY_MS 20 // 离线测量等待时间(ms)
+  24          #define TH_OVERFLOW 3       // 阈值溢出补偿（可忽略）
+  25          
+  26          // 按键长按时间定义（用于设置模式）
+  27          #define BOTH_PRESS_MS 50
+  28          
+  29          uint8_t idata status[4] = {0};  // 通道状态
+  30          uint16_t idata sys_tick = 0;    // 系统节拍计数器
+  31          uint8_t idata setting_mode = 0; // 0=正常模式, 1=阈值设置模式
+  32          uint8_t idata cha_th = 65;      // 充电目标阈值(%)
+  33          
+  34          uint8_t vi, vd;
+  35          // 同时按下检测
+  36          uint16_t idata both_press_start = 0;
+  37          bit both_press_active = 0;
+  38          
+  39          // 每个通道的CE状态（1=充电，0=停充）
+  40          static uint8_t ce_state[4] = {1, 1, 1, 1};
+  41          
+  42          void Timer0_Init(void) {
+  43   1        //   AUXR |= 0x80; // 定时器0 1T模式
+  44   1        //   TMOD &= 0xF0;
+  45   1        //   TL0 = 0x06; // 1ms @ 11.0592MHz
+  46   1        //   TH0 = 0xFF;
+  47   1        //   TF0 = 0;
+  48   1        //   TR0 = 1;
+  49   1      
+  50   1        AUXR |= 0x80; // 定时器时钟1T模式
+  51   1        TMOD &= 0xF0; // 设置定时器模式
+  52   1        TL0 = 0x48;   // 设置定时初始值
+  53   1        TH0 = 0x77;   // 设置定时初始值
+  54   1        TF0 = 0;      // 清除TF0标志
+C51 COMPILER V9.59.0.0   MAIN                                                              07/20/2026 21:06:12 PAGE 2   
 
-  55   1        CHR_Init();
-  56   1        KEY_Init();
-  57   1        Timer0_Init();
-  58   1      
-  59   1        for (i = 0; i < 4; i++) {
-  60   2          CHR_Set_CH(i + 1, 0);
-  61   2          status[i] = 0;
-  62   2        }
-  63   1      
-  64   1        EA = 1;
-  65   1      
-  66   1        while (1) {
-  67   2          now = sys_tick;
-  68   2      
-  69   2          // ★ 关中断保护下进行按键扫描
-  70   2          KEY_Scan_Handle(now);
-  71   2      
-  72   2          // ★ 非阻塞双键同时按下检测（50ms消抖）
-  73   2          if ((P32 == 0) && (P33 == 0)) {
-  74   3            if (!both_press_active) {
-  75   4              if (both_press_start == 0)
-  76   4                both_press_start = now;
-  77   4              else if (now - both_press_start >= 50) {
-  78   5                // 确认同时按下超过50ms
-  79   5                both_press_active = 1;
-  80   5                setting_mode = !setting_mode;
-  81   5                SSD13XX_Clear();
-  82   5              }
-  83   4            }
-  84   3          } else {
-  85   3            both_press_start = 0;
-  86   3            both_press_active = 0;
-  87   3          }
-  88   2      
-  89   2          // ★ 阈值设置界面
-  90   2          if (setting_mode) {
-  91   3            cha_th = KEY_GetThreshold();
-  92   3            SSD13XX_ClearPage(0);
-  93   3            SSD13XX_WriteString(0, 0, "Set Thr:", 0);
-  94   3            SSD13XX_WriteChar(56, 0, '0' + (cha_th / 10), 0);
-  95   3            SSD13XX_WriteChar(64, 0, '0' + (cha_th % 10), 0);
-  96   3            SSD13XX_WriteChar(72, 0, '%', 0);
-  97   3            SSD13XX_WriteString(0, 16, "Both->Back", 0);
-  98   3            continue;
-  99   3          }
- 100   2      
- 101   2          if (now - last < REFRESH_MS)
- 102   2            continue;
- 103   2          last = now;
- 104   2      
- 105   2          cha_th = KEY_GetThreshold();
- 106   2      
- 107   2          for (i = 0; i < 4; i++) {
- 108   3            EA = 0;
- 109   3            v = BAT_ADC_ReadVoltage(i);
- 110   3            EA = 1;
- 111   3      
- 112   3            title[0] = 'C';
- 113   3            title[1] = 'h';
- 114   3            title[2] = ' ';
- 115   3            title[3] = '1' + i;
- 116   3            title[4] = '\0';
-C51 COMPILER V9.59.0.0   MAIN                                                              07/19/2026 20:52:47 PAGE 3   
+  55   1        TR0 = 1;      // 定时器0开始计时
+  56   1      
+  57   1        ET0 = 1;
+  58   1      }
+  59          
+  60          void Timer0_ISR(void) interrupt 1 {
+  61   1        //   TH0 = 0xFF;
+  62   1        //   TL0 = 0x06;
+  63   1        TH0 = 0x77;
+  64   1        TL0 = 0x48;
+  65   1        sys_tick++;
+  66   1      }
+  67          
+  68          void main(void) {
+  69   1        uint16_t last_update = 0;
+  70   1        uint8_t i;
+  71   1        float v;
+  72   1        uint8_t soc;
+  73   1        char title[6];
+  74   1        char right[8];
+  75   1      
+  76   1        EA = 0;
+  77   1        SSD13XX_Init();
+  78   1        SSD13XX_Clear();
+  79   1        BAT_ADC_Init();
+  80   1        CHR_Init();
+  81   1        KEY_Init();
+  82   1        Timer0_Init();
+  83   1      
+  84   1        // 关闭所有通道充电
+  85   1        for (i = 0; i < 4; i++) {
+  86   2          CHR_Set_CH(i + 1, 0);
+  87   2          status[i] = 0;
+  88   2          ce_state[i] = 0;
+  89   2        }
+  90   1      
+  91   1        EA = 1;
+  92   1      
+  93   1        while (1) {
+  94   2          // 按键扫描（含设置模式切换）
+  95   2          KEY_Scan_Handle(sys_tick);
+  96   2      
+  97   2          // 检测双键同时按下（P32和P33）
+  98   2          if ((P32 == 0) && (P33 == 0)) {
+  99   3            if (!both_press_active) {
+ 100   4              if (both_press_start == 0)
+ 101   4                both_press_start = sys_tick;
+ 102   4              else if (sys_tick - both_press_start >= BOTH_PRESS_MS) {
+ 103   5                both_press_active = 1;
+ 104   5                setting_mode = !setting_mode;
+ 105   5                SSD13XX_Clear();
+ 106   5              }
+ 107   4            }
+ 108   3          } else {
+ 109   3            both_press_start = 0;
+ 110   3            both_press_active = 0;
+ 111   3          }
+ 112   2      
+ 113   2          // 设置模式
+ 114   2          if (setting_mode) {
+ 115   3            uint8_t cur_th = KEY_GetThreshold();
+ 116   3            // 仅在值变化或首次进入时刷新（防抖并降低I2C开销）
+C51 COMPILER V9.59.0.0   MAIN                                                              07/20/2026 21:06:12 PAGE 3   
 
- 117   3      
- 118   3            if (v < 0.01f) {
- 119   4              right[0] = '-';
- 120   4              right[1] = '-';
- 121   4              right[2] = '-';
- 122   4              right[3] = '\0';
- 123   4              // CHR_Set_CH(i + 1, 0);
- 124   4              CHR_Set_CH(i + 1, 1); // 这里是因为我ADC烧了，但不能浪费通道
- 125   4              Draw_ProgressBar_Double(0, i * 16, 128, title, "NoSig", right, 0);
- 126   4              continue;
- 127   4            }
- 128   3      
- 129   3            vi = (uint8_t)v;
- 130   3            vd = (uint8_t)((v - vi) * 10);
- 131   3            p = VoltageToSOC(v);
- 132   3      
- 133   3            right[0] = '0' + vi;
- 134   3            right[1] = '.';
- 135   3            right[2] = '0' + vd;
- 136   3            right[3] = 'V';
- 137   3            right[4] = '\0';
+ 117   3            if (cur_th != cha_th) {
+ 118   4              cha_th = cur_th;
+ 119   4              SSD13XX_ClearPage(0);
+ 120   4              SSD13XX_ClearPage(1);
+ 121   4              SSD13XX_WriteString(0, 0, "Set Thr:", 0);
+ 122   4              SSD13XX_WriteChar(56, 0, '0' + (cha_th / 10), 0);
+ 123   4              SSD13XX_WriteChar(64, 0, '0' + (cha_th % 10), 0);
+ 124   4              SSD13XX_WriteChar(72, 0, '%', 0);
+ 125   4              SSD13XX_WriteString(0, 16, "Both->Back", 0);
+ 126   4            }
+ 127   3            continue; // 不执行充电控制
+ 128   3          }
+ 129   2      
+ 130   2          if ((uint16_t)(sys_tick - last_update) < REFRESH_MS)
+ 131   2            continue;
+ 132   2          last_update = sys_tick;
+ 133   2      
+ 134   2          cha_th = KEY_GetThreshold(); // 同步按键阈值到充电控制阈值
+ 135   2      
+ 136   2          for (i = 0; i < 4; i++) {
+ 137   3            CHR_Set_CH(i + 1, 0);
  138   3      
- 139   3            if (v < BATTER_TH) {
- 140   4              CHR_Set_CH(i + 1, 0);
- 141   4              Draw_ProgressBar_Double(0, i * 16, 128, title, "Low", right, 0);
- 142   4            } else {
- 143   4              if (p >= cha_th)
- 144   4                CHR_Set_CH(i + 1, 0);
- 145   4              else
- 146   4                CHR_Set_CH(i + 1, 1);
- 147   4              Draw_ProgressBar_Double(0, i * 16, 128, title, right, right, p);
- 148   4            }
- 149   3          }
- 150   2        }
- 151   1      }
+ 139   3            delay_ms(MEASURE_DELAY_MS);
+ 140   3      
+ 141   3            EA = 0;
+ 142   3            v = BAT_ADC_ReadVoltage(i);
+ 143   3            EA = 1;
+ 144   3      
+ 145   3            // 组装显示标题
+ 146   3            title[0] = 'C';
+ 147   3            title[1] = 'h';
+ 148   3            title[2] = ' ';
+ 149   3            title[3] = '1' + i;
+ 150   3            title[4] = '\0';
+ 151   3      
+ 152   3            // 无电池或接触不良
+ 153   3            if (v < 0.01f) {
+ 154   4              ce_state[i] = 0; // 关闭充电
+ 155   4              right[0] = '-';
+ 156   4              right[1] = '-';
+ 157   4              right[2] = '-';
+ 158   4              right[3] = '\0';
+ 159   4              CHR_Set_CH(i + 1, 1); // adc损坏补偿 直接常开
+ 160   4              ce_state[i] = 1;
+ 161   4              Draw_ProgressBar_Double(0, i * 16, 128, title, "NoSig", right, 0);
+ 162   4              continue;
+ 163   4            }
+ 164   3      
+ 165   3            // 低于电池检测阈值
+ 166   3            if (v < BATTER_TH) {
+ 167   4              ce_state[i] = 0; // 关闭充电（或保持关闭）
+ 168   4              // 显示电压
+ 169   4              vi = (uint8_t)v;
+ 170   4              vd = (uint8_t)((v - vi) * 10);
+ 171   4              right[0] = '0' + vi;
+ 172   4              right[1] = '.';
+ 173   4              right[2] = '0' + vd;
+ 174   4              right[3] = 'V';
+ 175   4              right[4] = '\0';
+ 176   4              Draw_ProgressBar_Double(0, i * 16, 128, title, "Low", right, 0);
+ 177   4              continue;
+ 178   4            }
+C51 COMPILER V9.59.0.0   MAIN                                                              07/20/2026 21:06:12 PAGE 4   
+
+ 179   3      
+ 180   3            soc = VoltageToSOC(v);
+ 181   3      
+ 182   3            // 滞回决策 ----------
+ 183   3            if (soc >= cha_th) {
+ 184   4              ce_state[i] = 0;
+ 185   4            } else if (soc <= (cha_th - 7)) { // 恢复充电阈值 = 目标 - 7%
+ 186   4              ce_state[i] = 1;                // 恢复充电
+ 187   4            }
+ 188   3            // 否则保持原有状态
+ 189   3      
+ 190   3            CHR_Set_CH(i + 1, ce_state[i]);
+ 191   3      
+ 192   3            vi = (uint8_t)v;
+ 193   3            vd = (uint8_t)((v - vi) * 10);
+ 194   3            right[0] = '0' + vi;
+ 195   3            right[1] = '.';
+ 196   3            right[2] = '0' + vd;
+ 197   3            right[3] = 'V';
+ 198   3            right[4] = '\0';
+ 199   3            Draw_ProgressBar_Double(0, i * 16, 128, title, right, right, soc);
+ 200   3          }
+ 201   2        }
+ 202   1      }
+ 203          
+ 204          //   right[0] = '0' + vi;
+ 205          //   right[1] = '.';
+ 206          //   right[2] = '0' + vd;
+ 207          //   right[3] = 'V';
+ 208          //   right[4] = '\0';
+ 209          
+ 210          //   if (v < BATTER_TH) {
+ 211          //     CHR_Set_CH(i + 1, 0);
+ 212          //     Draw_ProgressBar_Double(0, i * 16, 128, title, "Low", right, 0);
+ 213          //   } else {
+ 214          //     if (p >= cha_th)
+ 215          //       CHR_Set_CH(i + 1, 0);
+ 216          //     else
+ 217          //       CHR_Set_CH(i + 1, 1);
+ 218          //     Draw_ProgressBar_Double(0, i * 16, 128, title, right, right, p);
+ 219          //   }
+ 220          // }
+ 221          
+ 222          // for (i = 0; i < 4; i++) {
+ 223          //   EA = 0;
+ 224          //   v = BAT_ADC_ReadVoltage(i);
+ 225          //   EA = 1;
+ 226          
+ 227          //   title[0] = 'C';
+ 228          //   title[1] = 'h';
+ 229          //   title[2] = ' ';
+ 230          //   title[3] = '1' + i;
+ 231          //   title[4] = '\0';
+ 232          
+ 233          //   if (v < 0.01f) {
+ 234          //     right[0] = '-';
+ 235          //     right[1] = '-';
+ 236          //     right[2] = '-';
+ 237          //     right[3] = '\0';
+ 238          //     // CHR_Set_CH(i + 1, 0);
+ 239          //     CHR_Set_CH(i + 1, 1); // 这里是因为我ADC烧了，但不能浪费通道
+ 240          //     Draw_ProgressBar_Double(0, i * 16, 128, title, "NoSig", right, 0);
+C51 COMPILER V9.59.0.0   MAIN                                                              07/20/2026 21:06:12 PAGE 5   
+
+ 241          //     continue;
+ 242          //   }
+ 243          
+ 244          //   vi = (uint8_t)v;
+ 245          //   vd = (uint8_t)((v - vi) * 10);
+ 246          //   p = VoltageToSOC(v);
+ 247          
+ 248          //   right[0] = '0' + vi;
+ 249          //   right[1] = '.';
+ 250          //   right[2] = '0' + vd;
+ 251          //   right[3] = 'V';
+ 252          //   right[4] = '\0';
+ 253          
+ 254          //   if (v < BATTER_TH) {
+ 255          //     CHR_Set_CH(i + 1, 0);
+ 256          //     Draw_ProgressBar_Double(0, i * 16, 128, title, "Low", right, 0);
+ 257          //   } else {
+ 258          //     if (p >= cha_th)
+ 259          //       CHR_Set_CH(i + 1, 0);
+ 260          //     else
+ 261          //       CHR_Set_CH(i + 1, 1);
+ 262          //     Draw_ProgressBar_Double(0, i * 16, 128, title, right, right, p);
+ 263          //   }
+ 264          // }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    727    ----
+   CODE SIZE        =    825    ----
    CONSTANT SIZE    =     30    ----
-   XDATA SIZE       =   ----    ----
+   XDATA SIZE       =      6      23
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
-   IDATA SIZE       =      9      27
+   IDATA SIZE       =     10    ----
    BIT SIZE         =      1    ----
 END OF MODULE INFORMATION.
 

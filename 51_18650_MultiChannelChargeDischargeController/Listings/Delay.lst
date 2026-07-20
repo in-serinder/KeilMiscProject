@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   DELAY                                                             07/19/2026 15:51:37 PAGE 1   
+C51 COMPILER V9.59.0.0   DELAY                                                             07/20/2026 20:51:50 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE DELAY
@@ -27,43 +27,38 @@ line level    source
   17          //   } while (--i);
   18          // }
   19          
-  20          void Delay1ms(void) //@11.0592MHz
+  20          void Delay1ms(void) //@35.000MHz
   21          {
-  22   1        uint8_t data i, j;
+  22   1        unsigned char data i, j;
   23   1      
-  24   1        _nop_();
-  25   1        _nop_();
-  26   1        _nop_();
-  27   1        i = 11;
-  28   1        j = 190;
-  29   1        do {
-  30   2          while (--j)
-  31   2            ;
-  32   2        } while (--i);
-  33   1      }
-  34          
-  35          // void Delay1us(void) //@11.0592MHz
-  36          // {
-  37          //   _nop_();
-  38          //   _nop_();
-  39          //   _nop_();
-  40          // }
-  41          
-  42          void delay_ms(uint16_t ms) {
-  43   1        while (ms--)
-  44   1          Delay1ms();
-  45   1      }
+  24   1        i = 35;
+  25   1        j = 8;
+  26   1        do {
+  27   2          while (--j)
+  28   2            ;
+  29   2        } while (--i);
+  30   1      }
+  31          
+  32          // void Delay1us(void) //@11.0592MHz
+  33          // {
+  34          //   _nop_();
+  35          //   _nop_();
+  36          //   _nop_();
+  37          // }
+  38          
+  39          void delay_ms(uint16_t ms) {
+  40   1        while (ms--)
+  41   1          Delay1ms();
+  42   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     32    ----
+   CODE SIZE        =     29    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----       2
    IDATA SIZE       =   ----    ----
-C51 COMPILER V9.59.0.0   DELAY                                                             07/19/2026 15:51:37 PAGE 2   
-
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
 

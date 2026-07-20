@@ -17,15 +17,12 @@
 //   } while (--i);
 // }
 
-void Delay1ms(void) //@11.0592MHz
+void Delay1ms(void) //@35.000MHz
 {
-  uint8_t data i, j;
+  unsigned char data i, j;
 
-  _nop_();
-  _nop_();
-  _nop_();
-  i = 11;
-  j = 190;
+  i = 35;
+  j = 8;
   do {
     while (--j)
       ;

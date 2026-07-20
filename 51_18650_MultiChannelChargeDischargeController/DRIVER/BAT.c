@@ -47,13 +47,34 @@ void BAT_ADC_Init(void) {
   }
 }
 
-
 uint16_t BAT_ADC_Read(BAT_Channel ch) {
+  // uint8_t ch_num = (uint8_t)ch & 0x07;
+  // uint16_t timeout;
+
+  // // POWER=1, START=1, SPEED=540clk, CHS=ch
+  // ADC_CONTR = 0x88 | ch_num;
+  // _nop_();
+  // _nop_();
+  // _nop_();
+  // _nop_();
+
+  // timeout = 0;
+  // while (!(ADC_CONTR & 0x10)) {
+  //   if (++timeout > 30000) {
+  //     ADC_CONTR = 0x80 | ch_num; // 超时停止
+  //     return 0;
+  //   }
+  // }
+
+  // ADC_CONTR = 0x80 | ch_num;
+
+  // // 右对齐：ADC_RES*4 + ADC_RESL
+  // return ((uint16_t)ADC_RES << 2) | (ADC_RESL & 0x03);
+
   uint8_t ch_num = (uint8_t)ch & 0x07;
   uint16_t timeout;
 
-  // POWER=1, START=1, SPEED=540clk, CHS=ch
-  ADC_CONTR = 0x88 | ch_num;
+  ADC_CONTR = 0x88 | ch_num; // POWER=1, START=1
   _nop_();
   _nop_();
   _nop_();
@@ -62,14 +83,13 @@ uint16_t BAT_ADC_Read(BAT_Channel ch) {
   timeout = 0;
   while (!(ADC_CONTR & 0x10)) {
     if (++timeout > 30000) {
-      ADC_CONTR = 0x80 | ch_num; // 超时停止
+      ADC_CONTR &= ~0x40; // 超时则停止
       return 0;
     }
   }
-
-  ADC_CONTR = 0x80 | ch_num;
-
-  // 右对齐：ADC_RES*4 + ADC_RESL
+  ADC_CONTR &= ~0x10; // 清除标志
+  ADCCFG |= 0x20;     // 设置 ADC 结果右对齐
+  // START 在转换完成后自动清零
   return ((uint16_t)ADC_RES << 2) | (ADC_RESL & 0x03);
 }
 
@@ -87,6 +107,8 @@ float BAT_ADC_ReadVoltage(BAT_Channel ch) {
   uint16_t mid;
   float v;
 
+  (void)BAT_ADC_Read(ch);
+
   for (i = 0; i < 10; i++)
     buf[i] = BAT_ADC_Read(ch);
 
@@ -100,9 +122,7 @@ float BAT_ADC_ReadVoltage(BAT_Channel ch) {
     }
   }
 
-
   mid = (buf[4] + buf[5]) / 2;
-
 
   sum = 0;
   t = 0;
