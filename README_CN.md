@@ -48,4 +48,5 @@ git clone  https://github.com/in-serinder/KeilMiscProject.git
 - [51 LCD1602 时钟项目](./51_LCD1602OClock/)
 - [51 4-8位数码管显示项目](./51_digital_4-8tube/)
 - [51 电阻穷举组合式假负载](./51_Rexhaustive_fakeload)
+- [STM32 峰值辅助仪](./STM32_PeakValueAssistant/)
 - [STM32 项目模板](./STM32_Project/)

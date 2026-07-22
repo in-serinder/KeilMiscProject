@@ -48,4 +48,5 @@ MCU_Platform_[Driver_specifies_hardware_driver_function]_Project_Name
 - [51 LCD1602 Clock Project](./51_LCD1602OClock/)
 - [51 4-8 Digit LED Display Project](./51_digital_4-8tube/)
 - [51 Resistor Exhaustive Combination Fake Load](./51_Rexhaustive_fakeload/)
+- [STM32 Peak Value Assistant](./STM32_PeakValueAssistant/)
 - [STM32 Project Template](./STM32_Project/)
