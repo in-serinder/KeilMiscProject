@@ -2,7 +2,7 @@
 
 //这里是通过光电模块对转轴上的触发板进行触发采集 当转一圈后通过轮子周长计数
 #define OBO_RATE 1000 //比例系数 这里是通过 轮子周长(cm) 获得公里就是 总程+OBO_RATE
-#define MILES_WRITE_COUNT 30 //达到指定计数周期后写入到EEPROM中
+#define TIME_WRITE_COUNT 60 * 2 //达到指定计数时间长度后写入到EEPROM中
 #define MILES_ADDR 0x01 //存储里程的地址
 
 uint32_t idata befor_Miles = 0; //公里数
@@ -45,6 +45,12 @@ float OBO_GET_SPEED(void){
     //上次访问点
     befor_Miles = millis_cm;
 
+    if(write_count >= TIME_WRITE_COUNT){
+        EEPROM_WriteU32(MILES_ADDR, millis_cm);
+        write_count = 0;
+    }
+    write_count++;
+
     // 防抖
     if(speed_kmh < 1.0f)
         speed_kmh = 0.0f;
@@ -58,9 +64,6 @@ float OBO_GET_SPEED(void){
 void INT0_Isr(void) interrupt 0
 {
     millis_cm += OBO_RATE;
-    if(write_count >= MILES_WRITE_COUNT){
-        EEPROM_WriteU32(MILES_ADDR, millis_cm);
-        write_count = 0;
-    }
-    write_count++;
+
+    
 }
