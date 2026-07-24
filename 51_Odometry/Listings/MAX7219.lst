@@ -1,0 +1,290 @@
+C51 COMPILER V9.59.0.0   MAX7219                                                           07/24/2026 22:02:48 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAX7219
+OBJECT MODULE PLACED IN .\Objects\MAX7219.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Hardware\MAX7219.c COMPACT OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Hardware;.\
+                    -System) DEBUG OBJECTEXTEND PRINT(.\Listings\MAX7219.lst) TABS(2) OBJECT(.\Objects\MAX7219.obj)
+
+line level    source
+
+   1          #include "stc89c52.h"
+   2          #include "Max7219.h"
+   3          #include "Delay.h"
+   4          
+   5          #include <string.h>
+   6          
+   7          // sbit MAX7219_CLK  = P2 ^ 0;
+   8          // sbit MAX7219_DIN  = P2 ^ 1;
+   9          // sbit MAX7219_LOAD = P2 ^ 2;
+  10          
+  11          #define MAX7219_BLANK 0x0F
+  12          
+  13          static const uint8_t code DigitMap[8] = {8,7,6,5,4,3,2,1};
+  14          
+  15          void Max7219_SendByte(uint8_t dat)
+  16          {
+  17   1          uint8_t i;
+  18   1          for (i = 0; i < 8; i++)
+  19   1          {
+  20   2              MAX7219_CLK = 0;
+  21   2              MAX7219_DIN = (dat & 0x80) ? 1 : 0;
+  22   2              dat <<= 1;
+  23   2              MAX7219_CLK = 1;
+  24   2              Delay_us(1);
+  25   2          }
+  26   1      }
+  27          
+  28          void Max7219_Write(uint8_t address, uint8_t dat)
+  29          {
+  30   1          MAX7219_LOAD = 0;
+  31   1          Max7219_SendByte(address);
+  32   1          Max7219_SendByte(dat);
+  33   1          MAX7219_LOAD = 1;
+  34   1          Delay_us(1);
+  35   1      }
+  36          
+  37          void Max7219_Init()
+  38          {
+  39   1          Delay_ms(10);
+  40   1          Max7219_Write(0x0C, 0x01);
+  41   1          Max7219_Write(0x0F, 0x00);
+  42   1          Max7219_Write(0x0B, 0x07);
+  43   1          Max7219_Write(0x09, 0xFF);
+  44   1          Max7219_Write(0x0A, 0x08);
+  45   1      }
+  46          
+  47          void Max7219_Display(uint8_t digit, uint8_t value, uint8_t dot_v)
+  48          {
+  49   1          Max7219_Write(digit, value | (dot_v ? 0x80 : 0x00));
+  50   1      }
+  51          
+  52          void Max7219_DisplayBlank(uint8_t digit, uint8_t dot_v)
+  53          {
+  54   1          Max7219_Write(digit, MAX7219_BLANK | (dot_v ? 0x80 : 0x00));
+C51 COMPILER V9.59.0.0   MAX7219                                                           07/24/2026 22:02:48 PAGE 2   
+
+  55   1      }
+  56          
+  57          void Max7219_Clear()
+  58          {
+  59   1          uint8_t i;
+  60   1          for (i = 0; i < 8; i++)
+  61   1          {
+  62   2              Max7219_Write(i + 1, 0x00);
+  63   2          }
+  64   1      }
+  65          
+  66          static uint8_t FloatToIntScale(float value, uint8_t format, signed long *int_val, uint8_t *neg)
+  67          {
+  68   1           uint8_t i, scale = 1;
+  69   1          uint8_t digits = 0;
+  70   1          uint16_t xdata tmp;
+  71   1          for (i = 0; i < format; i++)
+  72   1          {
+  73   2              scale *= 10;
+  74   2          }
+  75   1          if (value < 0)
+  76   1          {
+  77   2              *neg = 1;
+  78   2              value = -value;
+  79   2          }
+  80   1          else
+  81   1          {
+  82   2              *neg = 0;
+  83   2          }
+  84   1          *int_val = (signed long)(value * scale + 0.5f);
+  85   1          
+  86   1          tmp = *int_val;
+  87   1          if (tmp == 0)
+  88   1          {
+  89   2              digits = 1;
+  90   2          }
+  91   1          else
+  92   1          {
+  93   2              while (tmp > 0)
+  94   2              {
+  95   3                  tmp /= 10;
+  96   3                  digits++;
+  97   3              }
+  98   2          }
+  99   1          if (*neg) digits++;
+ 100   1          return digits;
+ 101   1      }
+ 102          
+ 103          static void DisplayScaledIntRange(uint8_t left_pos, uint8_t right_pos, signed long int_val, uint8_t format
+             -, uint8_t neg)
+ 104          {
+ 105   1          uint8_t total_digits = right_pos - left_pos + 1;
+ 106   1          uint8_t xdata buf[8] = {0};
+ 107   1          uint8_t xdata dot_pos[8] = {0};
+ 108   1          uint8_t pos;
+ 109   1           uint8_t digit_count = 0;
+ 110   1          uint8_t i;
+ 111   1          uint16_t xdata tmp;
+ 112   1          uint8_t fill_idx;
+ 113   1          for (i = 0; i < total_digits; i++)
+ 114   1          {
+ 115   2              buf[i] = MAX7219_BLANK;
+C51 COMPILER V9.59.0.0   MAX7219                                                           07/24/2026 22:02:48 PAGE 3   
+
+ 116   2              dot_pos[i] = 0;
+ 117   2          }
+ 118   1          tmp = int_val;
+ 119   1           fill_idx= total_digits - 1;
+ 120   1         
+ 121   1          do
+ 122   1          {
+ 123   2              if (fill_idx < 0) break;
+ 124   2              buf[fill_idx] = (uint8_t)(tmp % 10);
+ 125   2              digit_count++;
+ 126   2              if (format > 0 && digit_count == format)
+ 127   2              {
+ 128   3                  dot_pos[fill_idx] = 1;
+ 129   3              }
+ 130   2              tmp /= 10;
+ 131   2              fill_idx--;
+ 132   2          } while (tmp > 0);
+ 133   1          if (neg && fill_idx >= 0)
+ 134   1          {
+ 135   2              buf[fill_idx] = 0x0A;
+ 136   2              fill_idx--;
+ 137   2          }
+ 138   1          for (i = 0; i < total_digits; i++)
+ 139   1          {
+ 140   2               pos = DigitMap[left_pos - 1 + i];
+ 141   2              if (buf[i] == MAX7219_BLANK)
+ 142   2              {
+ 143   3                  Max7219_DisplayBlank(pos, dot_pos[i]);
+ 144   3              }
+ 145   2              else
+ 146   2              {
+ 147   3                  Max7219_Display(pos, buf[i], dot_pos[i]);
+ 148   3              }
+ 149   2          }
+ 150   1      }
+ 151          
+ 152          void Max7219_DisplayFloat(float value, uint8_t format)
+ 153          {
+ 154   1          uint16_t xdata int_val;
+ 155   1          uint8_t neg;
+ 156   1          if (format > 7) format = 7;
+ 157   1          FloatToIntScale(value, format, &int_val, &neg);
+*** WARNING C182 IN LINE 157 OF Hardware\MAX7219.c: pointer to different objects
+ 158   1          DisplayScaledIntRange(1, 8, int_val, format, neg);
+ 159   1      }
+ 160          
+ 161          void Max7219_DisplayFloatSplit(float value1, float value2, uint8_t format)
+ 162          {
+ 163   1          uint16_t xdata int_val1, int_val2;
+ 164   1          uint8_t neg1, neg2;
+ 165   1          if (format > 3) format = 3;
+ 166   1          FloatToIntScale(value1, format, &int_val1, &neg1);
+*** WARNING C182 IN LINE 166 OF Hardware\MAX7219.c: pointer to different objects
+ 167   1          FloatToIntScale(value2, format, &int_val2, &neg2);
+*** WARNING C182 IN LINE 167 OF Hardware\MAX7219.c: pointer to different objects
+ 168   1          DisplayScaledIntRange(1, 4, int_val1, format, neg1);
+ 169   1          DisplayScaledIntRange(5, 8, int_val2, format, neg2);
+ 170   1      }
+ 171          
+ 172          void Max7219_NumDisplay(double num)
+ 173          {
+ 174   1          uint8_t i;
+C51 COMPILER V9.59.0.0   MAX7219                                                           07/24/2026 22:02:48 PAGE 4   
+
+ 175   1          uint16_t xdata integer_part;
+ 176   1          uint16_t xdata decimal_part;
+ 177   1          uint8_t xdata int_digits[8] = {0};
+ 178   1          uint8_t xdata dec_digits[3] = {0};
+ 179   1          uint8_t int_len = 0;
+ 180   1        uint8_t xdata pos , dot;
+ 181   1      
+ 182   1          if (num < 0)
+ 183   1          {
+ 184   2              Max7219_Display(1, 0x0A, 0);
+ 185   2              num = -num;
+ 186   2              int_len = 1;
+ 187   2          }
+ 188   1          integer_part = (uint16_t)num;
+ 189   1          decimal_part = (uint16_t)((num - integer_part) * 1000);
+ 190   1          if (integer_part == 0)
+ 191   1          {
+ 192   2              int_digits[int_len++] = 0;
+ 193   2          }
+ 194   1          else
+ 195   1          {
+ 196   2              while (integer_part > 0)
+ 197   2              {
+ 198   3                  int_digits[int_len++] = integer_part % 10;
+ 199   3                  integer_part /= 10;
+ 200   3              }
+ 201   2          }
+ 202   1          dec_digits[0] = (decimal_part / 100) % 10;
+ 203   1          dec_digits[1] = (decimal_part / 10) % 10;
+ 204   1          dec_digits[2] = decimal_part % 10;
+ 205   1          for (i = 0; i < int_len; i++)
+ 206   1          {
+ 207   2               pos = (int_len > 1 && int_digits[int_len - 1] == 0x0A) ? (i + 2) : (i + 1);
+ 208   2               dot = (i == int_len - 1) ? 1 : 0;
+ 209   2              Max7219_Display(pos, int_digits[int_len - 1 - i], dot);
+ 210   2          }
+ 211   1          for (i = 0; i < 3; i++)
+ 212   1          {
+ 213   2               pos = int_len + 1 + i;
+ 214   2              if (pos > 8)
+ 215   2                  break;
+ 216   2              Max7219_Display(pos, dec_digits[i], 0);
+ 217   2          }
+ 218   1      }
+ 219          
+ 220          void Max7219DateDisplay(char *datestr)
+ 221          {
+ 222   1          uint8_t i;
+ 223   1          for (i = 0; i < 8; i++)
+ 224   1          {
+ 225   2              Max7219_Display(8 - i, datestr[i], (i == 3 || i == 5) ? 1 : 0);
+ 226   2          }
+ 227   1      }
+ 228          
+ 229          void removeChars(char *str, const char *remove)
+ 230          {
+ 231   1          char *src = str;
+ 232   1          char *dst = str;
+ 233   1          while (*src)
+ 234   1          {
+ 235   2              const char *r = remove;
+ 236   2              bit skip = 0;
+C51 COMPILER V9.59.0.0   MAX7219                                                           07/24/2026 22:02:48 PAGE 5   
+
+ 237   2              while (*r)
+ 238   2              {
+ 239   3                  if (*src == *r)
+ 240   3                  {
+ 241   4                      skip = 1;
+ 242   4                      break;
+ 243   4                  }
+ 244   3                  r++;
+ 245   3              }
+ 246   2              if (!skip)
+ 247   2              {
+ 248   3                  *dst++ = *src;
+ 249   3              }
+ 250   2              src++;
+ 251   2          }
+ 252   1          *dst = '\0';
+ 253   1      }
+ 254          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1838    ----
+   CONSTANT SIZE    =     35    ----
+   XDATA SIZE       =   ----      43
+   PDATA SIZE       =   ----      70
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  3 WARNING(S),  0 ERROR(S)

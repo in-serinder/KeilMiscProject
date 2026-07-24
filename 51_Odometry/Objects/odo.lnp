@@ -1,0 +1,11 @@
+".\Objects\main.obj",
+".\Objects\Display.obj",
+".\Objects\Delay.obj",
+".\Objects\uart.obj",
+".\Objects\24c64.obj",
+".\Objects\MAX7219.obj",
+".\Objects\key.obj",
+".\Objects\led.obj",
+".\Objects\obo.obj" 
+TO ".\Objects\odo" 
+PRINT(".\Listings\odo.m51") RAMSIZE(256) 

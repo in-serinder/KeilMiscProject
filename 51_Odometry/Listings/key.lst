@@ -1,0 +1,47 @@
+C51 COMPILER V9.59.0.0   KEY                                                               07/24/2026 21:52:56 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE KEY
+OBJECT MODULE PLACED IN .\Objects\key.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Hardware\key.c COMPACT OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Hardware;.\Syst
+                    -em) DEBUG OBJECTEXTEND PRINT(.\Listings\key.lst) TABS(2) OBJECT(.\Objects\key.obj)
+
+line level    source
+
+   1          #include "key.h"
+   2          
+   3          #define RESET_KEEP_TIME 6000 //6000ms保持RESET+MODE键按下 保证重置
+   4          
+   5          uint16_t xdata Reset_Cnt = 0;
+   6          
+   7          void Key_Init(void){
+   8   1          IT1 = 0;      //INT1(P3.3)上升沿+下降沿中断
+   9   1        EX1 = 1;      //使能INT1中断
+  10   1      }
+  11          
+  12          
+  13          bit Key_Scan(void){
+  14   1          //对于模式检测处于主函数 这里主要是对重置里程键进行扫描
+  15   1          if(Reset_Key&&Mode_Key){
+  16   2              Reset_Cnt++;
+  17   2          }
+  18   1          else{
+  19   2              Reset_Cnt = 0;
+  20   2          }
+  21   1      
+  22   1          return Reset_Cnt >= RESET_KEEP_TIME?1:0;
+  23   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     53    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      2    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

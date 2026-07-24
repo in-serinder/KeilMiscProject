@@ -1,0 +1,1 @@
+"Hardware\led.c" COMPACT OPTIMIZE (8,SPEED) BROWSE INCDIR(.\Hardware;.\System) DEBUG OBJECTEXTEND PRINT(.\Listings\led.lst) TABS (2) OBJECT(.\Objects\led.obj)
