@@ -4,11 +4,15 @@
 #define OBO_RATE 1000 //比例系数 这里是通过 轮子周长(cm) 获得公里就是 总程+OBO_RATE
 #define TIME_WRITE_COUNT 60 * 2 //达到指定计数时间长度后写入到EEPROM中
 #define MILES_ADDR 0x01 //存储里程的地址
+#define COUNT_SLOW 1 //是否统计慢速
+#define COUNT_SLOW_PATIENCE 10 //慢速耐心时间 计数
+
 
 uint32_t idata befor_Miles = 0; //公里数
 uint32_t idata millis_cm = 0; //cm制
 uint8_t idata write_count = 0; //写入计数周期
 float idata speed_kmh = 0.0f; //速度
+uint8_t idata slow_count = 0; //慢速计数周期
 
 void OBO_Init(void){
    	IT0 = 0;			//INT0(P3.2)上升沿+下降沿中断
@@ -46,11 +50,11 @@ float OBO_GET_SPEED(void){
     befor_Miles = millis_cm;
 
     if(write_count >= TIME_WRITE_COUNT){
-        EEPROM_WriteU32(MILES_ADDR, millis_cm);
+        if(speed_kmh > 0.5f || (COUNT_SLOW && slow_count >= COUNT_SLOW_PATIENCE)) EEPROM_WriteU32(MILES_ADDR, millis_cm); //当大于0.5km/h时判定正式骑行
         write_count = 0;
     }
     write_count++;
-
+    slow_count++;
     // 防抖
     if(speed_kmh < 1.0f)
         speed_kmh = 0.0f;

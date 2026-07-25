@@ -8,8 +8,10 @@ void Display_Init(void)
 
 
 void Display_SM_Mode(float speed, float mil){
+    uint8_t format = 2;
+    if (speed < 0.5) format = 3;
     LED_SM_Mode();
-    Max7219_DisplayFloatSplit(speed, mil, 2);
+    Max7219_DisplayFloatSplit(speed, mil, format);
 }
 
 
