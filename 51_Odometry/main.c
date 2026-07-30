@@ -1,3 +1,4 @@
+#include "System/stc89c52.h"
 #include "stc89c52.h"
 #include "Display.h"
 #include "obo.h"
@@ -29,16 +30,16 @@ void main(void)
     Key_Init();
 
     //硬件定时器驱动系统滴答
- 
-  
-    AUXR &= 0x7F;         // ★ 关闭1T模式！使用传统12T（与99%8051代码兼容）
-    TMOD &= 0xF0;         // Timer0 模式1（16位手动重装）
+
+    AUXR |= 0x7F;			//定时器时钟1T模式
+	TMOD &= 0xF0;			//设置定时器模式
     TMOD |= 0x01;
-    TH0 = 0xDC;           // 高8位
-    TL0 = 0x00;           // 低8位  → 0xDC00 = 10ms@11.0592MHz 12T
-    TF0 = 0;              // 清溢出标志
-    ET0 = 1;              // 使能Timer0中断（之前漏了！定时器中断没开）
-    TR0 = 1;              // 启动Timer0
+	// TL0 = 0xAE;				//设置定时初始值
+    TL0 = 0x00; 
+	TH0 = 0xDC;				//设置定时初始值
+	TF0 = 0;				//清除TF0标志
+    ET0 = 1;  
+	TR0 = 1;				//定时器0开始计时
 
     OBO_Init();
     EA = 1;             // 开启总中断
@@ -140,3 +141,10 @@ void INT1_Isr(void) interrupt 2
         ModeLastIntTick = sys_tick_10ms;
     }
 }
+
+
+// void main(){
+//     P10 = 0x00;
+//     P11 = 0x00;
+//     while(1);
+// }
