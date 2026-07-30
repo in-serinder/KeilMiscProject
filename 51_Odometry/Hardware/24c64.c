@@ -4,8 +4,8 @@
 // 延时函数
 void I2C_Delay(void)
 {
-    // unsigned char i = 2;
-    unsigned char i = 100; // 低于100延时在解码中会出现多1字符解码问题（逻辑分析仪显示FF） 或许加个电阻同步阻抗会很好
+    unsigned char i = 2;
+    // unsigned char i = 100; // 低于100延时在解码中会出现多1字符解码问题（逻辑分析仪显示FF） 或许加个电阻同步阻抗会很好
     while (i--)
         ;
 }
@@ -191,7 +191,7 @@ void EEPROM_ClearAll(void)
 }
 #endif
 
-// ========== 通用 Buffer 读写 ==========
+//  通用 Buffer 读写 
 
 /**
  * @brief  向EEPROM写入一段数据（通用buffer）
@@ -208,7 +208,7 @@ void EEPROM_WriteBuffer(unsigned int addr, unsigned char *buffer, unsigned int l
     }
 }
 
-// ========== 类型化读写（short / int / long / float） ==========
+//  类型化读写（short / int / long / float） 
 
 // 利用 union 共享内存进行字节拆分/合并，避免指针强转的严格别名问题
 typedef union {
@@ -222,7 +222,7 @@ typedef union {
     unsigned char  bytes[4]; // 最大 4 字节，覆盖 long/float
 } EEPROM_Union_t;
 
-// --- unsigned char / signed char ---
+//  unsigned char / signed char
 void EEPROM_WriteU8(unsigned int addr, unsigned char val)
 {
     EEPROM_WriteByte(addr, val);
@@ -243,7 +243,7 @@ signed char EEPROM_ReadS8(unsigned int addr)
 }
 #endif
 
-// --- unsigned int / signed int (16位) ---
+//  unsigned int / signed int (16位)
 #if 0
 void EEPROM_WriteU16(unsigned int addr, unsigned int val)
 {
@@ -274,7 +274,7 @@ signed int EEPROM_ReadS16(unsigned int addr)
 }
 #endif
 
-// --- unsigned long / signed long (32位) ---
+//  unsigned long / signed long (32位)
 void EEPROM_WriteU32(unsigned int addr, unsigned long val)
 {
     EEPROM_Union_t u;
@@ -303,7 +303,7 @@ signed long EEPROM_ReadS32(unsigned int addr)
 }
 #endif
 
-// --- float (32位) ---
+//  float (32位)
 #if 0
 void EEPROM_WriteFloat(unsigned int addr, float val)
 {
