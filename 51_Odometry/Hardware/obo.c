@@ -1,7 +1,6 @@
 #include "obo.h"
 #include "uart.h"
 
-/* ======== 内部变量 ======== */
 uint32_t idata raw_mm       = 0;    // 总脉冲累计 (cm, 用于速度计算)
 uint32_t idata valid_mm     = 0;    // 有效骑行里程 (cm, 筛掉推行/静止)
 uint32_t idata last_raw_mm  = 0;    // 上次速度计算时的 raw_mm
@@ -46,11 +45,7 @@ void OBO_Init(void)
     uint8_t boot_cnt, i;
 
 #if OBO_ACTIVE_HIGH
-    /* ---- 高电平有效（传感器输出高表示有脉冲）----
-     * STC89C52 INT0仅支持下降沿触发，所以不能用中断，
-     * 改用主循环轮询检测上升沿。
-     * 硬件需要：P3.2 外部加 10kΩ 下拉电阻到GND！
-     * 常态=低电平(0)，脉冲到来=高电平(1)                */
+            */
     OBO_PIN = 1;            // 准双向口输入态(内部上拉关闭，靠外部下拉)
     obo_prev_state = OBO_PIN;
     DEBUG_SY("OBO", "Polling mode (ACTIVE HIGH, ext pull-down 10k req)");
@@ -103,7 +98,14 @@ void OBO_Poll(void)
     }
     obo_prev_state = cur;
 #else
-    /* 中断模式无需轮询，此函数为空 */
+
+    // bit cur = OBO_PIN;
+    // if (cur && !obo_prev_state) {
+    //     if ((uint16_t)(sys_tick_10ms - last_pulse_tick) >= OBO_DEBOUNCE_TICK) {
+    //         OBO_CountPulse();
+    //     }
+    // }
+    // obo_prev_state = cur;
     ;
 #endif
 }
@@ -173,7 +175,7 @@ float OBO_GET_SPEED(void)
         }
         wnd_pulse = 0;
 
-        /*  10秒环形缓冲（真正的滑动平均）
+        /*  10秒环形缓冲
          *   cyc_buf[0~9]：最近10个1s窗口的速度
          *   工作时：旧值被挤出，新值加入，保持总和
          *   - 有脉冲时：spd > 0，正常入队

@@ -1,7 +1,6 @@
 #include "24c64.h"
 #include "Delay.h"
 
-// 延时函数
 void I2C_Delay(void)
 {
     unsigned char i = 2;
