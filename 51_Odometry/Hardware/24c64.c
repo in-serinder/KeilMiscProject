@@ -1,4 +1,5 @@
 #include "24c64.h"
+#include "Delay.h"
 
 // 延时函数
 void I2C_Delay(void)
@@ -97,7 +98,6 @@ void I2C_SendAck(bit ack)
 // 向EEPROM写入一个字节
 void EEPROM_WriteByte(unsigned int addr, unsigned char dat)
 {
-    unsigned char wait_i = 255;
     I2C_Start();
     I2C_SendByte(EEPROM_ADDR);
     if (I2C_WaitAck())
@@ -112,11 +112,9 @@ void EEPROM_WriteByte(unsigned int addr, unsigned char dat)
     if (I2C_WaitAck())
         return;
     I2C_Stop();
-    // 等待写入完成
-
-    while (wait_i--)
+        // 等待写入完成（~5ms，24C64写周期典型5ms）
+        Delay_ms(5);
         ;
-    ;
 }
 
 // 从EEPROM读取一个字节
@@ -144,6 +142,7 @@ unsigned char EEPROM_ReadByte(unsigned int addr)
 }
 
 // 向EEPROM写入字符串
+#if 0
 void EEPROM_WriteString(unsigned int addr, unsigned char *str)
 {
     while (*str)
@@ -152,8 +151,10 @@ void EEPROM_WriteString(unsigned int addr, unsigned char *str)
     }
     EEPROM_WriteByte(addr, 0); // 写入结束符
 }
+#endif
 
 // 从EEPROM读取字符串
+#if 0
 void EEPROM_ReadString(unsigned int addr, unsigned char *str, unsigned int len)
 {
     unsigned int read_str_i;
@@ -166,6 +167,7 @@ void EEPROM_ReadString(unsigned int addr, unsigned char *str, unsigned int len)
     }
     *str = 0; // 确保字符串结束
 }
+#endif
 
 // 读取EEPROM指定长度内容
 void EEPROM_ReadBuffer(unsigned int addr, unsigned char *buffer, unsigned int len)
@@ -178,6 +180,7 @@ void EEPROM_ReadBuffer(unsigned int addr, unsigned char *buffer, unsigned int le
 }
 
 // 清空EEPROM全部内容
+#if 0
 void EEPROM_ClearAll(void)
 {
     unsigned int clear_i;
@@ -186,6 +189,7 @@ void EEPROM_ClearAll(void)
         EEPROM_WriteByte(clear_i, 0);
     }
 }
+#endif
 
 // ========== 通用 Buffer 读写 ==========
 
@@ -228,6 +232,7 @@ unsigned char EEPROM_ReadU8(unsigned int addr)
     return EEPROM_ReadByte(addr);
 }
 
+#if 0
 void EEPROM_WriteS8(unsigned int addr, signed char val)
 {
     EEPROM_WriteByte(addr, (unsigned char)val);
@@ -236,8 +241,10 @@ signed char EEPROM_ReadS8(unsigned int addr)
 {
     return (signed char)EEPROM_ReadByte(addr);
 }
+#endif
 
 // --- unsigned int / signed int (16位) ---
+#if 0
 void EEPROM_WriteU16(unsigned int addr, unsigned int val)
 {
     EEPROM_Union_t u;
@@ -250,7 +257,9 @@ unsigned int EEPROM_ReadU16(unsigned int addr)
     EEPROM_ReadBuffer(addr, u.bytes, 2);
     return u.u16;
 }
+#endif
 
+#if 0
 void EEPROM_WriteS16(unsigned int addr, signed int val)
 {
     EEPROM_Union_t u;
@@ -263,6 +272,7 @@ signed int EEPROM_ReadS16(unsigned int addr)
     EEPROM_ReadBuffer(addr, u.bytes, 2);
     return u.s16;
 }
+#endif
 
 // --- unsigned long / signed long (32位) ---
 void EEPROM_WriteU32(unsigned int addr, unsigned long val)
@@ -278,6 +288,7 @@ unsigned long EEPROM_ReadU32(unsigned int addr)
     return u.u32;
 }
 
+#if 0
 void EEPROM_WriteS32(unsigned int addr, signed long val)
 {
     EEPROM_Union_t u;
@@ -290,8 +301,10 @@ signed long EEPROM_ReadS32(unsigned int addr)
     EEPROM_ReadBuffer(addr, u.bytes, 4);
     return u.s32;
 }
+#endif
 
 // --- float (32位) ---
+#if 0
 void EEPROM_WriteFloat(unsigned int addr, float val)
 {
     EEPROM_Union_t u;
@@ -304,3 +317,4 @@ float EEPROM_ReadFloat(unsigned int addr)
     EEPROM_ReadBuffer(addr, u.bytes, 4);
     return u.f32;
 }
+#endif

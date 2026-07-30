@@ -1,11 +1,11 @@
 #ifndef __24C64_H__
 #define __24C64_H__
 
-#include "stc89c52.h" //STC89C52的头文件，包含了寄存器定义和函数声明 用的是扁平封装 和Keil自带的reg52.h不同
+#include "stc89c52.h" 
 
 // 引脚定义
-#define SDA P34
-#define SCL P35
+#define SDA P25
+#define SCL P26
 
 // 24C64相关定义
 #define EEPROM_ADDR 0xA0 // 24C64设备地址

@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   DISPLAY                                                           07/24/2026 22:53:06 PAGE 1   
+C51 COMPILER V9.59.0.0   DISPLAY                                                           07/28/2026 23:45:29 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE DISPLAY
@@ -10,30 +10,69 @@ line level    source
 
    1          #include "Display.h"
    2          
-   3          
-   4          void Display_Init(void)
+   3          /* 根据里程值大小自动选择右半4位显示格式 */
+   4          static uint8_t AutoMileFormat(float mil)
    5          {
-   6   1          Max7219_Init();
-   7   1      }
-   8          
-   9          
-  10          void Display_SM_Mode(float speed, float mil){
-  11   1          LED_SM_Mode();
-  12   1          Max7219_DisplayFloatSplit(speed, mil, 2);
-  13   1      }
-  14          
-  15          
-  16          void Display_Obometry_Mode( float mil){
-  17   1          LED_Obometry_Mode();
-  18   1          Max7219_DisplayFloat(mil, 4);
-  19   1      }
+   6   1          if (mil < 10.0f)  return 2;   /*   9.99 km */
+   7   1          if (mil < 100.0f) return 1;   /*  99.9 km */
+   8   1          return 0;                      /* 999 km */
+   9   1      }
+  10          
+  11          
+  12          void Display_Init(void)
+  13          {
+  14   1          Max7219_Init();
+  15   1      }
+  16          
+  17          
+  18          /* 重置确认动画：全显 8. 闪烁3次 */
+  19          void Display_ResetAnimation(void)
+  20          {
+  21   1          uint8_t bl, di;
+  22   1          for (bl = 0; bl < 3; bl++) {
+  23   2              for (di = 1; di <= 8; di++) Max7219_Display(di, 8, 1);
+  24   2              Delay_ms(120);
+  25   2              Max7219_Clear();
+  26   2              Delay_ms(80);
+  27   2          }
+  28   1      }
+  29          
+  30          
+  31          /* 重置成功：显示 SUCCEED + 停顿 1.5s */
+  32          void Display_ShowSuccess(void)
+  33          {
+  34   1          uint8_t code succeed_segs[] = { SEG_S, SEG_U, SEG_C, SEG_C,
+  35   1                                          SEG_E, SEG_E, SEG_E, SEG_D };
+  36   1          Max7219_DisplayCustomSegments(succeed_segs, 8);
+  37   1          Delay_ms(1500);
+  38   1          Max7219_Clear();
+  39   1      }
+  40          
+  41          
+  42          void Display_SM_Mode(float speed, float mil){
+  43   1          uint8_t spd_fmt, mil_fmt;
+  44   1      
+  45   1          spd_fmt = (speed < 0.5f) ? 3 : 2;   /* 低速时用3位小数防闪烁 */
+  46   1          mil_fmt = AutoMileFormat(mil);
+  47   1      
+  48   1          LED_SM_Mode();
+  49   1          Max7219_DisplayDualFmt(speed, spd_fmt, mil, mil_fmt);
+  50   1      }
+  51          
+  52          
+  53          void Display_Obometry_Mode(float mil){
+  54   1          LED_Obometry_Mode();
+C51 COMPILER V9.59.0.0   DISPLAY                                                           07/28/2026 23:45:29 PAGE 2   
+
+  55   1          Max7219_DisplayFloat(mil, 3);
+  56   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     79    ----
-   CONSTANT SIZE    =   ----    ----
+   CODE SIZE        =    300    ----
+   CONSTANT SIZE    =      8    ----
    XDATA SIZE       =   ----    ----
-   PDATA SIZE       =   ----      12
+   PDATA SIZE       =   ----      20
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----

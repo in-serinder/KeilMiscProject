@@ -1,55 +1,87 @@
 #include "uart.h"
 
-// 串口初始化 (UART1, 9600bps@11.0592MHz, 定时器2作波特率发生器)
-void UART_Init(void) // 9600bps@11.0592MHz
+
+void UART_Init(void) //11.0592MHz  9600bps 
 {
-  // SCON = 0x50;  // 8位数据,可变波特率, 模式1
-  // AUXR |= 0x04; // 定时器时钟1T模式
-  // AUXR |= 0x01; // 定时器2作为UART1的波特率发生器
-  // T2L = 0xE0;   // 设置定时初始值
-  // T2H = 0xFE;   // 设置定时初始值
-  // AUXR |= 0x10; // 定时器2开始计时
+    SCON  = 0x50;    
+    PCON &= 0x7F;    
+    AUXR &= 0xBF;   
+    AUXR &= 0xFE;    
+    TMOD &= 0x0F;    
+    TMOD |= 0x20;    
+    TL1 = 0xFD;      
+    TH1 = 0xFD;      
+    ET1 = 0;         // 禁止T1中断
+    ES  = 0;         // 禁止串口中断（查询发送）
+    TR1 = 1;         // 启动T1
+    TI  = 1;         
 
-  	SCON = 0x50;		//8位数据,可变波特率
-	AUXR |= 0x40;		//定时器时钟1T模式
-	AUXR &= 0xFE;		//串口1选择定时器1为波特率发生器
-	TMOD &= 0x0F;		//设置定时器模式
-	TL1 = 0xE0;			//设置定时初始值
-	TH1 = 0xFE;			//设置定时初始值
-	ET1 = 0;			//禁止定时器中断
-	TR1 = 1;			//定时器1开始计时
+
+    UART_SendByte(0x55);
+    UART_SendByte(0x55);
+    UART_SendByte(0x55);
+    UART_SendByte('\r');
+    UART_SendByte('\n');
 }
 
-// 发送一个字节
-void UART_SendByte(uint8_t byte) {
-  SBUF = byte;
-  while (!TI)
-    ;
-  TI = 0;
+void UART_SendByte(uint8_t byte)
+{
+    TI = 0;         // 先清零TI
+    SBUF = byte;    // 写缓冲启动发送
+    while (!TI);    // 等待发送结束（硬件置TI=1）
 }
 
-// 发送字符串
-void UART_SendString(uint8_t *str) {
-  while (*str) {
-    UART_SendByte(*str++);
-  }
+void UART_SendString(uint8_t *str)
+{
+	while(*str)
+		UART_SendByte(*str++);
 }
 
-// 发送十六进制数
-void UART_SendHex(uint8_t byte) {
-  uint8_t high, low;
-  high = byte >> 4;
-  low = byte & 0x0F;
+void UART_SendHex(uint8_t byte)
+{
+	uint8_t high, low;
+	high = byte >> 4;
+	low = byte & 0x0F;
+	if(high < 10) UART_SendByte('0' + high);
+	else UART_SendByte('A' + (high - 10));
+	if(low < 10) UART_SendByte('0' + low);
+	else UART_SendByte('A' + (low - 10));
+}
 
-  // 发送高位
-  if (high < 10)
-    UART_SendByte('0' + high);
-  else
-    UART_SendByte('A' + (high - 10));
+/* 打印 uint16 十进制 */
+void UART_SendU16(uint16_t val)
+{
+    uint8_t buf[5], i = 0;
+    if (val == 0) { UART_SendByte('0'); return; }
+    while (val > 0 && i < 5) {
+        buf[i++] = '0' + (val % 10);
+        val /= 10;
+    }
+    while (i > 0) UART_SendByte(buf[--i]);
+}
 
-  // 发送低位
-  if (low < 10)
-    UART_SendByte('0' + low);
-  else
-    UART_SendByte('A' + (low - 10));
+/* 打印 uint32 十进制 */
+void UART_SendU32(uint32_t val)
+{
+    uint8_t buf[10], i = 0;
+    if (val == 0) { UART_SendByte('0'); return; }
+    while (val > 0 && i < 10) {
+        buf[i++] = '0' + (val % 10);
+        val /= 10;
+    }
+    while (i > 0) UART_SendByte(buf[--i]);
+}
+
+/* 打印 float (保留2位小数) */
+void UART_SendFloat2(float val)
+{
+    uint16_t int_part;
+    uint8_t frac;
+    if (val < 0) { UART_SendByte('-'); val = -val; }
+    int_part = (uint16_t)val;
+    UART_SendU16(int_part);
+    UART_SendByte('.');
+    frac = (uint8_t)((val - int_part) * 100.0f + 0.5f);
+    UART_SendByte('0' + (frac / 10));
+    UART_SendByte('0' + (frac % 10));
 }

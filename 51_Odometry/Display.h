@@ -8,6 +8,8 @@
 #include "led.h"
 
 void Display_Init(void);
+void Display_ResetAnimation(void);
+void Display_ShowSuccess(void);
 void Display_SM_Mode(float speed, float mil);
 void Display_Obometry_Mode( float mil);
 
