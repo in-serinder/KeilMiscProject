@@ -1,0 +1,7 @@
+#include "jumper.h"
+
+#define JUMPER_NIGHT_AUTO_TURN_ON_LIGHT_PIN GPIO_Pin_8
+#define JUMPER_OLEDP_POWER_ON_PIN GPIO_Pin_9
+#define JUMPER_PORT GPIOB
+
+
