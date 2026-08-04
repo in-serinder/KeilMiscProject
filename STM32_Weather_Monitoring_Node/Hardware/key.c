@@ -29,7 +29,6 @@ enum KeyState Key_Read(void)
         Delay_ms(20);
         if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15) == 0)
         {
-            /* 等待释放加超时500ms, 防止按键卡住/引脚被干扰时主循环死锁 */
             while (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15) == 0 && wait < 500)
             {
                 wait++;
@@ -44,7 +43,6 @@ enum KeyState Key_Read(void)
         Delay_ms(20);
         if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5) == 0)
         {
-            /* 等待释放加超时500ms, 防止按键卡住/引脚被干扰时主循环死锁 */
             while (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5) == 0 && wait < 500)
             {
                 wait++;
