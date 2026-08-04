@@ -51,11 +51,11 @@ float Adc_ReadVoltage(enum Adc_Channel channel)
     v = (float)raw * 3.3f / 4096.0f;
 
     if (channel == Adc_Channel_PT)
-        ratio = 186.0f / 86.0f;
+       ratio = 78.0f / 10.0f;
     else
-        ratio = 78.0f / 10.0f;
+         ratio = 186.0f / 86.0f;
 
-    v = v * ratio;
+    v = (channel == Adc_Channel_PT) ? v * ratio :( v * ratio)-0.71;
 
     v = (float)((int)(v * 10000.0f + 0.5f)) / 10000.0f;
     return v;

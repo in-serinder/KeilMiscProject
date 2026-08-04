@@ -28,6 +28,17 @@
 ".\objects\stm32f10x_usart.o"
 ".\objects\stm32f10x_wwdg.o"
 ".\objects\delay.o"
+".\objects\uart.o"
+".\objects\adc.o"
+".\objects\bmp280_s.o"
+".\objects\buzzer.o"
+".\objects\dht11_s.o"
+".\objects\jumper.o"
+".\objects\key.o"
+".\objects\light_ctl.o"
+".\objects\light_s.o"
+".\objects\oled_lightpower.o"
+".\objects\rain_s.o"
 --strict --scatter ".\Objects\Project.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

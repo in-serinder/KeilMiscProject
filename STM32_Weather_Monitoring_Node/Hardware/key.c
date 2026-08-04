@@ -9,7 +9,10 @@ PB5 OLED屏幕显示按键
 void Key_Init(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB, ENABLE);
+    /* PA15 是 JTAG_JTDI, 默认被JTAG调试接口占用
+       必须先关闭JTAG(保留SWD)才能作为普通IO使用 */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO, ENABLE);
+    GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -18,29 +21,37 @@ void Key_Init(void)
     GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
 
-uint8_t Key_Read(void)
+enum KeyState Key_Read(void)
 {
-    uint8_t key1 = 0;
-    uint8_t key2 = 0;
-    // PA15 照明LED按键 处于位 01
-    if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15) == 0)
+        if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15) == 0)
     {
+        uint32_t wait = 0;
         Delay_ms(20);
         if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15) == 0)
         {
-            key1 = 1;
-            while (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15) == 0);
+            /* 等待释放加超时500ms, 防止按键卡住/引脚被干扰时主循环死锁 */
+            while (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_15) == 0 && wait < 500)
+            {
+                wait++;
+                Delay_ms(1);
+            }
+            return Key_LIGHT_Power;
         }
     }
-    // PB5 OLED屏幕显示按键 处于位 10
     if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5) == 0)
     {
+        uint32_t wait = 0;
         Delay_ms(20);
         if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5) == 0)
         {
-            key2 = 1;
-            while (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5) == 0);
+            /* 等待释放加超时500ms, 防止按键卡住/引脚被干扰时主循环死锁 */
+            while (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_5) == 0 && wait < 500)
+            {
+                wait++;
+                Delay_ms(1);
+            }
+            return Key_OLED_Power;
         }
     }
-    return (key2 << 1) | key1;
+    return Key_None;
 }
