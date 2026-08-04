@@ -11,16 +11,19 @@
 #include "oled_lightpower.h"
 #include "rain_s.h"
 #include "stm32f10x.h"
+#include "weather_prediction.h"
 #include <stdbool.h>
 
 /*
  * 串口心跳通讯格式 以>开头 以<结尾 以-分隔
  * 发送
- * >dht11温度-dht11湿度-bmp280压力-bmp280温度-是否雨-是否夜晚-pt光伏板电压-电池电压-光线值-oled供电状态<
+ * >dht11温度-dht11湿度-bmp280压力-bmp280温度-是否雨-是否夜晚-pt光伏板电压-电池电压-光线值-oled供电状态-气象预测代码<
  * 例如
- * >13.00-50.00-1013.2-25.00-true-true-44.553v-3.92v-1000mv-true
+ * >13.00-50.00-1013.2-25.00-true-true-44.553v-3.92v-1000mv-true-1
  * oled供电状态: true=正在供电 false=已断电
  * ESP-01收到心跳后检测该字段 false->true 上升沿, 重新初始化SSD1306
+ * 气象预测代码(Weather_Prediction枚举):
+ *   0=转晴天 1=转降雨刮风 2=转阴天 3=转雷暴强对流 4=无效预测
  *
  * 调试信息格式 全英文
  *   // 传感器类型
@@ -43,6 +46,16 @@
 #define TASK_DHT11_TICKS 200u     // DHT11:  每200tick = 2s
 #define TASK_BMP280_TICKS 100u    // BMP280: 每100tick = 1s
 #define TASK_HEARTBEAT_TICKS 200u // 串口心跳+调试: 每200tick = 2s
+#define TASK_WEATHER_PRED_TICKS 6000u /* 气象预测: 每6000tick=60s采样一次 */
+
+/* 气象警报蜂鸣:
+   - 气象预测稳定转变(weather_prediction内部3分钟确认)为 转降雨/转雷暴
+     时触发 Buzzer_Config(0) 警报挂起, 之后每30s复响持续3分钟
+   - 10分钟冷却: 距上次触发不足10分钟不重复(解决判断抖动/反复报警)
+   - 转其他状态 -> Buzzer_Config(1) 取消警报 */
+#define WP_BUZZ_PERIOD_TICKS (30u * 100u)       /* 30s = 3000 tick */
+#define WP_BUZZ_DURATION_TICKS (3u * 60u * 100u)  /* 3分钟 = 18000 tick */
+#define WP_BUZZ_COOLDOWN_TICKS (10u * 60u * 100u) /* 10分钟 = 60000 tick */
 
 #define LED_LIGHT_SAVE_TH_VOLTAGE 3.65f // 光照省电保护电压
 #define OLED_ON_TICKS (5u * 60u * 100u)   // OLED手动供电时长 5分钟 = 30000tick
@@ -64,6 +77,11 @@ static bool lastNight = false;   // 上一次白/夜状态
 static bool oledPowered = false; // OLED当前供电状态
 static uint32_t oledOffTick = 0; // OLED自动关闭的时刻(tick)
 static bool dht11Ok = true;      // DHT11最近一次读取是否成功(用于失败节流)
+
+static uint32_t wpBuzzStart = 0;  /* 当前3分钟警报窗口起点tick */
+static uint32_t wpBuzzLast = 0;   /* 上次蜂鸣时刻tick */
+static bool wpBuzzWindow = false; /* 是否处于3分钟警报窗口 */
+static bool wpAlarmPrev = false;  /* 上一次是否处于警报状态(ToRainy/ToThunder) */
 
 void TIM2_IRQHandler(void) {
   if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
@@ -168,6 +186,46 @@ static void Light_Auto_Control(void) {
   }
 }
 
+/* 气象警报蜂鸣处理(每tick调用, 内部用tick差值控制周期/冷却):
+   进入 转降雨/转雷暴 稳定转变 -> Buzzer_Config(0)警报挂起,
+   警报窗口内每30s复响一次持续3分钟; 10分钟冷却内不重复触发;
+   转其他状态 -> Buzzer_Config(1)取消警报 */
+static void Weather_Alarm_Process(uint32_t now) {
+  Weather_Prediction code = Weather_Prediction_Print();
+  bool alarm = (code == Weather_Prediction_ToRainy ||
+                code == Weather_Prediction_ToThunder);
+
+  if (alarm) {
+    /* 稳定转变(刚进入警报)且冷却已过 -> 开启3分钟警报窗口 */
+    if (!wpAlarmPrev && !wpBuzzWindow &&
+        (int32_t)(now - wpBuzzLast) >= (int32_t)WP_BUZZ_COOLDOWN_TICKS) {
+      wpBuzzWindow = true;
+      wpBuzzStart = now;
+      wpBuzzLast = now;
+      Buzzer_Config(0); /* 警报挂起 */
+    }
+    /* 警报窗口内每30s复响一次, 持续3分钟 */
+    else if (wpBuzzWindow &&
+             (int32_t)(now - wpBuzzStart) < (int32_t)WP_BUZZ_DURATION_TICKS &&
+             (int32_t)(now - wpBuzzLast) >= (int32_t)WP_BUZZ_PERIOD_TICKS) {
+      wpBuzzLast = now;
+      Buzzer_Config(0);
+    }
+    /* 3分钟窗口到期关闭 */
+    if (wpBuzzWindow &&
+        (int32_t)(now - wpBuzzStart) >= (int32_t)WP_BUZZ_DURATION_TICKS) {
+      wpBuzzWindow = false;
+    }
+  } else {
+    /* 离开警报状态 -> 取消警报(响一声确认) */
+    if (wpAlarmPrev || wpBuzzWindow) {
+      wpBuzzWindow = false;
+      Buzzer_Config(1);
+    }
+  }
+  wpAlarmPrev = alarm;
+}
+
 static void Fast_Sensors_Read(void) {
   ptVoltage = Adc_ReadVoltage(Adc_Channel_PT);
   batteryVoltage = Adc_ReadVoltage(Adc_Channel_BAT);
@@ -220,10 +278,12 @@ static void Data_Acquire(uint32_t now) {
 }
 
 static void UART_Heartbeat(void) {
-  UART_Printf(">%.2f-%.2f-%.1f-%.2f-%s-%s-%.3fv-%.2fv-%umv-%s<\r\n",
+  /* 11字段: ...-oled供电状态-气象预测代码 */
+  UART_Printf(">%.2f-%.2f-%.1f-%.2f-%s-%s-%.3fv-%.2fv-%umv-%s-%d<\r\n",
               (float)dht11Temp, (float)dht11Humi, bmpPress, bmpTemp,
               isRain ? "true" : "false", isNight ? "true" : "false", ptVoltage,
-              batteryVoltage, lightMv, oledPowered ? "true" : "false");
+              batteryVoltage, lightMv, oledPowered ? "true" : "false",
+              (int)Weather_Prediction_Print());
 
   UART_Printf("[Debug][Sensor] DHT11-Temperature-%.2f\r\n", (float)dht11Temp);
   UART_Printf("[Debug][Sensor] DHT11-Humidity-%.2f\r\n", (float)dht11Humi);
@@ -239,11 +299,20 @@ static void UART_Heartbeat(void) {
 
 static void Tick_Process(uint32_t now) {
   static uint32_t lastHeartbeat = 0;
+  static uint32_t lastWeatherPred = 0;
 
   Key_Process(now);     // 按键扫描+业务逻辑
   Data_Acquire(now);    // 数据获取
   Oled_Manage(now);     // OLED供电管理
   Light_Auto_Control(); // 照明自动控制
+
+  // 气象预测: 每60s采样一次气压并刷新预测状态(内部3分钟稳定确认防抖)
+  if ((int32_t)(now - lastWeatherPred) >= TASK_WEATHER_PRED_TICKS) {
+    lastWeatherPred = now;
+    Weather_Prediction_Update();
+  }
+  // 气象警报蜂鸣: 每tick检查(内部有3分钟窗口/30s复响/10分钟冷却控制)
+  Weather_Alarm_Process(now);
 
   /* 心跳用增量式判断 + now快照:
      DHT11阻塞约20ms会让tickCounter漂移, 若用 tickCounter%200==0 会漏掉心跳;
@@ -262,9 +331,10 @@ int main(void) {
 
   Delay_ms(500);
 
-  Adc_Init();
+    Adc_Init();
   init_DHT11_S();
   BMP280_Sensor_Init();
+  Weather_Prediction_Init(); /* 气象预测模块初始化(清空历史气压缓冲) */
   Rain_Sensor_Init();
   Light_Init();
 

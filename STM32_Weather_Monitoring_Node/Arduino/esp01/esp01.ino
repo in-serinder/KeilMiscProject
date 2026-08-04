@@ -2,8 +2,9 @@
  * esp01.ino - STM32 气象监测节点 · ESP-01 无线网关
  *
  * 1) 串口(115200) 接收 STM32(User/main.c) 心跳数据, 格式:
- *      >dht11温度-dht11湿度-bmp280压力-bmp280温度-是否雨-是否夜晚-pt电压-bat电压-光线值-oled供电状态<
- *      例: >13.00-50.00-1013.2-25.00-true-true-44.553v-3.92v-1000mv-true<
+ *      >dht11温度-dht11湿度-bmp280压力-bmp280温度-是否雨-是否夜晚-pt电压-bat电压-光线值-oled供电状态-气象预测代码<
+ *      例: >13.00-50.00-1013.2-25.00-true-true-44.553v-3.92v-1000mv-true-1<
+ *      气象预测代码: 0=转晴天 1=转降雨刮风 2=转阴天 3=转雷暴强对流 4=无效预测
  *      当oled供电状态 false->true 上升沿(STM32重新给OLED上电)时,
  *      重新初始化SSD1306(断电后内部寄存器丢失)
  *      STM32还会发送指令帧 [Cmd]OLED-Reinit 主动通知重初始化,
@@ -67,10 +68,12 @@ JsonDocument json;
 String rawDht11Temp, rawDht11Humi, rawBmpPress, rawBmpTemp;
 String rawIsRain, rawIsNight;
 String rawPtVoltage, rawBatVoltage, rawLightMv;
+String rawWeatherPred; // 气象预测代码(STM32心跳第11字段: 0~4)
 // 用于JSON
 float fDht11Temp = 0, fDht11Humi = 0, fBmpPress = 0, fBmpTemp = 0;
 float fPtVoltage = 0, fBatVoltage = 0;
 int iLightMv = 0;
+int iWeatherPred = 0; // 0=转晴 1=转降雨刮风 2=转阴天 3=转雷暴 4=无效
 bool bIsRain = false;
 bool bIsNight = false;
 bool bOledPower = false;        // OLED当前供电状态(STM32心跳第10字段)
@@ -113,8 +116,9 @@ String formatUptime(unsigned long sec) {
   return String(buf);
 }
 
-/* 格式: >f-f-f-f-flag-flag-fv-fv-imv-flag<  共10个字段, 分隔符'-'
-   最后一个字段: OLED供电状态(true=供电中) */
+/* 格式: >f-f-f-f-flag-flag-fv-fv-imv-flag-code<  共11个字段, 分隔符'-'
+   第10字段: OLED供电状态(true=供电中)
+   第11字段: 气象预测代码(0=转晴 1=转降雨刮风 2=转阴天 3=转雷暴 4=无效) */
 void parserSTM32Serial(String data) {
   /* 指令帧: [Cmd]OLED-Reinit -> OLED重新上电, 需重新初始化SSD1306 */
   if (data.startsWith("[Cmd]OLED-Reinit")) {
@@ -126,16 +130,16 @@ void parserSTM32Serial(String data) {
     return;
   data = data.substring(1, data.length() - 1); // 去掉首尾 > >
 
-  String fields[10];
+  String fields[11];
   int count = 0, pos = 0;
-  while (count < 9) { // 找9个'-' => 10个字段
+  while (count < 10) { // 找10个'-' => 11个字段
     int idx = data.indexOf('-', pos);
     if (idx == -1)
       return;
     fields[count++] = data.substring(pos, idx);
     pos = idx + 1;
   }
-  fields[9] = data.substring(pos);
+  fields[10] = data.substring(pos);
 
   rawDht11Temp = fields[0];
   rawDht11Humi = fields[1];
@@ -146,6 +150,7 @@ void parserSTM32Serial(String data) {
   rawPtVoltage = fields[6];
   rawBatVoltage = fields[7];
   rawLightMv = fields[8];
+  rawWeatherPred = fields[10];
 
   // 去掉单位后缀 v / mv
   rawPtVoltage.replace("v", "");
@@ -161,6 +166,7 @@ void parserSTM32Serial(String data) {
   iLightMv = rawLightMv.toInt();
   bIsRain = (rawIsRain == "true");
   bIsNight = (rawIsNight == "true");
+  iWeatherPred = rawWeatherPred.toInt(); // 气象预测代码: 0~4
 
   // OLED供电状态: 检测 关闭->打开 上升沿, 需重新初始化SSD1306
   bool newPower = (fields[9] == "true");
@@ -220,6 +226,13 @@ void updateDisplay() {
   display.print(rawLightMv);
   display.print("mv");
 
+  // 气象预测代码右侧显示: 0晴 1雨 2阴 3雷 4无
+  display.setCursor(78, 36);
+  display.print("W:");
+  display.print(iWeatherPred);
+  display.print(" ");
+  display.print(iWeatherPred==1?"sun":(iWeatherPred==2?"rain":(iWeatherPred==3?"thud":"none")));
+
   // 运行时长 Uptime (格式化为 HH:MM:SS / XdHH:MM:SS)
   unsigned long uptime = (millis() - bootMs) / 1000UL;
   display.setCursor(0, 45);
@@ -247,6 +260,8 @@ void publishData() {
   json["bmp280_temp"] = fBmpTemp;
   json["is_rain"] = bIsRain;
   json["is_night"] = bIsNight;
+  json["weather_prediction"] =
+      iWeatherPred; /* 0晴 1转降雨刮风 2阴 3转雷暴强对流 4无效 */
   json["oled_power"] = bOledPower;
   json["pt_voltage"] = fPtVoltage;
   json["battery_voltage"] = fBatVoltage;

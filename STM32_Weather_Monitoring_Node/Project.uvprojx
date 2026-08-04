@@ -421,6 +421,16 @@
               <FilePath>.\User\main.c</FilePath>
             </File>
             <File>
+              <FileName>weather_prediction.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\weather_prediction.c</FilePath>
+            </File>
+            <File>
+              <FileName>weather_prediction.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\User\weather_prediction.h</FilePath>
+            </File>
+            <File>
               <FileName>stm32f10x_conf.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\User\stm32f10x_conf.h</FilePath>

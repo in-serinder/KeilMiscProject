@@ -41,3 +41,4 @@
 .\objects\main.o: .\Hardware\light_s.h
 .\objects\main.o: .\Hardware\oled_lightpower.h
 .\objects\main.o: .\Hardware\rain_s.h
+.\objects\main.o: User\weather_prediction.h
