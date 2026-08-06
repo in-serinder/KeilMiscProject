@@ -48,5 +48,11 @@ MCU_Platform_[Driver_specifies_hardware_driver_function]_Project_Name
 - [51 LCD1602 Clock Project](./51_LCD1602OClock/)
 - [51 4-8 Digit LED Display Project](./51_digital_4-8tube/)
 - [51 Resistor Exhaustive Combination Fake Load](./51_Rexhaustive_fakeload/)
+- [51 Odometry](./51_Odometry/)
 - [STM32 Peak Value Assistant](./STM32_PeakValueAssistant/)
+- [STM32 Solar Weather Monitoring Node](./STM32_Weather_Monitoring_Node/)
 - [STM32 Project Template](./STM32_Project/)
+
+### View
+
+https://count.getloli.com/get/@:Argovict/KeilMiscProject
