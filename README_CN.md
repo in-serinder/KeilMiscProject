@@ -55,4 +55,4 @@ git clone  https://github.com/in-serinder/KeilMiscProject.git
 
 ### 浏览量
 
-https://count.getloli.com/get/@:Argovict/KeilMiscProject
+![View](https://count.getloli.com/get/@:Argovict/KeilMiscProject)
