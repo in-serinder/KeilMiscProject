@@ -40,8 +40,11 @@
 #define OLED_WIDTH 128
 #define OLED_HEIGHT 64
 
-const char *WIFI_SSID = "2.4GHZ";
-const char *WIFI_PASSWORD = "320724fuck";
+
+
+const char *WIFI_SSID = "CMCC-5V9M";
+const char *WIFI_PASSWORD = "2beat35c";
+
 
 const char *MQTT_SERVER_IP = "8.130.191.142";
 const int MQTT_PORT = 1883;
