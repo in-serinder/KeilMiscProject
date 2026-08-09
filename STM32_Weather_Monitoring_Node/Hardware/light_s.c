@@ -1,6 +1,6 @@
 #include "light_s.h"
 
-#define LIGHT_SENSOR_NIGHT_THRESHOLD 1000
+#define LIGHT_SENSOR_NIGHT_THRESHOLD 3000
 #define LIGHT_SENSOR_ANG_PIN GPIO_Pin_0
 #define LIGHT_SENSOR_DIG_PIN GPIO_Pin_0
 #define LIGHT_SENSOR_ANG_PORT GPIOA
@@ -55,7 +55,7 @@ bool Light_Sensor_IsNight(void)
 {
     if (GPIO_ReadInputDataBit(LIGHT_SENSOR_DIG_PORT, LIGHT_SENSOR_DIG_PIN) == 0)
         return true;
-    return Light_Sensor_Read() <= LIGHT_SENSOR_NIGHT_THRESHOLD;
+    return Light_Sensor_Read() >= LIGHT_SENSOR_NIGHT_THRESHOLD;
 }
 
 float Light_Sensor_ReadVoltage(void)

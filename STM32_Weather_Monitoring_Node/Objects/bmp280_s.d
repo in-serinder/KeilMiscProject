@@ -31,3 +31,4 @@
 .\objects\bmp280_s.o: .\Library\misc.h
 .\objects\bmp280_s.o: D:\Keil_ARM\ARM\ARMCC\Bin\..\include\stdbool.h
 .\objects\bmp280_s.o: .\System\Delay.h
+.\objects\bmp280_s.o: .\System\UART.h

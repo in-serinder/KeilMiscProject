@@ -6,12 +6,22 @@
 static uint16_t buzzer_arr = 0;
 static uint16_t buzzer_psc = 0;
 
-static void Buzzer_SetFreq(uint16_t freq)
+void Buzzer_SetFreq(uint16_t freq)
 {
+
+    uint32_t arr;
+    if (freq < 50)   freq = 50;
+    if (freq > 20000) freq = 20000;
+
     TIM_Cmd(TIM1, DISABLE);
-    buzzer_arr = (uint16_t)(72000000 / freq - 1);
-    TIM1->ARR = buzzer_arr;
-    TIM1->CCR1 = (buzzer_arr + 1) / 2;
+
+    /* Prescaler = 0  72MHz tick */
+    TIM1->PSC = 0;
+    arr = 72000000UL / (uint32_t)freq;
+    if (arr == 0) arr = 1;
+    TIM1->ARR = (uint16_t)(arr - 1);
+    TIM1->CCR1 = (uint16_t)(arr / 2);
+
     TIM_Cmd(TIM1, ENABLE);
 }
 
@@ -28,8 +38,8 @@ void Buzzer_Init(void)
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    TIM_TimeBaseStructure.TIM_Period = 1000 - 1;
-    TIM_TimeBaseStructure.TIM_Prescaler = 72 - 1;
+    TIM_TimeBaseStructure.TIM_Period = 72000 - 1;    /* PSC=0时 72MHz/72000 = 1kHz 默认PWM */
+    TIM_TimeBaseStructure.TIM_Prescaler = 0;          /* 统一: PSC永远=0, 72MHz直接计数 */
     TIM_TimeBaseStructure.TIM_ClockDivision = 0;
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
     TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
@@ -48,12 +58,18 @@ void Buzzer_Init(void)
 
 void Buzzer_On(void)
 {
-    Buzzer_SetFreq(2500);
+    Buzzer_SetFreq(3000);
+}
+
+void Buzzer_Play(uint16_t freq)
+{
+    Buzzer_SetFreq(freq);
 }
 
 void Buzzer_Off(void)
 {
     TIM_Cmd(TIM1, DISABLE);
+    TIM1->CCR1 = 0;
 }
 
 void Buzzer_Config(bool state)

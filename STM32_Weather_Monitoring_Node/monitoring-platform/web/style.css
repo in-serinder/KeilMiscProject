@@ -1,0 +1,558 @@
+/* ========== 基础重置 ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Microsoft YaHei", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #1c1e22;
+    color: #d7d9de;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+code {
+    background: #2a2d33;
+    padding: 2px 8px;
+    border-radius: 2px;
+    color: #7cd1f9;
+    font-family: "Consolas", "Monaco", monospace;
+    font-size: 12px;
+}
+
+/* ========== 布局 ========== */
+.app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.topbar {
+    height: 56px;
+    background: #13151a;
+    border-bottom: 1px solid #262930;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    flex-shrink: 0;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-dot {
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(135deg, #4fb3ff, #7cd1f9);
+    box-shadow: 0 0 0 3px rgba(79, 179, 255, 0.15);
+}
+
+.brand h1 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: #e8eaee;
+}
+
+.status-bar {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: #1c1e22;
+    border: 1px solid #262930;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    background: #5c5f66;
+    display: inline-block;
+}
+
+.status-indicator.ok {
+    background: #3ddc84;
+    box-shadow: 0 0 8px rgba(61, 220, 132, 0.5);
+}
+
+.status-indicator.bad {
+    background: #ff5252;
+    box-shadow: 0 0 8px rgba(255, 82, 82, 0.5);
+}
+
+.status-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: #8f95a0;
+    font-weight: 600;
+}
+
+.status-time {
+    font-family: "Consolas", monospace;
+    font-size: 14px;
+    color: #7cd1f9;
+    font-weight: 600;
+    padding: 6px 14px;
+    background: #1c1e22;
+    border: 1px solid #262930;
+    min-width: 110px;
+    text-align: center;
+}
+
+/* ========== 主内容 ========== */
+.main {
+    flex: 1;
+    padding: 20px 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-width: 1920px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ========== 卡片通用 ========== */
+.card {
+    background: #24272e;
+    border: 1px solid #2e323a;
+    padding: 18px 20px;
+    position: relative;
+}
+
+.card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: #4fb3ff;
+}
+
+/* ========== 大字数据区 ========== */
+.big-data {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 14px;
+}
+
+.big-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 18px 18px;
+}
+
+.card-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8f95a0;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.card-value {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.card-value .num {
+    font-family: "Consolas", "Monaco", monospace;
+    font-size: 44px;
+    font-weight: 700;
+    color: #e8eaee;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    transition: color 0.3s;
+}
+
+.card-value .num.flash {
+    color: #7cd1f9;
+}
+
+.card-value .num.soc-high {
+    color: #3ddc84;
+}
+
+.card-value .num.soc-mid {
+    color: #feca57;
+}
+
+.card-value .num.soc-low {
+    color: #ff9f43;
+}
+
+.card-value .num.soc-crit {
+    color: #ff5252;
+}
+
+.card-value .num.feel-hot {
+    color: #ff6b6b;
+}
+
+.card-value .num.feel-cool {
+    color: #4fb3ff;
+}
+
+.card-value .num.pt-charge {
+    color: #3ddc84;
+}
+
+.card-value .num.pt-idle {
+    color: #8f95a0;
+}
+
+.card-value .num.battery-high {
+    color: #3ddc84;
+}
+
+.card-value .num.battery-medium {
+    color: #7cd1f9;
+}
+
+.card-value .num.battery-low {
+    color: #ff5252;
+}
+
+.card-value .unit {
+    font-size: 14px;
+    color: #8f95a0;
+    font-weight: 600;
+}
+
+.card-sub {
+    font-size: 11px;
+    color: #6c727d;
+    margin-top: 4px;
+    font-family: "Consolas", monospace;
+}
+
+/* ========== 预测行 ========== */
+.prediction-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.2fr;
+    gap: 14px;
+}
+
+.pred-card {
+    padding: 16px 20px;
+}
+
+.pred-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: #8f95a0;
+}
+
+.pred-tag {
+    padding: 3px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #fff;
+}
+
+.tag-hw {
+    background: #ff9f43;
+}
+
+.tag-sw {
+    background: #4fb3ff;
+}
+
+.pred-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 70px;
+}
+
+.pred-icon {
+    width: 64px;
+    height: 64px;
+    background: #1c1e22;
+    border: 1px solid #2e323a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    flex-shrink: 0;
+}
+
+.pred-icon.w0 {
+    background: linear-gradient(135deg, #2c3e50, #4a6572);
+}
+
+.pred-icon.w1 {
+    background: linear-gradient(135deg, #34495e, #6a89cc);
+}
+
+.pred-icon.w2 {
+    background: linear-gradient(135deg, #3d3d3d, #636e72);
+}
+
+.pred-icon.w3 {
+    background: linear-gradient(135deg, #5e1a1a, #c0392b);
+}
+
+.pred-icon.w4 {
+    background: #2a2d33;
+}
+
+.pred-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pred-text .pt-main {
+    font-size: 20px;
+    font-weight: 700;
+    color: #e8eaee;
+}
+
+.pred-text .pt-sub {
+    font-size: 11px;
+    color: #8f95a0;
+    font-family: "Consolas", monospace;
+}
+
+/* 状态卡片 */
+.state-card {
+    padding: 16px 20px;
+}
+
+.state-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 24px;
+    margin-bottom: 12px;
+}
+
+.state-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.state-label {
+    font-size: 11px;
+    color: #8f95a0;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.state-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #e8eaee;
+    font-family: "Consolas", monospace;
+    padding: 3px 10px;
+    background: #1c1e22;
+    border: 1px solid #2e323a;
+    min-width: 72px;
+    text-align: center;
+}
+
+.state-value.yes {
+    color: #ff5252;
+    border-color: #5c2a2a;
+    background: #3a1f1f;
+}
+
+.state-value.no {
+    color: #3ddc84;
+    border-color: #27543c;
+    background: #1f3a2b;
+}
+
+.state-footer {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid #2e323a;
+    font-size: 11px;
+    color: #8f95a0;
+    font-family: "Consolas", monospace;
+}
+
+.state-footer b {
+    color: #e8eaee;
+    font-weight: 600;
+}
+
+/* ========== 图表区 ========== */
+.charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+
+
+.chart-card {
+    padding: 14px 18px 18px;
+}
+
+.chart-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.chart-head h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e8eaee;
+    letter-spacing: 1px;
+}
+
+.range-select {
+    display: flex;
+    gap: 0;
+    border: 1px solid #2e323a;
+}
+
+.range-btn {
+    background: #1c1e22;
+    color: #8f95a0;
+    border: none;
+    padding: 5px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 1px;
+    font-family: inherit;
+    border-right: 1px solid #2e323a;
+    transition: all 0.15s;
+}
+
+.range-btn:last-child {
+    border-right: none;
+}
+
+.range-btn:hover {
+    background: #2a2d33;
+    color: #d7d9de;
+}
+
+.range-btn.active {
+    background: #4fb3ff;
+    color: #0d1117;
+}
+
+.chart-update {
+    font-size: 11px;
+    color: #8f95a0;
+    font-family: "Consolas", monospace;
+}
+
+.chart-wrap {
+    position: relative;
+    height: 240px;
+}
+
+/* ========== 底部 ========== */
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 12px;
+    font-size: 11px;
+    color: #6c727d;
+    font-family: "Consolas", monospace;
+    border-top: 1px solid #262930;
+}
+
+.footer b {
+    color: #8f95a0;
+    font-weight: 600;
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 1700px) {
+    .big-data {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1400px) {
+    .big-data {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1100px) {
+    .prediction-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .prediction-row .state-card {
+        grid-column: 1 / -1;
+    }
+
+    .charts {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .topbar {
+        padding: 0 12px;
+    }
+
+    .main {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .big-data {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .card-value .num {
+        font-size: 32px;
+    }
+
+    .prediction-row {
+        grid-template-columns: 1fr;
+    }
+
+    .brand h1 {
+        font-size: 11px;
+        letter-spacing: 1px;
+    }
+
+    .status-item {
+        padding: 4px 8px;
+    }
+
+    .status-label {
+        display: none;
+    }
+}

@@ -231,7 +231,11 @@ void updateDisplay() {
   display.print("W:");
   display.print(iWeatherPred);
   display.print(" ");
-  display.print(iWeatherPred==1?"sun":(iWeatherPred==2?"rain":(iWeatherPred==3?"thud":"none")));
+  display.print(iWeatherPred == 1
+                    ? "sun"
+                    : (iWeatherPred == 2
+                           ? "rain"
+                           : (iWeatherPred == 3 ? "thud" : "none")));
 
   // 运行时长 Uptime (格式化为 HH:MM:SS / XdHH:MM:SS)
   unsigned long uptime = (millis() - bootMs) / 1000UL;

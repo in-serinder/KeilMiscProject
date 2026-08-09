@@ -4,8 +4,8 @@
 #include <stdbool.h>
 
 void Buzzer_Init(void);
-void Buzzer_Config(bool state); //0：警报挂起 1：警报取消
-void Buzzer_On(void);
-void Buzzer_Off(void);
+void Buzzer_Config(bool state); /* 0：警报(扫频双音6次)  1：就绪(2kHz短音) */
+void Buzzer_On(void);           /* PWM 3000Hz 持续响 (无源蜂鸣器谐振峰值附近) */
+void Buzzer_Off(void);          /* 停止 PWM */
 
 #endif

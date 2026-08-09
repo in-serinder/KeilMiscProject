@@ -349,6 +349,22 @@ int main(void) {
   Jumper_Init();
   Oled_LightPower_Init();
 
+  /* ============ 开机蜂鸣器 自检 ============
+   *  板子是 16Ω 无源蜂鸣器 + NPN(高电平导通).
+   *  无源蜂鸣器必须靠 PWM 方波驱动其机械膜片共振, 且必须落在它的
+   *  谐振频率窗口(典型 2.3kHz~3.2kHz)内才会尖锐响亮.
+   *  这里使用 3000Hz 长音 1s. 若还是不够尖锐, 把下面 3000
+   *  依次换成 2300 / 2500 / 2700 / 2800 / 3000 / 3200 试一下,
+   *  其中某个频率会明显最尖锐 - 那就是它的真实谐振点.
+   */
+  UART_SendString("[Boot] Buzzer-Beep @3000Hz 1s (Passive)...\r\n");
+  /* 直接调用 SetFreq(3000) = 真正3kHz PWM方波, 打到谐振上 */
+  Buzzer_SetFreq(3000);  
+  Delay_ms(1000);
+  Buzzer_Off();
+  Delay_ms(50);  /* 分隔静音 */
+  /* ============================================ */
+
   Buzzer_Config(1);
 
   UART_Printf("[Debug][Config] Jumper-IsNightAutoTurnOnLight-%s\r\n",

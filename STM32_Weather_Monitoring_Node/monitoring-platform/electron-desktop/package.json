@@ -1,0 +1,22 @@
+{
+  "name": "weather-monitoring-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "STM32 天气监测节点 - 桌面客户端",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "dependencies": {
+    "mqtt": "^5.3.4",
+    "sqlite3": "^5.1.7",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "socket.io": "^4.7.4"
+  },
+  "devDependencies": {
+    "electron": "^41.7.1"
+  }
+}

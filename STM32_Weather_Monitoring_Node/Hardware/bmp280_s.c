@@ -1,5 +1,6 @@
 #include "bmp280_s.h"
 #include "Delay.h"
+#include "UART.h"
 
 #define BMP280_SENSOR_SDA GPIO_Pin_11
 #define BMP280_SENSOR_SCL GPIO_Pin_10
@@ -13,6 +14,8 @@
 #define BMP280_REG_CTRL    0xF4
 #define BMP280_REG_CONFIG  0xF5
 #define BMP280_REG_DATA    0xF7
+
+#define BMP280_DEVICE_ID   0x58 /* 读寄存器0xD0应返回0x58, 用于校验I2C通讯 */
 
 static uint16_t dig_T1;
 static int16_t  dig_T2, dig_T3;
@@ -62,9 +65,11 @@ static void I2C_Stop(void)
     SDA_H(); Delay_us(5);
 }
 
-static void I2C_SendByte(uint8_t b)
+/* 发送1字节, 第9个时钟释放SDA读取从机ACK
+   返回: 0=从机应答(ACK) 1=从机无应答(NACK) */
+static uint8_t I2C_WriteByte(uint8_t b)
 {
-    uint8_t i;
+    uint8_t i, ack;
     I2C_SDA_Out();
     for (i = 0; i < 8; i++)
     {
@@ -74,76 +79,85 @@ static void I2C_SendByte(uint8_t b)
         SCL_H(); Delay_us(5);
         SCL_L(); Delay_us(3);
     }
+    I2C_SDA_In();
+    SCL_H(); Delay_us(5);
+    ack = SDA_READ(); /* 0=ACK 1=NACK */
+    SCL_L(); Delay_us(3);
+    I2C_SDA_Out();
+    return ack;
 }
 
+/* 读取1字节; ack=1时master发ACK(继续读), ack=0时master发NACK(最后一个字节) */
 static uint8_t I2C_ReadByte(uint8_t ack)
 {
     uint8_t i, b = 0;
     I2C_SDA_In();
     for (i = 0; i < 8; i++)
     {
-        SCL_L(); Delay_us(3);
         SCL_H(); Delay_us(5);
         b <<= 1;
         if (SDA_READ()) b |= 0x01;
+        SCL_L(); Delay_us(3);
     }
-    //发送ACK/NACK
+    /* 第9个时钟: master发送ACK/NACK */
     I2C_SDA_Out();
     if (ack) SDA_L(); else SDA_H();
+    Delay_us(3);
     SCL_H(); Delay_us(5);
-    SCL_L();
+    SCL_L(); Delay_us(3);
     return b;
 }
 
-static void BMP280_WriteReg(uint8_t reg, uint8_t val)
+/* 写寄存器: 地址+寄存器+数据, 任一字节无应答返回1 */
+static uint8_t BMP280_WriteReg(uint8_t reg, uint8_t val)
 {
+    uint8_t fail = 0;
     I2C_Start();
-    I2C_SendByte(BMP280_ADDR_WRITE);
-    I2C_ReadByte(1); //读ACK，忽略返回
-    I2C_SendByte(reg);
-    I2C_ReadByte(1);
-    I2C_SendByte(val);
-    I2C_ReadByte(1);
+    if (I2C_WriteByte(BMP280_ADDR_WRITE)) fail = 1; /* 器件无应答 */
+    if (I2C_WriteByte(reg)) fail = 1;
+    if (I2C_WriteByte(val)) fail = 1;
     I2C_Stop();
+    return fail;
 }
 
-static void BMP280_ReadBuf(uint8_t reg, uint8_t *buf, uint8_t len)
+/* 连续读len字节, 任一步无应答返回1 */
+static uint8_t BMP280_ReadBuf(uint8_t reg, uint8_t *buf, uint8_t len)
 {
-    uint8_t i;
+    uint8_t i, fail = 0;
     I2C_Start();
-    I2C_SendByte(BMP280_ADDR_WRITE);
-    I2C_ReadByte(1);
-    I2C_SendByte(reg);
-    I2C_ReadByte(1);
-    I2C_Start(); //重复起始
-    I2C_SendByte(BMP280_ADDR_READ);
-    I2C_ReadByte(1);
+    if (I2C_WriteByte(BMP280_ADDR_WRITE)) fail = 1;
+    if (I2C_WriteByte(reg)) fail = 1;
+    I2C_Start(); /* 重复起始: 写->读切换 */
+    if (I2C_WriteByte(BMP280_ADDR_READ)) fail = 1;
     for (i = 0; i < len; i++)
-        buf[i] = I2C_ReadByte((i == (len - 1)) ? 0 : 1);
+        buf[i] = I2C_ReadByte((i == (len - 1)) ? 0 : 1); /* 最后一字节NACK */
     I2C_Stop();
+    return fail;
 }
 
 static void BMP280_ReadCalib(void)
 {
     uint8_t buf[24];
     BMP280_ReadBuf(BMP280_REG_CALIB, buf, 24);
-    dig_T1 = (uint16_t)buf[0] | ((uint16_t)buf[1] << 8);
-    dig_T2 = (int16_t)buf[2]  | ((int16_t)buf[3] << 8);
-    dig_T3 = (int16_t)buf[4]  | ((int16_t)buf[5] << 8);
+        dig_T1 = (uint16_t)buf[0] | ((uint16_t)buf[1] << 8);
+    dig_T2 = (int16_t)((uint16_t)buf[2] | ((uint16_t)buf[3] << 8));
+    dig_T3 = (int16_t)((uint16_t)buf[4] | ((uint16_t)buf[5] << 8));
     dig_P1 = (uint16_t)buf[6] | ((uint16_t)buf[7] << 8);
-    dig_P2 = (int16_t)buf[8]  | ((int16_t)buf[9] << 8);
-    dig_P3 = (int16_t)buf[10] | ((int16_t)buf[11] << 8);
-    dig_P4 = (int16_t)buf[12] | ((int16_t)buf[13] << 8);
-    dig_P5 = (int16_t)buf[14] | ((int16_t)buf[15] << 8);
-    dig_P6 = (int16_t)buf[16] | ((int16_t)buf[17] << 8);
-    dig_P7 = (int16_t)buf[18] | ((int16_t)buf[19] << 8);
-    dig_P8 = (int16_t)buf[20] | ((int16_t)buf[21] << 8);
-    dig_P9 = (int16_t)buf[22] | ((int16_t)buf[23] << 8);
+    dig_P2 = (int16_t)((uint16_t)buf[8]  | ((uint16_t)buf[9] << 8));
+    dig_P3 = (int16_t)((uint16_t)buf[10] | ((uint16_t)buf[11] << 8));
+    dig_P4 = (int16_t)((uint16_t)buf[12] | ((uint16_t)buf[13] << 8));
+    dig_P5 = (int16_t)((uint16_t)buf[14] | ((uint16_t)buf[15] << 8));
+    dig_P6 = (int16_t)((uint16_t)buf[16] | ((uint16_t)buf[17] << 8));
+    dig_P7 = (int16_t)((uint16_t)buf[18] | ((uint16_t)buf[19] << 8));
+    dig_P8 = (int16_t)((uint16_t)buf[20] | ((uint16_t)buf[21] << 8));
+    dig_P9 = (int16_t)((uint16_t)buf[22] | ((uint16_t)buf[23] << 8));
 }
 
 void BMP280_Sensor_Init(void)
 {
     GPIO_InitTypeDef g;
+    uint8_t id, fail;
+
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 
     g.GPIO_Pin = BMP280_SENSOR_SCL | BMP280_SENSOR_SDA;
@@ -153,12 +167,35 @@ void BMP280_Sensor_Init(void)
     SCL_H(); SDA_H();
     Delay_ms(20);
 
-    //读取校准参数
+    /* 读取器件ID, 校验I2C通讯(0x58=BMP280/BME280) */
+    id = 0;
+    fail = BMP280_ReadBuf(BMP280_REG_ID, &id, 1);
+    if (fail || id != BMP280_DEVICE_ID)
+    {
+        UART_Printf("[BMP280] ERROR: ID read fail=%d id=0x%02X\r\n", fail, id);
+        UART_Printf("[BMP280] Check wiring: SCL=PB10 SDA=PB11 addr=0x76\r\n");
+        return; // 通讯失败则不再配置, 后续读取返回0
+    }
+    UART_Printf("[BMP280] ID=0x%02X OK\r\n", id);
+
     BMP280_ReadCalib();
-    //配置：温度x1采样 压力x1采样 正常模式(0x27=001 001 11)
-    BMP280_WriteReg(BMP280_REG_CTRL, 0x27);
-    //配置：待机0.5ms IIR滤波x4 0x08=000 010 00
-    BMP280_WriteReg(BMP280_REG_CONFIG, 0x08);
+    // 校准参数有效性: 芯片正常时 dig_T1>0 且 dig_P1>0
+    if (dig_T1 == 0 && dig_P1 == 0)
+    {
+        UART_Printf("[BMP280] ERROR: calib all zero\r\n");
+        return;
+    }
+
+    // 配置: 温度x1采样 压力x1采样 正常模式(0x27=001 001 11)
+    fail = BMP280_WriteReg(BMP280_REG_CTRL, 0x27);
+    // 配置: 待机0.5ms IIR滤波x4 0x08=000 010 00
+    fail |= BMP280_WriteReg(BMP280_REG_CONFIG, 0x08);
+    if (fail)
+        UART_Printf("[BMP280] WARN: reg write NACK\r\n");
+    else
+        UART_Printf("[BMP280] Init OK\r\n");
+
+    Delay_ms(15); // 等待normal模式完成首次测量(约8.3ms)
 }
 
 void BMP280_Sensor_Read(void)
