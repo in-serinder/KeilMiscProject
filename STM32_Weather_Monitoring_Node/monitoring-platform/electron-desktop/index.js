@@ -6,115 +6,28 @@ const {
     dialog
 } = require('electron');
 const path = require('path');
-const {
-    fork
-} = require('child_process');
-
-// ========== 配置 ==========
-const HTTP_PORT = 3000;
-const BACKEND_ENTRY = path.join(__dirname, '..', 'backend', 'main.js');
-const FRONTEND_URL = `http://localhost:${HTTP_PORT}`;
+const fs = require('fs');
 
 const isDev = process.argv.includes('--dev');
 
-// ========== 全局变量 ==========
 let mainWindow = null;
-let backendProcess = null;
-let backendReady = false;
 
-// ========== 启动后端服务器（子进程） ==========
-function startBackend() {
-    console.log('[Electron] 正在启动后端服务...');
-
-    // 将当前 electron-desktop/node_modules 加入 NODE_PATH，让 backend/main.js 能找到依赖
-    const nodePath = process.env.NODE_PATH ?
-        process.env.NODE_PATH + path.delimiter + path.join(__dirname, 'node_modules') :
-        path.join(__dirname, 'node_modules');
-
-    const env = {
-        ...process.env,
-        NODE_PATH: nodePath,
-        ELECTRON_WRAPPED: '1'
-    };
-
-    backendProcess = fork(BACKEND_ENTRY, [], {
-        env: env,
-        stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-        cwd: path.dirname(BACKEND_ENTRY),
-        windowsHide: true
-    });
-
-    // 监听 stdout/stderr
-    backendProcess.stdout.on('data', (data) => {
-        const msg = data.toString().trim();
-        if (msg) {
-            console.log('[BACKEND]', msg);
-            // 检测服务是否就绪
-            if (msg.includes('HTTP/Web 服务') || msg.includes('localhost:' + HTTP_PORT) || msg.includes('已启动')) {
-                if (!backendReady) {
-                    backendReady = true;
-                    console.log('[Electron] 后端就绪，加载前端...');
-                    loadFrontend();
-                }
-            }
-        }
-    });
-
-    backendProcess.stderr.on('data', (data) => {
-        console.error('[BACKEND_ERR]', data.toString().trim());
-    });
-
-    backendProcess.on('message', (msg) => {
-        console.log('[BACKEND_IPC]', msg);
-    });
-
-    backendProcess.on('exit', (code, signal) => {
-        console.log(`[Electron] 后端进程退出 code=${code} signal=${signal}`);
-        backendReady = false;
-        if (!app.isQuiting) {
-            // 如果不是正常退出，尝试重启或者提示用户
-            dialog.showErrorBox(
-                '后端服务异常退出',
-                `后端服务进程已退出 (code=${code}). 应用即将关闭，请重新启动。`
-            );
-            quitApp();
-        }
-    });
-
-    backendProcess.on('error', (err) => {
-        console.error('[Electron] 后端进程错误:', err);
-        dialog.showErrorBox('无法启动后端服务', err.message || String(err));
-        quitApp();
-    });
-
-    // 兜底：如果 stdout 中没有检测到就绪信号，3秒后强制加载
-    setTimeout(() => {
-        if (!backendReady) {
-            console.log('[Electron] 就绪信号超时，尝试加载...');
-            backendReady = true;
-            loadFrontend();
-        }
-    }, 5000);
+// ========== 资源路径 (开发: web/ 目录; 打包: resources/web) ==========
+function getFrontendPath() {
+    if (app.isPackaged) {
+        return path.join(process.resourcesPath, 'web', 'index.html');
+    }
+    return path.join(__dirname, '..', 'web', 'index.html');
 }
 
-// ========== 创建窗口并加载前端 ==========
-function loadFrontend() {
-    if (!mainWindow) {
-        createMainWindow();
-    }
-    if (mainWindow) {
-        mainWindow.loadURL(FRONTEND_URL).catch(err => {
-            console.error('[Electron] 加载失败:', err);
-            // 重试一次
-            setTimeout(() => {
-                if (mainWindow && !mainWindow.isDestroyed()) {
-                    mainWindow.loadURL(FRONTEND_URL).catch(() => {});
-                }
-            }, 1500);
-        });
-    }
+function getIconPath() {
+    const p = app.isPackaged ?
+        path.join(process.resourcesPath, 'web', 'favicon.png') :
+        path.join(__dirname, '..', 'web', 'favicon.png');
+    return fs.existsSync(p) ? p : undefined;
 }
 
+// ========== 创建窗口 ==========
 function createMainWindow() {
     mainWindow = new BrowserWindow({
         width: 1440,
@@ -125,13 +38,13 @@ function createMainWindow() {
         title: '天气监测节点 · Monitoring Platform',
         autoHideMenuBar: true,
         show: false,
+        icon: getIconPath(),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
             sandbox: true,
             spellcheck: false
-        },
-        icon: path.join(__dirname, '..', 'web', 'favicon.png')
+        }
     });
 
     mainWindow.once('ready-to-show', () => {
@@ -151,15 +64,14 @@ function createMainWindow() {
         };
     });
 
-    // 阻止拖拽导航
-    mainWindow.webContents.on('will-navigate', (e, url) => {
-        if (!url.startsWith(FRONTEND_URL) && !url.startsWith('http://localhost:' + HTTP_PORT)) {
-            e.preventDefault();
-        }
-    });
-
     mainWindow.on('closed', () => {
         mainWindow = null;
+    });
+
+    console.log('[Electron] 加载前端:', getFrontendPath());
+    mainWindow.loadFile(getFrontendPath()).catch(err => {
+        console.error('[Electron] 加载前端失败:', err);
+        dialog.showErrorBox('加载失败', String((err && err.message) || err));
     });
 }
 
@@ -181,16 +93,9 @@ function buildMenu() {
                     type: 'separator'
                 },
                 {
-                    label: '在浏览器中打开',
-                    click: () => shell.openExternal(FRONTEND_URL)
-                },
-                {
-                    type: 'separator'
-                },
-                {
                     label: '退出',
                     accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
-                    click: () => quitApp()
+                    click: () => app.quit()
                 }
             ]
         },
@@ -239,85 +144,34 @@ function buildMenu() {
                         title: '关于',
                         message: '天气监测节点 · Monitoring Platform',
                         detail: `版本: ${app.getVersion()}\n` +
-                            `Electron: ${process.versions.electron}\n` +
-                            `Node.js: ${process.versions.node}\n\n` +
-                            `MQTT Broker: 8.130.191.142:1883\n` +
-                            `Topic: IOTGP/WMN\n` +
-                            `数据保留周期: 72 小时\n\n` +
-                            `后端端口: ${HTTP_PORT}\n` +
-                            `数据库: SQLite (weather.db)`
+                            `Electron: ${process.versions.electron}\n\n` +
+                            `这是一个独立的前端客户端，不包含后端服务。\n` +
+                            `请在页面底部点击“设置”配置后端服务地址。\n` +
+                            `后端需先运行: cd backend && npm start`
                     });
                 }
             }]
         }
     ];
-    const menu = Menu.buildFromTemplate(template);
-    Menu.setApplicationMenu(menu);
-}
-
-// ========== 退出清理 ==========
-function quitApp() {
-    app.isQuiting = true;
-
-    // 1. 关闭窗口
-    try {
-        if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.removeAllListeners('close');
-            mainWindow.close();
-        }
-    } catch (e) {}
-
-    // 2. 结束后端进程
-    if (backendProcess && !backendProcess.killed) {
-        console.log('[Electron] 正在终止后端进程...');
-        try {
-            // 发送 SIGINT 让后端优雅关闭（Windows 下 child_process 会模拟）
-            backendProcess.removeAllListeners('exit');
-            backendProcess.kill('SIGINT');
-            // 兜底 2 秒后强制 kill
-            setTimeout(() => {
-                if (backendProcess && !backendProcess.killed) {
-                    backendProcess.kill('SIGKILL');
-                }
-                app.quit();
-            }, 2000);
-            return;
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    app.quit();
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
 // ========== App 生命周期 ==========
 app.on('ready', () => {
     console.log('[Electron] App ready');
-    console.log('[Electron] 后端入口:', BACKEND_ENTRY);
-    console.log('[Electron] NODE_PATH +=', path.join(__dirname, 'node_modules'));
-
     buildMenu();
-    startBackend();
+    createMainWindow();
 });
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-        quitApp();
+        app.quit();
     }
 });
 
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-        if (backendReady) {
-            loadFrontend();
-        }
-    }
-});
-
-app.on('before-quit', (e) => {
-    if (!app.isQuiting) {
-        e.preventDefault();
-        quitApp();
+        createMainWindow();
     }
 });
 

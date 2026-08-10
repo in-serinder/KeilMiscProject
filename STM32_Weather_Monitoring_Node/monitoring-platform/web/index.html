@@ -202,13 +202,51 @@
             <footer class="footer">
                 <span>最近数据时间: <b id="last-time">--</b></span>
                 <span>|</span>
-                <span>MQTT Topic: <code>IOTGP/WMN</code></span>
+                <span>MQTT Topic: <code id="mqtt-topic">IOTGP/WMN</code></span>
                 <span>|</span>
-                <span>Broker: <code>8.130.191.142:1883</code></span>
+                <span>Broker: <code id="mqtt-broker">8.130.191.142:1883</code></span>
                 <span>|</span>
-                <span>数据保留 <b>72h</b></span>
+                <span>数据保留 <b id="retention">72h</b></span>
+                <span>|</span>
+                <span>服务器: <b id="server-addr">--</b></span>
+                <button class="settings-btn" id="settings-btn" title="后端连接设置">⚙ 设置</button>
             </footer>
         </main>
+    </div>
+
+    <!-- 后端连接设置弹窗 -->
+    <div class="modal-overlay" id="settings-modal" hidden>
+        <div class="modal">
+            <div class="modal-head">
+                <h3>后端服务配置</h3>
+                <span class="modal-close" id="modal-close" title="关闭">×</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tip">
+                    后端需先运行：在 <code>backend</code> 目录执行 <code>npm install</code> 与 <code>npm start</code>，
+                    然后在此填写运行后端的服务器地址与端口。
+                </div>
+                <div class="field">
+                    <label for="cfg-host">服务器地址</label>
+                    <input type="text" id="cfg-host" placeholder="例如 192.168.1.100" spellcheck="false" />
+                </div>
+                <div class="field">
+                    <label for="cfg-port">端口</label>
+                    <input type="number" id="cfg-port" placeholder="3000" min="1" max="65535" />
+                </div>
+                <div class="field">
+                    <label>连接地址</label>
+                    <div class="preview" id="cfg-preview">http://localhost:3000</div>
+                </div>
+                <div class="modal-msg" id="cfg-msg"></div>
+            </div>
+            <div class="modal-foot">
+                <button class="btn btn-ghost" id="cfg-test">测试连接</button>
+                <span class="spacer"></span>
+                <button class="btn btn-ghost" id="cfg-cancel">取消</button>
+                <button class="btn btn-primary" id="cfg-save">保存并连接</button>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>

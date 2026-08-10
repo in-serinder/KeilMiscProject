@@ -3,8 +3,62 @@
  * ========================================================= */
 
 // ========== 配置 ==========
-const API_BASE = window.location.origin;
 const HISTORY_HOURS_DEFAULT = 1;
+const CFG_KEY = 'wmn_config';
+
+let config = loadConfig();
+let API_BASE = getApiBase();
+let socket = null;
+
+// 默认配置: 浏览器模式取当前页面地址，否则用 localhost:3000
+function defaultConfig() {
+    const o = window.location.origin;
+    if (o && /^https?:/.test(o)) {
+        try {
+            const u = new URL(o);
+            return {
+                host: u.hostname,
+                port: u.port || (u.protocol === 'https:' ? '443' : '80')
+            };
+        } catch (e) {
+            /* ignore */ }
+    }
+    return {
+        host: 'localhost',
+        port: '3000'
+    };
+}
+
+function loadConfig() {
+    try {
+        const raw = localStorage.getItem(CFG_KEY);
+        if (raw) {
+            const c = JSON.parse(raw);
+            if (c && c.host && c.port) return {
+                host: String(c.host).trim(),
+                port: String(c.port).trim()
+            };
+        }
+    } catch (e) {
+        /* ignore */ }
+    return defaultConfig();
+}
+
+function saveConfig(host, port) {
+    config = {
+        host: String(host).trim(),
+        port: String(port).trim()
+    };
+    try {
+        localStorage.setItem(CFG_KEY, JSON.stringify(config));
+    } catch (e) {
+        /* ignore */ }
+    API_BASE = getApiBase();
+}
+
+function getApiBase() {
+    return `http://${config.host}:${config.port}`;
+}
 
 // ========== 预测映射 ==========
 const PRED_MAP = {
@@ -649,6 +703,13 @@ async function pollStatus() {
         const r = await fetch(`${API_BASE}/api/status`);
         const s = await r.json();
         $(ids.mqttInd).className = 'status-indicator ' + (s.mqtt_connected ? 'ok' : 'bad');
+        // 底部信息随后端实际配置更新
+        const t = $('mqtt-topic');
+        if (t && s.mqtt_topic) t.textContent = s.mqtt_topic;
+        const b = $('mqtt-broker');
+        if (b && s.mqtt_broker) b.textContent = String(s.mqtt_broker).replace(/^mqtt:\/\//, '');
+        const rt = $('retention');
+        if (rt && s.cleanup_interval_hours) rt.textContent = s.cleanup_interval_hours + 'h';
     } catch (_) {
         $(ids.mqttInd).className = 'status-indicator bad';
     }
@@ -656,7 +717,7 @@ async function pollStatus() {
 
 // ========== Socket.IO ==========
 function connectSocket() {
-    const socket = io(API_BASE, {
+    socket = io(API_BASE, {
         transports: ['websocket', 'polling']
     });
 
@@ -696,12 +757,29 @@ function bindRangeBtns() {
     });
 }
 
-// ========== 初始化 ==========
-async function init() {
-    initCharts();
-    bindRangeBtns();
+// ========== 连接管理 ==========
+function updateServerAddr() {
+    const el = $('server-addr');
+    if (el) el.textContent = `${config.host}:${config.port}`;
+}
 
-    // 初始数据加载
+// 重新连接 (初始化与配置变更后调用)
+async function reconnect() {
+    API_BASE = getApiBase();
+    updateServerAddr();
+
+    // 断开旧连接
+    if (socket) {
+        try {
+            socket.disconnect();
+        } catch (e) {
+            /* ignore */ }
+        socket = null;
+    }
+    $(ids.wsInd).className = 'status-indicator bad';
+    $(ids.mqttInd).className = 'status-indicator bad';
+
+    // 拉取最新数据
     try {
         const r = await fetch(`${API_BASE}/api/latest`);
         const d = await r.json();
@@ -712,12 +790,99 @@ async function init() {
             updateStates(d);
         }
     } catch (e) {
-        console.error(e);
+        console.error('[RECONNECT] 获取最新数据失败:', e);
     }
 
     await loadHistory(currentHours);
     connectSocket();
     pollStatus();
+}
+
+// ========== 设置弹窗 ==========
+function bindSettings() {
+    const modal = $('settings-modal');
+    if (!modal) return;
+    const hostInput = $('cfg-host');
+    const portInput = $('cfg-port');
+    const preview = $('cfg-preview');
+    const msg = $('cfg-msg');
+
+    function show() {
+        hostInput.value = config.host;
+        portInput.value = config.port;
+        updatePreview();
+        msg.textContent = '';
+        msg.className = 'modal-msg';
+        modal.hidden = false;
+    }
+
+    function hide() {
+        modal.hidden = true;
+    }
+
+    function updatePreview() {
+        const h = hostInput.value.trim() || 'localhost';
+        const p = portInput.value.trim() || '3000';
+        preview.textContent = `http://${h}:${p}`;
+    }
+
+    $('settings-btn').addEventListener('click', show);
+    $('modal-close').addEventListener('click', hide);
+    $('cfg-cancel').addEventListener('click', hide);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) hide();
+    });
+    hostInput.addEventListener('input', updatePreview);
+    portInput.addEventListener('input', updatePreview);
+
+    $('cfg-test').addEventListener('click', async () => {
+        const h = hostInput.value.trim() || 'localhost';
+        const p = portInput.value.trim() || '3000';
+        msg.textContent = '测试中...';
+        msg.className = 'modal-msg';
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 4000);
+        try {
+            const r = await fetch(`http://${h}:${p}/api/status`, {
+                signal: ctrl.signal
+            });
+            const s = await r.json();
+            msg.textContent = `连接成功 · MQTT ${s.mqtt_connected ? '已连接' : '未连接'} · 主题 ${s.mqtt_topic || '-'}`;
+            msg.className = 'modal-msg ok';
+        } catch (e) {
+            msg.textContent = '连接失败: ' + (e.name === 'AbortError' ? '超时' : e.message);
+            msg.className = 'modal-msg err';
+        } finally {
+            clearTimeout(timer);
+        }
+    });
+
+    $('cfg-save').addEventListener('click', async () => {
+        const h = hostInput.value.trim();
+        const p = portInput.value.trim();
+        if (!h) {
+            msg.textContent = '请填写服务器地址';
+            msg.className = 'modal-msg err';
+            return;
+        }
+        if (!/^\d+$/.test(p) || +p < 1 || +p > 65535) {
+            msg.textContent = '端口无效 (1-65535)';
+            msg.className = 'modal-msg err';
+            return;
+        }
+        saveConfig(h, p);
+        hide();
+        await reconnect();
+    });
+}
+
+// ========== 初始化 ==========
+async function init() {
+    initCharts();
+    bindRangeBtns();
+    bindSettings();
+    updateServerAddr();
+    await reconnect();
     setInterval(pollStatus, 10000);
 }
 

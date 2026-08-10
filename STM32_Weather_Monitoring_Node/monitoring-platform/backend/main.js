@@ -7,12 +7,13 @@ const http = require('http');
 const {
     Server
 } = require('socket.io');
+const os = require('os');
 
 // ========== 配置 ==========
 const MQTT_BROKER = 'mqtt://8.130.191.142:1883';
 const MQTT_TOPIC = 'IOTGP/WMN';
 const DB_PATH = path.join(__dirname, 'weather.db');
-const HTTP_PORT = 3000;
+const HTTP_PORT = parseInt(process.env.PORT, 10) || 3000;
 const CLEANUP_INTERVAL_HOURS = 72;
 const PRESSURE_HISTORY_SIZE = 30; // 用于大气压预测的历史数据点数
 
@@ -20,7 +21,23 @@ const PRESSURE_HISTORY_SIZE = 30; // 用于大气压预测的历史数据点数
 const DATA_PULL_ENABLED = true; // 启用主动拉取
 const DATA_PULL_INTERVAL_MS = 5000; // 超过该间隔(最大5s)未收到数据则主动下发指令
 const DATA_PULL_WATCHDOG_MS = 1000; // 看门狗检查周期
-const DATA_PULL_CMD = JSON.stringify({ cmd: 'get' }); // 主动拉取指令
+const DATA_PULL_CMD = JSON.stringify({
+    cmd: 'get'
+}); // 主动拉取指令
+
+// 获取本机局域网 IPv4 地址 (供前端配置连接用)
+function getLanIPs() {
+    const list = [];
+    const nets = os.networkInterfaces();
+    for (const name of Object.keys(nets)) {
+        for (const net of nets[name] || []) {
+            if (net.family === 'IPv4' && !net.internal) {
+                list.push(net.address);
+            }
+        }
+    }
+    return list;
+}
 
 // ========== 全局变量 ==========
 let pressureHistory = []; // 近期大气压历史 { time, pressure }
@@ -268,7 +285,10 @@ function publishPullRequest(reason) {
         console.log('[PULL] 跳过下发，MQTT 未连接');
         return false;
     }
-    mqttClient.publish(MQTT_TOPIC, DATA_PULL_CMD, { qos: 0, retain: false }, (err) => {
+    mqttClient.publish(MQTT_TOPIC, DATA_PULL_CMD, {
+        qos: 0,
+        retain: false
+    }, (err) => {
         if (err) {
             console.error('[PULL] 下发指令失败:', err.message);
         } else {
@@ -449,6 +469,7 @@ server.listen(HTTP_PORT, () => {
     // console.log('   天气监测平台后端已启动');
     console.log('========================================');
     console.log('  HTTP/Web 服务:   http://localhost:' + HTTP_PORT);
+    console.log('  局域网访问:      ' + (getLanIPs().map(ip => 'http://' + ip + ':' + HTTP_PORT).join('  ') || '(未检测到)'));
     console.log('  Socket.IO:       ws://localhost:' + HTTP_PORT);
     console.log('  MQTT Broker:     ' + MQTT_BROKER);
     console.log('  MQTT 主题:       ' + MQTT_TOPIC);

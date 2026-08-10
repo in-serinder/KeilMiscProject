@@ -42,8 +42,10 @@
 
 
 
-const char *WIFI_SSID = "CMCC-5V9M";
-const char *WIFI_PASSWORD = "2beat35c";
+// const char *WIFI_SSID = "CMCC-5V9M";
+// const char *WIFI_PASSWORD = "2beat35c";
+const char *WIFI_SSID = "LinkHusen";
+const char *WIFI_PASSWORD = "320724fuck";
 
 
 const char *MQTT_SERVER_IP = "8.130.191.142";

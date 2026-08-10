@@ -556,3 +556,179 @@ code {
         display: none;
     }
 }
+
+/* ========== 设置按钮与弹窗 ========== */
+.settings-btn {
+    background: #1c1e22;
+    border: 1px solid #2e323a;
+    color: #8f95a0;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.settings-btn:hover {
+    background: #2a2d33;
+    color: #7cd1f9;
+    border-color: #4fb3ff;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 12, 16, 0.72);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-overlay[hidden] {
+    display: none;
+}
+
+.modal {
+    width: 440px;
+    max-width: calc(100vw - 40px);
+    background: #1c1e22;
+    border: 1px solid #2e323a;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid #2e323a;
+}
+
+.modal-head h3 {
+    font-size: 14px;
+    color: #e8eaee;
+    letter-spacing: 1px;
+}
+
+.modal-close {
+    font-size: 20px;
+    color: #6c727d;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+}
+
+.modal-close:hover {
+    color: #fff;
+}
+
+.modal-body {
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.modal-tip {
+    font-size: 12px;
+    color: #8f95a0;
+    line-height: 1.6;
+    background: #13151a;
+    border-left: 3px solid #4fb3ff;
+    padding: 8px 12px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8f95a0;
+    letter-spacing: 1px;
+}
+
+.field input {
+    background: #13151a;
+    border: 1px solid #2e323a;
+    color: #e8eaee;
+    font-family: "Consolas", monospace;
+    font-size: 13px;
+    padding: 8px 10px;
+    outline: none;
+}
+
+.field input:focus {
+    border-color: #4fb3ff;
+}
+
+.preview {
+    background: #13151a;
+    border: 1px dashed #2e323a;
+    color: #7cd1f9;
+    font-family: "Consolas", monospace;
+    font-size: 12px;
+    padding: 8px 10px;
+}
+
+.modal-msg {
+    font-size: 12px;
+    min-height: 16px;
+    color: #8f95a0;
+    font-family: "Consolas", monospace;
+}
+
+.modal-msg.ok {
+    color: #3ddc84;
+}
+
+.modal-msg.err {
+    color: #ff5252;
+}
+
+.modal-foot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-top: 1px solid #2e323a;
+}
+
+.modal-foot .spacer {
+    flex: 1;
+}
+
+.btn {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border: 1px solid #2e323a;
+    background: #24272e;
+    color: #d7d9de;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.btn:hover {
+    background: #2a2d33;
+}
+
+.btn-primary {
+    background: #4fb3ff;
+    border-color: #4fb3ff;
+    color: #0d1117;
+}
+
+.btn-primary:hover {
+    background: #7cd1f9;
+}
+
+.btn-ghost {
+    background: transparent;
+}
