@@ -904,11 +904,107 @@ function bindSettings() {
     });
 }
 
+// ========== 天气预测变动追溯 ==========
+const TRACE_DAYS = 7;
+
+// 从后端拉取近 N 天的预测变动记录并渲染表格
+async function loadPredictionChanges() {
+    const tbody = $('trace-tbody');
+    const tip = $('trace-tip');
+    const count = $('trace-count');
+    if (!tbody || !tip) return;
+    tip.textContent = '加载中...';
+    count.textContent = '';
+    try {
+        const r = await fetch(`${API_BASE}/api/prediction-changes?days=${TRACE_DAYS}`);
+        const rows = await r.json();
+        if (!Array.isArray(rows)) throw new Error('响应格式异常');
+
+        tip.textContent = `以下为近 ${TRACE_DAYS} 天内硬件/软件预测内容发生变动时的记录（时间 · 大气压变动值依据 · 预测内容）。`;
+
+        if (rows.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="trace-empty">近 ${TRACE_DAYS} 天暂无预测变动记录</td></tr>`;
+            count.textContent = '共 0 条';
+            return;
+        }
+
+        tbody.innerHTML = rows.map(row => {
+            const from = PRED_MAP[row.prev_code] || PRED_MAP[4];
+            const to = PRED_MAP[row.new_code] || PRED_MAP[4];
+            const src = row.source === 'hw' ?
+                '<span class="trace-src src-hw">硬件</span>' :
+                '<span class="trace-src src-sw">软件</span>';
+
+            // 气压: 按记录单位换算为 hPa 显示
+            let presTxt = '--';
+            if (typeof row.pressure === 'number') {
+                const pVal = row.pressure_unit === 'Pa' ? row.pressure / 100 : row.pressure;
+                presTxt = Number(pVal).toFixed(1) + ' hPa';
+            }
+
+            // 趋势依据: 线性回归斜率 hPa/小时 + 窗口总变化百分比
+            const trend = typeof row.trend_hpa === 'number' ?
+                (row.trend_hpa >= 0 ? '+' : '') + Number(row.trend_hpa).toFixed(2) : '--';
+            const chg = typeof row.change_percent === 'number' ?
+                (row.change_percent >= 0 ? '+' : '') + Number(row.change_percent).toFixed(3) + '%' : '--';
+
+            const temp = typeof row.bmp280_temp === 'number' ?
+                Number(row.bmp280_temp).toFixed(1) + '°C' : '--';
+            const rain = row.is_rain ?
+                '<span class="trace-rain yes">是</span>' :
+                '<span class="trace-rain no">否</span>';
+
+            return `<tr>
+                <td class="trace-time">${row.time || '--'}</td>
+                <td>${src}</td>
+                <td class="trace-change">
+                    <span class="wdot">${from.icon}</span>${from.text}
+                    <span class="trace-arrow">→</span>
+                    <span class="wdot">${to.icon}</span>${to.text}
+                </td>
+                <td class="trace-mono">${presTxt}</td>
+                <td class="trace-mono">${trend}<span class="trace-sub">Δ${chg}</span></td>
+                <td class="trace-mono">${temp}</td>
+                <td>${rain}</td>
+            </tr>`;
+        }).join('');
+        count.textContent = `共 ${rows.length} 条`;
+    } catch (e) {
+        console.error('[TRACE] 加载失败:', e);
+        tip.textContent = '加载失败: ' + e.message;
+        tbody.innerHTML = `<tr><td colspan="7" class="trace-empty">加载失败，请检查后端连接</td></tr>`;
+    }
+}
+
+// 绑定追溯弹窗的开关与刷新
+function bindTrace() {
+    const modal = $('trace-modal');
+    const openBtn = $('trace-open-btn');
+    if (!modal || !openBtn) return;
+
+    const show = () => {
+        modal.hidden = false;
+        loadPredictionChanges();
+    };
+    const hide = () => {
+        modal.hidden = true;
+    };
+
+    openBtn.addEventListener('click', show);
+    $('trace-close').addEventListener('click', hide);
+    $('trace-close-btn').addEventListener('click', hide);
+    $('trace-refresh').addEventListener('click', loadPredictionChanges);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) hide();
+    });
+}
+
 // ========== 初始化 ==========
 async function init() {
     initCharts();
     bindRangeBtns();
     bindSettings();
+    bindTrace();
     updateServerAddr();
     await reconnect();
     setInterval(pollStatus, 10000);

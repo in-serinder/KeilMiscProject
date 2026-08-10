@@ -250,7 +250,7 @@ code {
 /* ========== 预测行 ========== */
 .prediction-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1.2fr;
+    grid-template-columns: 1fr 1fr 1.3fr 0.9fr;
     gap: 14px;
 }
 
@@ -281,6 +281,10 @@ code {
 
 .tag-sw {
     background: #4fb3ff;
+}
+
+.tag-trace {
+    background: #3ddc84;
 }
 
 .pred-main {
@@ -337,6 +341,60 @@ code {
 .pred-text .pt-sub {
     font-size: 11px;
     color: #8f95a0;
+    font-family: "Consolas", monospace;
+}
+
+/* 预测追溯卡片 */
+.trace-card {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.trace-card .pred-title {
+    margin-bottom: 10px;
+}
+
+.trace-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    min-height: 70px;
+}
+
+.trace-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 10px;
+    background: #13151a;
+    border: 1px solid #2e323a;
+    color: #d7d9de;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.trace-btn:hover {
+    border-color: #3ddc84;
+    color: #3ddc84;
+    background: #15231d;
+}
+
+.trace-btn-icon {
+    font-size: 16px;
+}
+
+.trace-hint {
+    font-size: 10px;
+    color: #6c727d;
+    text-align: center;
     font-family: "Consolas", monospace;
 }
 
@@ -512,7 +570,8 @@ code {
         grid-template-columns: 1fr 1fr;
     }
 
-    .prediction-row .state-card {
+    .prediction-row .state-card,
+    .prediction-row .trace-card {
         grid-column: 1 / -1;
     }
 
@@ -596,6 +655,18 @@ code {
     background: #1c1e22;
     border: 1px solid #2e323a;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal.modal-wide {
+    width: 900px;
+    max-width: calc(100vw - 40px);
+}
+
+.trace-modal-sub {
+    font-size: 11px;
+    color: #8f95a0;
+    font-weight: 400;
+    letter-spacing: 0;
 }
 
 .modal-head {
@@ -701,6 +772,120 @@ code {
 
 .modal-foot .spacer {
     flex: 1;
+}
+
+/* ========== 预测变动追溯表格 ========== */
+.trace-wrap {
+    overflow-x: auto;
+    max-height: 56vh;
+    overflow-y: auto;
+    border: 1px solid #2e323a;
+    background: #13151a;
+}
+
+.trace-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.trace-table th {
+    position: sticky;
+    top: 0;
+    background: #1c1e22;
+    color: #8f95a0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid #2e323a;
+    white-space: nowrap;
+}
+
+.trace-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #24272e;
+    color: #d7d9de;
+    vertical-align: middle;
+}
+
+.trace-table tbody tr:hover {
+    background: #1c1e22;
+}
+
+.trace-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.trace-time {
+    color: #8f95a0;
+    font-family: "Consolas", monospace;
+    white-space: nowrap;
+}
+
+.trace-mono {
+    font-family: "Consolas", monospace;
+    white-space: nowrap;
+}
+
+.trace-change {
+    white-space: nowrap;
+}
+
+.wdot {
+    display: inline-block;
+    min-width: 20px;
+    text-align: center;
+}
+
+.trace-arrow {
+    margin: 0 6px;
+    color: #6c727d;
+}
+
+.trace-sub {
+    display: block;
+    font-size: 10px;
+    color: #6c727d;
+}
+
+.trace-src {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #fff;
+}
+
+.src-hw {
+    background: #ff9f43;
+}
+
+.src-sw {
+    background: #4fb3ff;
+}
+
+.trace-rain.yes {
+    color: #ff5252;
+    font-weight: 700;
+}
+
+.trace-rain.no {
+    color: #3ddc84;
+}
+
+.trace-empty {
+    text-align: center;
+    color: #6c727d;
+    padding: 28px 10px !important;
+}
+
+.trace-count {
+    font-size: 11px;
+    color: #8f95a0;
+    font-family: "Consolas", monospace;
 }
 
 .btn {

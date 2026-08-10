@@ -155,6 +155,19 @@
                         <span>运行时长: <b id="uptime">--</b></span>
                     </div>
                 </div>
+                <div class="card trace-card">
+                    <div class="pred-title">
+                        <span class="pred-tag tag-trace">追溯</span>
+                        <span>近7天预测变动</span>
+                    </div>
+                    <div class="trace-main">
+                        <button class="trace-btn" id="trace-open-btn" title="查看近7天天气预测变动记录">
+                            <span class="trace-btn-icon">📋</span>
+                            <span>预测变动记录</span>
+                        </button>
+                        <div class="trace-hint">点击查看 7 天内预测变动</div>
+                    </div>
+                </div>
             </section>
 
             <!-- 图表区 -->
@@ -245,6 +258,41 @@
                 <span class="spacer"></span>
                 <button class="btn btn-ghost" id="cfg-cancel">取消</button>
                 <button class="btn btn-primary" id="cfg-save">保存并连接</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 天气预测变动追溯弹窗 -->
+    <div class="modal-overlay" id="trace-modal" hidden>
+        <div class="modal modal-wide">
+            <div class="modal-head">
+                <h3>天气预测变动追溯 <span class="trace-modal-sub">(近7天)</span></h3>
+                <span class="modal-close" id="trace-close" title="关闭">×</span>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tip" id="trace-tip">加载中...</div>
+                <div class="trace-wrap">
+                    <table class="trace-table">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>来源</th>
+                                <th>预测变动</th>
+                                <th>气压依据</th>
+                                <th>趋势 (hPa/h)</th>
+                                <th>温度</th>
+                                <th>降雨</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trace-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <span class="trace-count" id="trace-count"></span>
+                <span class="spacer"></span>
+                <button class="btn btn-ghost" id="trace-refresh">刷新</button>
+                <button class="btn btn-primary" id="trace-close-btn">关闭</button>
             </div>
         </div>
     </div>

@@ -13,9 +13,10 @@ const os = require('os');
 const MQTT_BROKER = 'mqtt://8.130.191.142:1883';
 const MQTT_TOPIC = 'IOTGP/WMN';
 const DB_PATH = path.join(__dirname, 'weather.db');
-const HTTP_PORT = parseInt(process.env.PORT, 10) || 3000;
+const HTTP_PORT = parseInt(process.env.PORT, 10) || 3100;
 const CLEANUP_INTERVAL_HOURS = 72;
 const PRESSURE_HISTORY_SIZE = 30; // 用于大气压预测的历史数据点数
+const PRED_CHANGE_RETENTION_DAYS = 7; // 天气预测变动追溯记录保留天数
 
 // ===== 数据主动拉取 =====
 const DATA_PULL_ENABLED = true; // 启用主动拉取
@@ -42,6 +43,8 @@ function getLanIPs() {
 // ========== 全局变量 ==========
 let pressureHistory = []; // 近期大气压历史 { time, pressure }
 let lastHWPacket = null;
+let lastHWPred = null; // 最近一次硬件预测值 (追溯用, null=尚无对比基准)
+let lastSWPred = null; // 最近一次软件预测值 (追溯用, null=尚无对比基准)
 let lastDataReceivedAt = Date.now(); // 最近一次收到有效数据的时间 (ms)
 let lastPullRequestAt = 0; // 最近一次主动下发拉取指令的时间
 let pullRequestCount = 0; // 主动拉取累计下发次数
@@ -81,6 +84,26 @@ db.serialize(() => {
     // 创建索引
     db.run(`CREATE INDEX IF NOT EXISTS idx_time ON weather_data(time)`);
     db.run(`CREATE INDEX IF NOT EXISTS idx_created_at ON weather_data(created_at)`);
+
+    // 天气预测变动追溯表 (保留7天): 预测内容变化时记录 时间/大气压变动依据/预测内容
+    db.run(`CREATE TABLE IF NOT EXISTS prediction_changes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source TEXT,           -- 'hw' 硬件预测 / 'sw' 软件预测
+    time TEXT,             -- 设备时间
+    prev_code INTEGER,
+    new_code INTEGER,
+    pressure REAL,         -- 当前气压 (原始单位)
+    pressure_unit TEXT,    -- 'Pa' / 'hPa'
+    trend_hpa REAL,        -- 趋势依据: 线性回归斜率 hPa/小时
+    change_percent REAL,   -- 依据: 窗口总变化百分比
+    bmp280_temp REAL,
+    is_rain INTEGER,
+    created_at INTEGER
+  )`, (err) => {
+        if (err) console.error('[DB] 创建 prediction_changes 表失败', err.message);
+    });
+    db.run(`CREATE INDEX IF NOT EXISTS idx_pc_created_at ON prediction_changes(created_at)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_pc_source ON prediction_changes(source)`);
 });
 
 // ========== 大气压预测算法 ==========
@@ -102,16 +125,31 @@ function parseTime(t) {
 }
 
 function predictByPressure(currentPressure, bmp280Temp, isRaining) {
-    if (pressureHistory.length < 5) return 4; // 数据不足
+    // 依据数据 (供预测追溯记录使用)
+    const base = {
+        slope_hPa: 0, // 回归斜率 hPa/小时
+        changePercent: 0, // 窗口总变化百分比
+        recentChangePercent: 0,
+        volatility: 0,
+        pressureLevel: 1,
+        unit: detectPressureUnit(currentPressure),
+        currentPressure: currentPressure
+    };
+    const done = (code) => ({
+        code,
+        ...base
+    });
+
+    if (pressureHistory.length < 5) return done(4); // 数据不足
 
     // 自动判定单位并统一换算到 hPa 进行判断和阈值比较
-    const unit = detectPressureUnit(currentPressure);
+    const unit = base.unit;
     // 阈值基准 (使用 hPa)
     const STD_P_hPa = 1013.25; // 标准大气压
     let curr_hPa;
     if (unit === 'Pa') curr_hPa = currentPressure / 100;
     else if (unit === 'hPa') curr_hPa = currentPressure;
-    else return 4; // 单位未知，无法判断
+    else return done(4); // 单位未知，无法判断
 
     // ---- 按真实时间(小时)做线性回归 ----
     // 设备约每 2~5s 上报一条。若按"每样本"算斜率, 30 个点只覆盖 1~2 分钟,
@@ -124,12 +162,12 @@ function predictByPressure(currentPressure, bmp280Temp, isRaining) {
         }))
         .filter(pt => !isNaN(pt.t));
     const n = points.length;
-    if (n < 5) return 4;
+    if (n < 5) return done(4);
 
     const t0 = points[0].t;
     const spanHours = (points[n - 1].t - t0) / 3600000;
     // 时间跨度不足 5 分钟(刚启动/时间异常) -> 无法判断趋势
-    if (spanHours < 5 / 60) return 4;
+    if (spanHours < 5 / 60) return done(4);
 
     let sumX = 0,
         sumY = 0,
@@ -146,36 +184,41 @@ function predictByPressure(currentPressure, bmp280Temp, isRaining) {
     const denom = n * sumXX - sumX * sumX;
     const slope_raw = (denom !== 0) ? (n * sumXY - sumX * sumY) / denom : 0;
     const slope_hPa = (unit === 'Pa') ? slope_raw / 100 : slope_raw; // hPa/小时
+    base.slope_hPa = slope_hPa;
 
     const avgP_raw = points.reduce((a, b) => a + b.p, 0) / n;
     const totalChange = currentPressure - points[0].p;
     const changePercent = avgP_raw > 0 ? (totalChange / avgP_raw) * 100 : 0;
+    base.changePercent = changePercent;
 
     const recentN = Math.min(5, n);
     const recentPressures = points.slice(-recentN).map(pt => pt.p);
     const recentAvg = recentPressures.reduce((a, b) => a + b, 0) / recentN;
     const recentChange = currentPressure - recentPressures[0];
     const recentChangePercent = recentAvg > 0 ? (recentChange / recentAvg) * 100 : 0;
+    base.recentChangePercent = recentChangePercent;
 
     let variance = 0;
     for (const pt of points) variance += (pt.p - avgP_raw) ** 2;
     variance /= n;
     const stdDev = Math.sqrt(variance);
     const volatility = avgP_raw > 0 ? (stdDev / avgP_raw) * 1000 : 0; // 千分比
+    base.volatility = volatility;
 
     const pressureLevel = curr_hPa / STD_P_hPa; // 相对标准大气压水平
+    base.pressureLevel = pressureLevel;
 
     // ========= 预测阈值 (斜率单位 hPa/小时; 气象经验 3h 变 1.5hPa 即趋势显著) =========
     // 快速大幅下降 + 明显偏低气压 => 雷暴强对流
-    if (slope_hPa < -2.0 && recentChangePercent < -0.04 && pressureLevel < 0.997) return 3;
+    if (slope_hPa < -2.0 && recentChangePercent < -0.04 && pressureLevel < 0.997) return done(3);
     // 持续下降 => 转降雨刮风
-    if (slope_hPa < -0.8 && recentChangePercent < -0.02) return 1;
+    if (slope_hPa < -0.8 && recentChangePercent < -0.02) return done(1);
     // 缓慢下降或气压略低 => 转阴天 (温度<25视作条件辅助)
-    if (slope_hPa < -0.3 || (pressureLevel < 0.999 && bmp280Temp < 25)) return 2;
+    if (slope_hPa < -0.3 || (pressureLevel < 0.999 && bmp280Temp < 25)) return done(2);
     // 稳定上升或气压偏高 => 转晴天
-    if (slope_hPa > 1.2 || (pressureLevel > 1.002 && recentChangePercent > 0.02)) return 0;
+    if (slope_hPa > 1.2 || (pressureLevel > 1.002 && recentChangePercent > 0.02)) return done(0);
     // 大幅波动且下跌 => 雷暴可能
-    if (volatility > 0.8 && recentChangePercent < -0.03) return 3;
+    if (volatility > 0.8 && recentChangePercent < -0.03) return done(3);
 
     // 稳定 => 按气压水平判断晴/阴
     let code = 4;
@@ -185,11 +228,11 @@ function predictByPressure(currentPressure, bmp280Temp, isRaining) {
     // 降雨保持: 正在下雨时气压平稳/下降维持"降雨",
     // 避免绵绵细雨转中雨(气压几乎不动)却误报"转阴天"
     if (isRaining) {
-        if (slope_hPa < -2.0) return 3; // 仍优先识别雷暴骤降
-        if (slope_hPa > 1.2) return 0; // 明显回升 -> 雨停转晴
-        return 1; // 其余情况维持降雨
+        if (slope_hPa < -2.0) return done(3); // 仍优先识别雷暴骤降
+        if (slope_hPa > 1.2) return done(0); // 明显回升 -> 雨停转晴
+        return done(1); // 其余情况维持降雨
     }
-    return code;
+    return done(code);
 }
 
 // ========== MQTT 连接 ==========
@@ -243,6 +286,37 @@ mqttClient.on('message', (topic, message) => {
     }
 });
 
+// ===== 天气预测变动追溯 =====
+// 预测内容变化时记录一条: 时间 / 大气压变动依据 / 预测内容 (保留7天)
+function recordPredictionChange(source, prevCode, newCode, data, swRes) {
+    if (prevCode === null || newCode === null) return; // 无对比基准时不记录
+    if (newCode === prevCode) return; // 无变化不记录
+    const now = Date.now();
+    const stmt = db.prepare(`INSERT INTO prediction_changes (
+      source, time, prev_code, new_code, pressure, pressure_unit,
+      trend_hpa, change_percent, bmp280_temp, is_rain, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    stmt.run(
+        source,
+        data.time || new Date(now).toISOString(),
+        prevCode,
+        newCode,
+        data.bmp280_pressure || 0,
+        (swRes && swRes.unit) || 'unknown',
+        swRes ? swRes.slope_hPa : 0,
+        swRes ? swRes.changePercent : 0,
+        data.bmp280_temp || 0,
+        data.is_rain ? 1 : 0,
+        now,
+        function (err) {
+            if (err) console.error('[DB] 记录预测变动失败:', err.message);
+        }
+    );
+    stmt.finalize();
+    console.log(`[PRED-CHANGE] ${source} ${prevCode} -> ${newCode} @ ${data.time || '-'}` +
+        ` 趋势: ${(swRes ? swRes.slope_hPa : 0).toFixed(2)} hPa/h 变化: ${(swRes ? swRes.changePercent : 0).toFixed(3)}%`);
+}
+
 function handleWeatherData(data) {
     // 记录收到数据时间，供看门狗判断是否需要主动拉取
     lastDataReceivedAt = Date.now();
@@ -258,11 +332,23 @@ function handleWeatherData(data) {
     }
 
     // 计算软件预测 (传入降雨状态: 下雨时保持"降雨", 不再误报"阴天")
-    const swPressurePrediction = predictByPressure(
+    const swRes = predictByPressure(
         data.bmp280_pressure || 0,
         data.bmp280_temp || 0,
         !!data.is_rain
     );
+    const swPressurePrediction = swRes.code;
+
+    // ===== 天气预测变动追溯: 硬件/软件预测内容变化时记录 =====
+    const hwCode = (typeof data.weather_prediction === 'number') ? data.weather_prediction : null;
+    if (hwCode !== null && hwCode !== lastHWPred) {
+        recordPredictionChange('hw', lastHWPred, hwCode, data, swRes);
+        lastHWPred = hwCode;
+    }
+    if (swRes.code !== lastSWPred) {
+        recordPredictionChange('sw', lastSWPred, swRes.code, data, swRes);
+        lastSWPred = swRes.code;
+    }
 
     const now = Date.now();
     const stmt = db.prepare(`INSERT INTO weather_data (
@@ -365,6 +451,16 @@ function runCleanup() {
         const t = new Date(p.time).getTime();
         return isNaN(t) || t > pressureCutoff;
     });
+
+    // 天气预测变动追溯记录保留 7 天
+    const pcCutoff = Date.now() - PRED_CHANGE_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+    db.run(`DELETE FROM prediction_changes WHERE created_at < ?`, [pcCutoff], function (err) {
+        if (err) {
+            console.error('[DB] 清理预测变动记录失败:', err.message);
+        } else {
+            console.log(`[DB] 已清理${this.changes} 条预测变动记录 (保留最近${PRED_CHANGE_RETENTION_DAYS}天)`);
+        }
+    });
 }
 
 // 启动时立即清理一次
@@ -446,6 +542,25 @@ app.get('/api/stats', (req, res) => {
                 });
             } else {
                 res.json(row);
+            }
+        }
+    );
+});
+
+// 获取最近 N 天的天气预测变动追溯记录 (默认7天)
+app.get('/api/prediction-changes', (req, res) => {
+    const days = Math.min(parseFloat(req.query.days) || PRED_CHANGE_RETENTION_DAYS, 30);
+    const since = Date.now() - days * 24 * 60 * 60 * 1000;
+    db.all(
+        `SELECT * FROM prediction_changes WHERE created_at >= ? ORDER BY id DESC LIMIT 500`,
+        [since],
+        (err, rows) => {
+            if (err) {
+                res.status(500).json({
+                    error: err.message
+                });
+            } else {
+                res.json(rows || []);
             }
         }
     );
