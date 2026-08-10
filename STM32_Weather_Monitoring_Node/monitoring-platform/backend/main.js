@@ -93,7 +93,15 @@ function detectPressureUnit(p) {
     return 'unknown';
 }
 
-function predictByPressure(currentPressure, bmp280Temp) {
+// 解析设备时间 "YYYY-MM-DD HH:MM:SS" -> 本地时间戳(ms)
+function parseTime(t) {
+    if (typeof t !== 'string') return NaN;
+    const m = t.match(/(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})/);
+    if (!m) return new Date(t).getTime();
+    return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime();
+}
+
+function predictByPressure(currentPressure, bmp280Temp, isRaining) {
     if (pressureHistory.length < 5) return 4; // 数据不足
 
     // 自动判定单位并统一换算到 hPa 进行判断和阈值比较
@@ -105,57 +113,83 @@ function predictByPressure(currentPressure, bmp280Temp) {
     else if (unit === 'hPa') curr_hPa = currentPressure;
     else return 4; // 单位未知，无法判断
 
-    // 计算压力变化趋势 (按原始单位)
-    const pressures = pressureHistory.map(p => p.pressure);
-    const n = pressures.length;
+    // ---- 按真实时间(小时)做线性回归 ----
+    // 设备约每 2~5s 上报一条。若按"每样本"算斜率, 30 个点只覆盖 1~2 分钟,
+    // 阈值换算成真实速率是每小时几百 hPa, 几乎永远达不到, 导致预测总是
+    // "稳定 -> 晴/阴"。必须把斜率归一化到 hPa/小时 再与气象阈值比较。
+    const points = pressureHistory
+        .map(p => ({
+            t: parseTime(p.time),
+            p: p.pressure
+        }))
+        .filter(pt => !isNaN(pt.t));
+    const n = points.length;
+    if (n < 5) return 4;
+
+    const t0 = points[0].t;
+    const spanHours = (points[n - 1].t - t0) / 3600000;
+    // 时间跨度不足 5 分钟(刚启动/时间异常) -> 无法判断趋势
+    if (spanHours < 5 / 60) return 4;
+
     let sumX = 0,
         sumY = 0,
         sumXY = 0,
         sumXX = 0;
     for (let i = 0; i < n; i++) {
-        sumX += i;
-        sumY += pressures[i];
-        sumXY += i * pressures[i];
-        sumXX += i * i;
+        const x = (points[i].t - t0) / 3600000; // 相对首点的小时数
+        const y = points[i].p;
+        sumX += x;
+        sumY += y;
+        sumXY += x * y;
+        sumXX += x * x;
     }
-    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-    // 把斜率转换成 hPa/样本 方便阈值比较
-    const slope_hPa = (unit === 'Pa') ? slope / 100 : slope;
+    const denom = n * sumXX - sumX * sumX;
+    const slope_raw = (denom !== 0) ? (n * sumXY - sumX * sumY) / denom : 0;
+    const slope_hPa = (unit === 'Pa') ? slope_raw / 100 : slope_raw; // hPa/小时
 
-    const avgP_raw = pressures.reduce((a, b) => a + b, 0) / n;
-    const totalChange = currentPressure - pressures[0];
+    const avgP_raw = points.reduce((a, b) => a + b.p, 0) / n;
+    const totalChange = currentPressure - points[0].p;
     const changePercent = avgP_raw > 0 ? (totalChange / avgP_raw) * 100 : 0;
 
-    const recentN = Math.min(3, n);
-    const recentPressures = pressures.slice(-recentN);
+    const recentN = Math.min(5, n);
+    const recentPressures = points.slice(-recentN).map(pt => pt.p);
     const recentAvg = recentPressures.reduce((a, b) => a + b, 0) / recentN;
     const recentChange = currentPressure - recentPressures[0];
     const recentChangePercent = recentAvg > 0 ? (recentChange / recentAvg) * 100 : 0;
 
     let variance = 0;
-    for (const p of pressures) variance += (p - avgP_raw) ** 2;
+    for (const pt of points) variance += (pt.p - avgP_raw) ** 2;
     variance /= n;
     const stdDev = Math.sqrt(variance);
     const volatility = avgP_raw > 0 ? (stdDev / avgP_raw) * 1000 : 0; // 千分比
 
     const pressureLevel = curr_hPa / STD_P_hPa; // 相对标准大气压水平
 
-    // ========= 预测阈值 (以 hPa 斜率和百分比变化为基准) =========
+    // ========= 预测阈值 (斜率单位 hPa/小时; 气象经验 3h 变 1.5hPa 即趋势显著) =========
     // 快速大幅下降 + 明显偏低气压 => 雷暴强对流
-    if (slope_hPa < -0.8 && recentChangePercent < -0.08 && pressureLevel < 0.997) return 3;
-    // 中等下降 => 转降雨刮风
-    if (slope_hPa < -0.4 && recentChangePercent < -0.04) return 1;
+    if (slope_hPa < -2.0 && recentChangePercent < -0.04 && pressureLevel < 0.997) return 3;
+    // 持续下降 => 转降雨刮风
+    if (slope_hPa < -0.8 && recentChangePercent < -0.02) return 1;
     // 缓慢下降或气压略低 => 转阴天 (温度<25视作条件辅助)
-    if (slope_hPa < -0.15 || (pressureLevel < 0.999 && bmp280Temp < 25)) return 2;
+    if (slope_hPa < -0.3 || (pressureLevel < 0.999 && bmp280Temp < 25)) return 2;
     // 稳定上升或气压偏高 => 转晴天
-    if (slope_hPa > 0.3 || (pressureLevel > 1.002 && recentChangePercent > 0.02)) return 0;
+    if (slope_hPa > 1.2 || (pressureLevel > 1.002 && recentChangePercent > 0.02)) return 0;
     // 大幅波动且下跌 => 雷暴可能
     if (volatility > 0.8 && recentChangePercent < -0.03) return 3;
-    // 稳定 => 按当前气压水平判断晴/阴
-    if (Math.abs(slope_hPa) < 0.1 && volatility < 0.3) {
-        return pressureLevel >= 1.0 ? 0 : 2;
+
+    // 稳定 => 按气压水平判断晴/阴
+    let code = 4;
+    if (Math.abs(slope_hPa) < 0.4 && volatility < 0.5) {
+        code = pressureLevel >= 1.0 ? 0 : 2;
     }
-    return 4;
+    // 降雨保持: 正在下雨时气压平稳/下降维持"降雨",
+    // 避免绵绵细雨转中雨(气压几乎不动)却误报"转阴天"
+    if (isRaining) {
+        if (slope_hPa < -2.0) return 3; // 仍优先识别雷暴骤降
+        if (slope_hPa > 1.2) return 0; // 明显回升 -> 雨停转晴
+        return 1; // 其余情况维持降雨
+    }
+    return code;
 }
 
 // ========== MQTT 连接 ==========
@@ -223,10 +257,11 @@ function handleWeatherData(data) {
         }
     }
 
-    // 计算软件预测
+    // 计算软件预测 (传入降雨状态: 下雨时保持"降雨", 不再误报"阴天")
     const swPressurePrediction = predictByPressure(
         data.bmp280_pressure || 0,
-        data.bmp280_temp || 0
+        data.bmp280_temp || 0,
+        !!data.is_rain
     );
 
     const now = Date.now();

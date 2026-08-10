@@ -1,4 +1,5 @@
 #include "weather_prediction.h"
+#include "rain_s.h" /* 降雨传感器: 预测需结合当前是否在下雨 */
 #include <string.h>
 
 /*
@@ -83,9 +84,20 @@ void Weather_Prediction_Update(void) {
   if (pressCnt >= WP_TREND_WIN_LONG)
     dPLong = p - History_Get(WP_TREND_WIN_LONG); // 60分钟变化
   
+      /* 降雨状态保持: 读取硬件降雨传感器。正在下雨时气压常无明显波动
+     (绵绵细雨转中雨可能只有 0.1~0.3hPa/10min 变化), 纯气压趋势会误判为
+     "平稳->阴天"; 因此下雨期间若气压未明显回升应保持"降雨",
+     只有气压明显回升(>=WP_RISE_SHORT)才允许转晴 */
+  bool isRaining = Rain_Sensor_IsRain();
+
   // 气压趋势 -> 候选气象状态
   if (dPShort <= WP_DROP_FAST_SHORT) {
     cand = Weather_Prediction_ToThunder; // 气压骤降: 雷暴/强对流
+  } else if (isRaining) {
+    if (dPShort >= WP_RISE_SHORT || dPLong >= WP_RISE_LONG)
+      cand = Weather_Prediction_ToSunny; // 降雨中气压回升 -> 雨停转晴
+    else
+      cand = Weather_Prediction_ToRainy; // 降雨中气压平稳/下降 -> 保持降雨
   } else if (dPShort <= WP_DROP_SLOW_SHORT || dPLong <= WP_DROP_LONG) {
     cand = Weather_Prediction_ToRainy; // 持续下降: 降雨/刮风
   } else if (dPShort >= WP_RISE_SHORT || dPLong >= WP_RISE_LONG) {

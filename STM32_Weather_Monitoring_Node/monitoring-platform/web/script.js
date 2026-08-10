@@ -21,7 +21,8 @@ function defaultConfig() {
                 port: u.port || (u.protocol === 'https:' ? '443' : '80')
             };
         } catch (e) {
-            /* ignore */ }
+            /* ignore */
+        }
     }
     return {
         host: 'localhost',
@@ -40,7 +41,8 @@ function loadConfig() {
             };
         }
     } catch (e) {
-        /* ignore */ }
+        /* ignore */
+    }
     return defaultConfig();
 }
 
@@ -52,7 +54,8 @@ function saveConfig(host, port) {
     try {
         localStorage.setItem(CFG_KEY, JSON.stringify(config));
     } catch (e) {
-        /* ignore */ }
+        /* ignore */
+    }
     API_BASE = getApiBase();
 }
 
@@ -525,12 +528,15 @@ function initCharts() {
             label: '太阳能板 V',
             color: '#ff9f43',
             fill: false,
-            yAxisID: 'y'
+            yAxisID: 'y1'
         },
     ], {
+        // 锂电: 独立左轴, 收窄范围让 3.3-4.2V 的充放电波动清晰可见
         y: {
             type: 'linear',
             position: 'left',
+            min: 2.9,
+            max: 4.3,
             grid: {
                 color: '#2e323a'
             },
@@ -539,12 +545,33 @@ function initCharts() {
                     size: 10
                 }
             },
-            suggestedMin: 0,
-            suggestedMax: 6,
             title: {
                 display: true,
-                text: 'V',
-                color: '#8f95a0',
+                text: '锂电 (V)',
+                color: '#3ddc84',
+                font: {
+                    size: 10
+                }
+            }
+        },
+        // 光伏: 独立右轴, 覆盖 0-6V 保证夜间 0V 与白天峰值都可见
+        y1: {
+            type: 'linear',
+            position: 'right',
+            min: 0,
+            max: 6,
+            grid: {
+                display: false
+            },
+            ticks: {
+                font: {
+                    size: 10
+                }
+            },
+            title: {
+                display: true,
+                text: '光伏 (V)',
+                color: '#ff9f43',
                 font: {
                     size: 10
                 }
@@ -650,8 +677,8 @@ async function loadHistory(hours = 1) {
         (() => {
             const chart = charts.volt;
             chart.data.labels = labels;
-            chart.data.datasets[0].data = rows.map(r => r.pt_voltage);
-            chart.data.datasets[1].data = rows.map(r => r.battery_voltage);
+            chart.data.datasets[0].data = rows.map(r => r.battery_voltage);
+            chart.data.datasets[1].data = rows.map(r => r.pt_voltage);
             chart.update('none');
         })();
         // chart-light: 电量% / 光照mV
@@ -693,7 +720,7 @@ function appendRealtime(d) {
 
     addTo(0, [d.dht11_temp, d.dht11_humidity]);
     addTo(1, [d.bmp280_pressure, d.bmp280_temp]);
-    addTo(2, [d.pt_voltage, d.battery_voltage]);
+    addTo(2, [d.battery_voltage, d.pt_voltage]);
     addTo(3, [calcLipoSoc(d.battery_voltage), d.light_mv]);
 }
 
@@ -773,7 +800,8 @@ async function reconnect() {
         try {
             socket.disconnect();
         } catch (e) {
-            /* ignore */ }
+            /* ignore */
+        }
         socket = null;
     }
     $(ids.wsInd).className = 'status-indicator bad';
