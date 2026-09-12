@@ -6,15 +6,18 @@
 
 
 typedef enum Weather_Prediction {
-  Weather_Prediction_ToSunny = 0,   //转晴天
-  Weather_Prediction_ToRainy = 1,   //转降雨刮风
-  Weather_Prediction_ToOvercast = 2, //转阴天
-  Weather_Prediction_ToThunder = 3, //转雷暴强对流
-  Weather_Prediction_Invalid = 4,   //无效预测
+  Weather_Prediction_ToSunny = 0,
+  Weather_Prediction_ToRainy = 1,
+  Weather_Prediction_ToOvercast = 2,
+  Weather_Prediction_ToThunder = 3,
+  Weather_Prediction_Invalid = 4,
 } Weather_Prediction;
 
 void Weather_Prediction_Init(void);
 void Weather_Prediction_Update(void);
 Weather_Prediction Weather_Prediction_Print(void);
+void Weather_Prediction_GetRaw(float *outP, float *outDPShort, float *outDPLong,
+                                Weather_Prediction *outCand, Weather_Prediction *outCur,
+                                uint8_t *outConfirmCnt, uint8_t *outSampleCnt);
 
 #endif

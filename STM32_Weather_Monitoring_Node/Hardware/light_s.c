@@ -1,6 +1,6 @@
 #include "light_s.h"
 
-#define LIGHT_SENSOR_NIGHT_THRESHOLD 3000
+#define LIGHT_SENSOR_NIGHT_THRESHOLD 2700
 #define LIGHT_SENSOR_ANG_PIN GPIO_Pin_0
 #define LIGHT_SENSOR_DIG_PIN GPIO_Pin_0
 #define LIGHT_SENSOR_ANG_PORT GPIOA
@@ -53,8 +53,14 @@ uint16_t Light_Sensor_Read(void)
 
 bool Light_Sensor_IsNight(void)
 {
-    if (GPIO_ReadInputDataBit(LIGHT_SENSOR_DIG_PORT, LIGHT_SENSOR_DIG_PIN) == 0)
-        return true;
+    /* 只用模拟输出 AO 判定:
+       本模块 AO 特性为 高光->低压, 弱光->高压,
+       AO >= 阈值(3.0V) 表示弱光 => 夜间。
+
+       不采用 DO 数字输出: 其电平极性由模块比较器接线与板上电位器
+       阈值决定, 不同批次/型号可能相反; 且 DO 分支抢在 AO 判断之前,
+       白天(高光, AO 低压)时若 DO 输出低电平会被误判为夜间,
+       这正是此前 "高光仍上报 is_night=true" 的根因。 */
     return Light_Sensor_Read() >= LIGHT_SENSOR_NIGHT_THRESHOLD;
 }
 

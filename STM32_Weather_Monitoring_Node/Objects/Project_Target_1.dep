@@ -35,7 +35,7 @@ I (.\Library\stm32f10x_usart.h)(0x68C14CAF)
 I (.\Library\stm32f10x_wwdg.h)(0x68C14CAF)
 I (.\Library\misc.h)(0x68C14CAF)
 F (.\Booter\system_stm32f10x.h)(0x68C14CAF)()
-F (.\User\main.c)(0x6A7852CD)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Booter -I .\Library -I .\User -I .\System -I .\Hardware-I.\RTE\_Target_1-ID:\Keil_ARM\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-ID:\Keil_ARM\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_LD -DUSE_STDPERIPH_DRIVER-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+F (.\User\main.c)(0x6A7AF4AF)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Booter -I .\Library -I .\User -I .\System -I .\Hardware-I.\RTE\_Target_1-ID:\Keil_ARM\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-ID:\Keil_ARM\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_LD -DUSE_STDPERIPH_DRIVER-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
 I (.\System\Delay.h)(0x6A71EBDA)
 I (.\Booter\stm32f10x.h)(0x68C14CAF)
 I (.\Booter\core_cm3.h)(0x68C14CAF)
@@ -69,7 +69,7 @@ I (.\System\UART.h)(0x6A71707C)
 I (.\Hardware\adc.h)(0x6A717751)
 I (.\Hardware\bmp280_s.h)(0x6A717DFB)
 I (D:\Keil_ARM\ARM\ARMCC\include\stdbool.h)(0x599ECD2E)
-I (.\Hardware\buzzer.h)(0x6A7852CC)
+I (.\Hardware\buzzer.h)(0x6A78532D)
 I (.\Hardware\dht11_s.h)(0x6A7171F0)
 I (.\Hardware\jumper.h)(0x6A717EDB)
 I (.\Hardware\key.h)(0x6A718847)
@@ -77,9 +77,9 @@ I (.\Hardware\light_ctl.h)(0x6A71724F)
 I (.\Hardware\light_s.h)(0x6A717B72)
 I (.\Hardware\oled_lightpower.h)(0x6A717653)
 I (.\Hardware\rain_s.h)(0x6A78345A)
-I (User\weather_prediction.h)(0x6A71F306)
-F (.\User\weather_prediction.c)(0x6A71F510)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Booter -I .\Library -I .\User -I .\System -I .\Hardware-I.\RTE\_Target_1-ID:\Keil_ARM\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-ID:\Keil_ARM\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_LD -DUSE_STDPERIPH_DRIVER-o .\objects\weather_prediction.o --omf_browse .\objects\weather_prediction.crf --depend .\objects\weather_prediction.d)
-I (User\weather_prediction.h)(0x6A71F306)
+I (User\weather_prediction.h)(0x6A7AF4A9)
+F (.\User\weather_prediction.c)(0x6A7AF4AC)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Booter -I .\Library -I .\User -I .\System -I .\Hardware-I.\RTE\_Target_1-ID:\Keil_ARM\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-ID:\Keil_ARM\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_LD -DUSE_STDPERIPH_DRIVER-o .\objects\weather_prediction.o --omf_browse .\objects\weather_prediction.crf --depend .\objects\weather_prediction.d)
+I (User\weather_prediction.h)(0x6A7AF4A9)
 I (.\Booter\stm32f10x.h)(0x68C14CAF)
 I (.\Booter\core_cm3.h)(0x68C14CAF)
 I (D:\Keil_ARM\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
@@ -110,8 +110,9 @@ I (.\Library\stm32f10x_wwdg.h)(0x68C14CAF)
 I (.\Library\misc.h)(0x68C14CAF)
 I (.\Hardware\bmp280_s.h)(0x6A717DFB)
 I (D:\Keil_ARM\ARM\ARMCC\include\stdbool.h)(0x599ECD2E)
+I (.\Hardware\rain_s.h)(0x6A78345A)
 I (D:\Keil_ARM\ARM\ARMCC\include\string.h)(0x599ECD2C)
-F (.\User\weather_prediction.h)(0x6A71F306)()
+F (.\User\weather_prediction.h)(0x6A7AF4A9)()
 F (.\User\stm32f10x_conf.h)(0x68C14CAF)()
 F (.\User\stm32f10x_it.c)(0x68C14CAF)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Booter -I .\Library -I .\User -I .\System -I .\Hardware-I.\RTE\_Target_1-ID:\Keil_ARM\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-ID:\Keil_ARM\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_LD -DUSE_STDPERIPH_DRIVER-o .\objects\stm32f10x_it.o --omf_browse .\objects\stm32f10x_it.crf --depend .\objects\stm32f10x_it.d)
 I (User\stm32f10x_it.h)(0x68C14CAF)
@@ -981,8 +982,8 @@ I (.\Library\misc.h)(0x68C14CAF)
 I (D:\Keil_ARM\ARM\ARMCC\include\stdbool.h)(0x599ECD2E)
 I (.\System\Delay.h)(0x6A71EBDA)
 I (.\System\UART.h)(0x6A71707C)
-F (.\Hardware\buzzer.c)(0x6A7852EF)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Booter -I .\Library -I .\User -I .\System -I .\Hardware-I.\RTE\_Target_1-ID:\Keil_ARM\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-ID:\Keil_ARM\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_LD -DUSE_STDPERIPH_DRIVER-o .\objects\buzzer.o --omf_browse .\objects\buzzer.crf --depend .\objects\buzzer.d)
-I (Hardware\buzzer.h)(0x6A7852CC)
+F (.\Hardware\buzzer.c)(0x6A78534F)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Booter -I .\Library -I .\User -I .\System -I .\Hardware-I.\RTE\_Target_1-ID:\Keil_ARM\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-ID:\Keil_ARM\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_LD -DUSE_STDPERIPH_DRIVER-o .\objects\buzzer.o --omf_browse .\objects\buzzer.crf --depend .\objects\buzzer.d)
+I (Hardware\buzzer.h)(0x6A78532D)
 I (.\Booter\stm32f10x.h)(0x68C14CAF)
 I (.\Booter\core_cm3.h)(0x68C14CAF)
 I (D:\Keil_ARM\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
@@ -1136,7 +1137,7 @@ I (.\Library\stm32f10x_tim.h)(0x68C14CAF)
 I (.\Library\stm32f10x_usart.h)(0x68C14CAF)
 I (.\Library\stm32f10x_wwdg.h)(0x68C14CAF)
 I (.\Library\misc.h)(0x68C14CAF)
-F (.\Hardware\light_s.c)(0x6A77F6C3)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Booter -I .\Library -I .\User -I .\System -I .\Hardware-I.\RTE\_Target_1-ID:\Keil_ARM\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-ID:\Keil_ARM\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_LD -DUSE_STDPERIPH_DRIVER-o .\objects\light_s.o --omf_browse .\objects\light_s.crf --depend .\objects\light_s.d)
+F (.\Hardware\light_s.c)(0x6A7A72AD)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Booter -I .\Library -I .\User -I .\System -I .\Hardware-I.\RTE\_Target_1-ID:\Keil_ARM\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-ID:\Keil_ARM\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DSTM32F10X_LD -DUSE_STDPERIPH_DRIVER-o .\objects\light_s.o --omf_browse .\objects\light_s.crf --depend .\objects\light_s.d)
 I (Hardware\light_s.h)(0x6A717B72)
 I (.\Booter\stm32f10x.h)(0x68C14CAF)
 I (.\Booter\core_cm3.h)(0x68C14CAF)

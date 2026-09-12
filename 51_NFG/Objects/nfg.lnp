@@ -1,0 +1,4 @@
+".\Objects\main.obj",
+".\Objects\d12864.obj" 
+TO ".\Objects\nfg" 
+PRINT(".\Listings\nfg.m51") RAMSIZE(256) 

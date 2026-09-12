@@ -15,7 +15,7 @@ const MQTT_TOPIC = 'IOTGP/WMN';
 const DB_PATH = path.join(__dirname, 'weather.db');
 const HTTP_PORT = parseInt(process.env.PORT, 10) || 3100;
 const CLEANUP_INTERVAL_HOURS = 72;
-const PRESSURE_HISTORY_SIZE = 30; // 用于大气压预测的历史数据点数
+const PRESSURE_HISTORY_SIZE = 180; // 用于大气压预测的历史数据点数(2s上报覆盖约6分钟)
 const PRED_CHANGE_RETENTION_DAYS = 7; // 天气预测变动追溯记录保留天数
 
 // ===== 数据主动拉取 =====
@@ -124,11 +124,11 @@ function parseTime(t) {
     return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime();
 }
 
-function predictByPressure(currentPressure, bmp280Temp, isRaining) {
-    // 依据数据 (供预测追溯记录使用)
+function predictByPressure(currentPressure, bmp280Temp, isRaining, history) {
+    const hist = history || pressureHistory;
     const base = {
-        slope_hPa: 0, // 回归斜率 hPa/小时
-        changePercent: 0, // 窗口总变化百分比
+        slope_hPa: 0,
+        changePercent: 0,
         recentChangePercent: 0,
         volatility: 0,
         pressureLevel: 1,
@@ -140,7 +140,7 @@ function predictByPressure(currentPressure, bmp280Temp, isRaining) {
         ...base
     });
 
-    if (pressureHistory.length < 5) return done(4); // 数据不足
+    if (hist.length < 5) return done(4);
 
     // 自动判定单位并统一换算到 hPa 进行判断和阈值比较
     const unit = base.unit;
@@ -155,7 +155,7 @@ function predictByPressure(currentPressure, bmp280Temp, isRaining) {
     // 设备约每 2~5s 上报一条。若按"每样本"算斜率, 30 个点只覆盖 1~2 分钟,
     // 阈值换算成真实速率是每小时几百 hPa, 几乎永远达不到, 导致预测总是
     // "稳定 -> 晴/阴"。必须把斜率归一化到 hPa/小时 再与气象阈值比较。
-    const points = pressureHistory
+    const points = hist
         .map(p => ({
             t: parseTime(p.time),
             p: p.pressure
@@ -166,8 +166,8 @@ function predictByPressure(currentPressure, bmp280Temp, isRaining) {
 
     const t0 = points[0].t;
     const spanHours = (points[n - 1].t - t0) / 3600000;
-    // 时间跨度不足 5 分钟(刚启动/时间异常) -> 无法判断趋势
-    if (spanHours < 5 / 60) return done(4);
+    // 时间跨度不足 2 分钟(刚启动/时间异常) -> 无法判断趋势
+    if (spanHours < 2 / 60) return done(4);
 
     let sumX = 0,
         sumY = 0,
@@ -368,7 +368,7 @@ function handleWeatherData(data) {
         data.bmp280_temp || 0,
         data.is_rain ? 1 : 0,
         data.is_night ? 1 : 0,
-        data.weather_prediction ? 1 : 4,
+        typeof data.weather_prediction === 'number' ? data.weather_prediction : 4,
         data.oled_power ? 1 : 0,
         data.pt_voltage || 0,
         data.battery_voltage || 0,
@@ -463,9 +463,84 @@ function runCleanup() {
     });
 }
 
-// 启动时立即清理一次
+// ========== 数据库历史数据回溯预测 ==========
+async function backfillPredictions() {
+    return new Promise((resolve) => {
+        db.all(
+            `SELECT id, time, bmp280_pressure, bmp280_temp, is_rain FROM weather_data
+             WHERE sw_pressure_prediction IS NULL OR sw_pressure_prediction = 0
+             ORDER BY id ASC`,
+            [],
+            async (err, rows) => {
+                if (err) {
+                    console.error('[BACKFILL] 查询待回填记录失败:', err.message);
+                    resolve();
+                    return;
+                }
+                if (!rows || rows.length === 0) {
+                    console.log('[BACKFILL] 无待回填记录，跳过');
+                    resolve();
+                    return;
+                }
+                console.log(`[BACKFILL] 开始回溯预测，共 ${rows.length} 条待处理记录...`);
+                const localHistory = [];
+                let lastPred = null;
+                let done = 0;
+                let updates = 0;
+                const BATCH_LOG = 500;
+
+                for (const row of rows) {
+                    if (typeof row.bmp280_pressure === 'number' && row.bmp280_pressure > 0) {
+                        localHistory.push({
+                            time: row.time || new Date(row.created_at).toISOString(),
+                            pressure: row.bmp280_pressure
+                        });
+                        if (localHistory.length > PRESSURE_HISTORY_SIZE) {
+                            localHistory.shift();
+                        }
+                    }
+                    const swRes = predictByPressure(
+                        row.bmp280_pressure || 0,
+                        row.bmp280_temp || 0,
+                        !!row.is_rain,
+                        localHistory
+                    );
+                    const prevNull = (row.sw_pressure_prediction === null);
+                    const prevZero = (row.sw_pressure_prediction === 0);
+                    const needWrite = prevNull || (prevZero && swRes.code !== 4);
+                    if (needWrite && swRes.code !== 4) {
+                        updates++;
+                        db.run(
+                            `UPDATE weather_data SET sw_pressure_prediction = ? WHERE id = ?`,
+                            [swRes.code, row.id]
+                        );
+                        if (lastPred !== null && swRes.code !== lastPred) {
+                            recordPredictionChange('sw', lastPred, swRes.code, {
+                                time: row.time,
+                                bmp280_pressure: row.bmp280_pressure,
+                                bmp280_temp: row.bmp280_temp,
+                                is_rain: row.is_rain
+                            }, swRes);
+                        }
+                        lastPred = swRes.code;
+                    } else if (swRes.code !== 4) {
+                        lastPred = swRes.code;
+                    }
+                    done++;
+                    if (done % BATCH_LOG === 0) {
+                        console.log(`[BACKFILL] 进度 ${done}/${rows.length}, 已更新 ${updates} 条`);
+                        await new Promise(r => setTimeout(r, 10));
+                    }
+                }
+                console.log(`[BACKFILL] 完成，处理 ${done} 条，更新 sw_pressure_prediction ${updates} 条`);
+                resolve();
+            }
+        );
+    });
+}
+
 runCleanup();
-// 每小时检查一次
+setTimeout(() => backfillPredictions(), 2000);
 setInterval(runCleanup, 60 * 60 * 1000);
 
 // ========== HTTP 服务器 + Socket.IO ==========
@@ -585,6 +660,46 @@ app.get('/api/status', (req, res) => {
         data_stale: lastDataReceivedAt ? (Date.now() - lastDataReceivedAt) >= DATA_PULL_INTERVAL_MS : true,
         server_time: new Date().toISOString()
     });
+});
+
+app.get('/api/pressure-export.txt', (req, res) => {
+    const hours = Math.min(parseFloat(req.query.hours) || 24, 72);
+    const since = Date.now() - hours * 60 * 60 * 1000;
+    db.all(
+        `SELECT time, bmp280_pressure FROM weather_data WHERE created_at >= ? AND bmp280_pressure > 0 ORDER BY id ASC`,
+        [since],
+        (err, rows) => {
+            if (err) {
+                res.status(500).type('text/plain').send('ERROR: ' + err.message);
+                return;
+            }
+            const lines = ['# time pressure_hpa'];
+            for (const r of rows) {
+                lines.push(`${r.time || ''} ${Number(r.bmp280_pressure).toFixed(1)}`);
+            }
+            res.type('text/plain').send(lines.join('\n'));
+        }
+    );
+});
+
+app.get('/api/pressure-export.txt', (req, res) => {
+    const hours = Math.min(parseFloat(req.query.hours) || 24, 72);
+    const since = Date.now() - hours * 60 * 60 * 1000;
+    db.all(
+        `SELECT time, bmp280_pressure FROM weather_data WHERE created_at >= ? AND bmp280_pressure > 0 ORDER BY id ASC`,
+        [since],
+        (err, rows) => {
+            if (err) {
+                res.status(500).type('text/plain').send('ERROR: ' + err.message);
+                return;
+            }
+            const lines = ['# time pressure_hpa'];
+            for (const r of rows) {
+                lines.push(`${r.time || ''} ${Number(r.bmp280_pressure).toFixed(1)}`);
+            }
+            res.type('text/plain').send(lines.join('\n'));
+        }
+    );
 });
 
 // 手动触发主动拉取 (调试/运维用)

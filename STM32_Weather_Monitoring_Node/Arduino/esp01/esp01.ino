@@ -40,13 +40,10 @@
 #define OLED_WIDTH 128
 #define OLED_HEIGHT 64
 
-
-
 // const char *WIFI_SSID = "CMCC-5V9M";
 // const char *WIFI_PASSWORD = "2beat35c";
 const char *WIFI_SSID = "LinkHusen";
 const char *WIFI_PASSWORD = "320724fuck";
-
 
 const char *MQTT_SERVER_IP = "8.130.191.142";
 const int MQTT_PORT = 1883;
@@ -236,11 +233,13 @@ void updateDisplay() {
   display.print("W:");
   display.print(iWeatherPred);
   display.print(" ");
-  display.print(iWeatherPred == 1
+  display.print(iWeatherPred == 0
                     ? "sun"
-                    : (iWeatherPred == 2
+                    : (iWeatherPred == 1
                            ? "rain"
-                           : (iWeatherPred == 3 ? "thud" : "none")));
+                           : (iWeatherPred == 2
+                                  ? "cldy"
+                                  : (iWeatherPred == 3 ? "thud" : "none"))));
 
   // 运行时长 Uptime (格式化为 HH:MM:SS / XdHH:MM:SS)
   unsigned long uptime = (millis() - bootMs) / 1000UL;

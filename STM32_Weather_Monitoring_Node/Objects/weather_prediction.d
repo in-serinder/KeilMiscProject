@@ -31,4 +31,5 @@
 .\objects\weather_prediction.o: .\Library\misc.h
 .\objects\weather_prediction.o: .\Hardware\bmp280_s.h
 .\objects\weather_prediction.o: D:\Keil_ARM\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\weather_prediction.o: .\Hardware\rain_s.h
 .\objects\weather_prediction.o: D:\Keil_ARM\ARM\ARMCC\Bin\..\include\string.h

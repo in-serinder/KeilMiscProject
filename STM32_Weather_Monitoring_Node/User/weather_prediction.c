@@ -36,9 +36,13 @@ static float pressHist[WP_HISTORY_MAX]; //气压环形缓冲
 static uint8_t pressCnt = 0;            //已采样样本数
 static uint8_t pressIdx = 0;            //环形写指针(指向下次写入位置)
 
-static Weather_Prediction wpCurrent = Weather_Prediction_Invalid;   //已确认输出
-static Weather_Prediction wpCandidate = Weather_Prediction_Invalid; //候选状态
-static uint8_t wpConfirmCnt = 0;        //候选连续相同计数
+static Weather_Prediction wpCurrent = Weather_Prediction_Invalid;
+static Weather_Prediction wpCandidate = Weather_Prediction_Invalid;
+static uint8_t wpConfirmCnt = 0;
+static float wpLastP = 0.0f;
+static float wpLastDPShort = 0.0f;
+static float wpLastDPLong = 0.0f;
+static Weather_Prediction wpLastCand = Weather_Prediction_Invalid;
 
 // 取 back 个样本之前的气压值(环形缓冲反向索引) 
 static float History_Get(uint8_t back) {
@@ -61,8 +65,6 @@ void Weather_Prediction_Update(void) {
   float p, dPShort, dPLong = 0.0f;
   Weather_Prediction cand;
 
-  
-  BMP280_Sensor_Read();
   p = BMP280_Sensor_ReadPressure();
 
   // 存入环形缓冲
@@ -102,6 +104,10 @@ void Weather_Prediction_Update(void) {
     cand = Weather_Prediction_ToRainy; // 持续下降: 降雨/刮风
   } else if (dPShort >= WP_RISE_SHORT || dPLong >= WP_RISE_LONG) {
     cand = Weather_Prediction_ToSunny; // 气压回升: 转晴
+  } else if (pressCnt >= WP_TREND_WIN_LONG && dPLong <= WP_DROP_LONG) {
+    cand = Weather_Prediction_ToRainy; // 长窗口持续下降补判: 降雨
+  } else if (pressCnt >= WP_TREND_WIN_LONG && dPLong >= WP_RISE_LONG) {
+    cand = Weather_Prediction_ToSunny; // 长窗口持续回升补判: 转晴
   } else {
     cand = Weather_Prediction_ToOvercast; // 平稳: 阴天
   }
@@ -122,4 +128,16 @@ void Weather_Prediction_Update(void) {
 
 Weather_Prediction Weather_Prediction_Print(void) {
   return wpCurrent;
+}
+
+void Weather_Prediction_GetRaw(float *outP, float *outDPShort, float *outDPLong,
+                                Weather_Prediction *outCand, Weather_Prediction *outCur,
+                                uint8_t *outConfirmCnt, uint8_t *outSampleCnt) {
+  if (outP) *outP = wpLastP;
+  if (outDPShort) *outDPShort = wpLastDPShort;
+  if (outDPLong) *outDPLong = wpLastDPLong;
+  if (outCand) *outCand = wpLastCand;
+  if (outCur) *outCur = wpCurrent;
+  if (outConfirmCnt) *outConfirmCnt = wpConfirmCnt;
+  if (outSampleCnt) *outSampleCnt = pressCnt;
 }

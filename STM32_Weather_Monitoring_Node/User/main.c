@@ -295,6 +295,14 @@ static void UART_Heartbeat(void) {
   UART_Printf("[Debug][Sensor] PT-Voltage-%.3fv\r\n", ptVoltage);
   UART_Printf("[Debug][Sensor] Battery-Voltage-%.2fv\r\n", batteryVoltage);
   UART_Printf("[Debug][Sensor] Light-Value-%umv\r\n", lightMv);
+  {
+    float wpP, wpDS, wpDL;
+    Weather_Prediction wpC, wpCu;
+    uint8_t wpCC, wpSC;
+    Weather_Prediction_GetRaw(&wpP, &wpDS, &wpDL, &wpC, &wpCu, &wpCC, &wpSC);
+    UART_Printf("[Debug][WP] P=%.1fhPa dP10=%+.2fhPa dP60=%+.2fhPa sample=%u cand=%u cur=%u confirm=%u/3\r\n",
+                wpP, wpDS, wpDL, (unsigned)wpSC, (unsigned)wpC, (unsigned)wpCu, (unsigned)wpCC);
+  }
 }
 
 static void Tick_Process(uint32_t now) {
