@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="140"
+             xmlns:vm="using:_24Cxx_Copier_Porg.ViewModels"
+             xmlns:models="using:_24Cxx_Copier_Porg.Models"
+             x:Class="_24Cxx_Copier_Porg.Views.LogViewer"
+             x:DataType="vm:OpearationPanelViewModel">
+
+    <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            CornerRadius="7"
+            Padding="12">
+        <DockPanel LastChildFill="True">
+
+            <TextBlock DockPanel.Dock="Top"
+                       Text="Log"
+                       FontSize="11"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,6"/>
+
+            <Separator DockPanel.Dock="Top" Margin="0,0,0,4" Opacity="0.5"/>
+
+            <ScrollViewer x:Name="LogScroll"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding Logs}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:LogEntry">
+                            <Grid ColumnDefinitions="Auto,*" Margin="0,1">
+                                <!-- Bracketed tag -->
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding Tag}"
+                                           FontFamily="Consolas,Menlo,Monospace"
+                                           FontSize="9"
+                                           FontWeight="SemiBold"
+                                           Foreground="{Binding TagColor}"
+                                           Margin="0,0,6,0"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding Message}"
+                                           FontFamily="Consolas,Menlo,Monospace"
+                                           FontSize="9"
+                                           TextWrapping="Wrap"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
+</UserControl>
+

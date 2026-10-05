@@ -1,0 +1,214 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\jyag\\AppData\\Local\\Temp\\.vsdbgsrc\\04d90ecf2764256136072fe079c58613cdca554b\\_24Cxx_Copier_Porg.ViewModels.MainWindowViewModel.g.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|f:\\sysfile\\desktop\\misc.git\\keilmiscproject\\51_24cxx_copier\\avalonia_upper\\24cxx_copier_porg\\24cxx_copier_porg\\24cxx_copier_porg.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|solutionrelative:24cxx_copier_porg\\24cxx_copier_porg.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|f:\\sysfile\\desktop\\misc.git\\keilmiscproject\\51_24cxx_copier\\avalonia_upper\\24cxx_copier_porg\\24cxx_copier_porg\\models\\serialobjecthelpermodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|solutionrelative:24cxx_copier_porg\\models\\serialobjecthelpermodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|f:\\sysfile\\desktop\\misc.git\\keilmiscproject\\51_24cxx_copier\\avalonia_upper\\24cxx_copier_porg\\24cxx_copier_porg\\views\\mainwindow.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|solutionrelative:24cxx_copier_porg\\views\\mainwindow.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|f:\\sysfile\\desktop\\misc.git\\keilmiscproject\\51_24cxx_copier\\avalonia_upper\\24cxx_copier_porg\\24cxx_copier_porg\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|solutionrelative:24cxx_copier_porg\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|f:\\sysfile\\desktop\\misc.git\\keilmiscproject\\51_24cxx_copier\\avalonia_upper\\24cxx_copier_porg\\24cxx_copier_porg\\viewmodels\\hexviewviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|solutionrelative:24cxx_copier_porg\\viewmodels\\hexviewviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|f:\\sysfile\\desktop\\misc.git\\keilmiscproject\\51_24cxx_copier\\avalonia_upper\\24cxx_copier_porg\\24cxx_copier_porg\\views\\mainwindow.axaml||{62A225A0-D448-4681-8CB7-5F403067404B}",
+      "RelativeMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|solutionrelative:24cxx_copier_porg\\views\\mainwindow.axaml||{62A225A0-D448-4681-8CB7-5F403067404B}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|f:\\sysfile\\desktop\\misc.git\\keilmiscproject\\51_24cxx_copier\\avalonia_upper\\24cxx_copier_porg\\24cxx_copier_porg\\app.axaml||{62A225A0-D448-4681-8CB7-5F403067404B}",
+      "RelativeMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|solutionrelative:24cxx_copier_porg\\app.axaml||{62A225A0-D448-4681-8CB7-5F403067404B}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|f:\\sysfile\\desktop\\misc.git\\keilmiscproject\\51_24cxx_copier\\avalonia_upper\\24cxx_copier_porg\\24cxx_copier_porg\\app.manifest||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|solutionrelative:24cxx_copier_porg\\app.manifest||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|f:\\sysfile\\desktop\\misc.git\\keilmiscproject\\51_24cxx_copier\\avalonia_upper\\24cxx_copier_porg\\24cxx_copier_porg\\views\\opearationpanel.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|solutionrelative:24cxx_copier_porg\\views\\opearationpanel.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|f:\\sysfile\\desktop\\misc.git\\keilmiscproject\\51_24cxx_copier\\avalonia_upper\\24cxx_copier_porg\\24cxx_copier_porg\\views\\opearationpanel.axaml||{62A225A0-D448-4681-8CB7-5F403067404B}",
+      "RelativeMoniker": "D:0:0:{595ECDDE-D3A2-403D-A2D5-8D11B0E92644}|24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj|solutionrelative:24cxx_copier_porg\\views\\opearationpanel.axaml||{62A225A0-D448-4681-8CB7-5F403067404B}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "MainWindow.axaml",
+              "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\Views\\MainWindow.axaml",
+              "RelativeDocumentMoniker": "24Cxx_Copier_Porg\\Views\\MainWindow.axaml",
+              "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\Views\\MainWindow.axaml",
+              "RelativeToolTip": "24Cxx_Copier_Porg\\Views\\MainWindow.axaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-10-05T10:01:34.42Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "_24Cxx_Copier_Porg.ViewModels.MainWindowViewModel.g.cs",
+              "DocumentMoniker": "C:\\Users\\jyag\\AppData\\Local\\Temp\\.vsdbgsrc\\04d90ecf2764256136072fe079c58613cdca554b\\_24Cxx_Copier_Porg.ViewModels.MainWindowViewModel.g.cs",
+              "ToolTip": "C:\\Users\\jyag\\AppData\\Local\\Temp\\.vsdbgsrc\\04d90ecf2764256136072fe079c58613cdca554b\\_24Cxx_Copier_Porg.ViewModels.MainWindowViewModel.g.cs [\u53EA\u8BFB]",
+              "ViewState": "AgIAACAAAAAAAAAAAAAQwDUAAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-05T16:02:13.73Z",
+              "EditorCaption": " [\u53EA\u8BFB]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "SerialObjectHelperModel.cs",
+              "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\Models\\SerialObjectHelperModel.cs",
+              "RelativeDocumentMoniker": "24Cxx_Copier_Porg\\Models\\SerialObjectHelperModel.cs",
+              "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\Models\\SerialObjectHelperModel.cs",
+              "RelativeToolTip": "24Cxx_Copier_Porg\\Models\\SerialObjectHelperModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-05T15:24:57.13Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Program.cs",
+              "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\Program.cs",
+              "RelativeDocumentMoniker": "24Cxx_Copier_Porg\\Program.cs",
+              "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\Program.cs",
+              "RelativeToolTip": "24Cxx_Copier_Porg\\Program.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAIwB4AAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-05T12:44:44.769Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "HexViewViewModel.cs",
+              "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\ViewModels\\HexViewViewModel.cs",
+              "RelativeDocumentMoniker": "24Cxx_Copier_Porg\\ViewModels\\HexViewViewModel.cs",
+              "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\ViewModels\\HexViewViewModel.cs",
+              "RelativeToolTip": "24Cxx_Copier_Porg\\ViewModels\\HexViewViewModel.cs",
+              "ViewState": "AgIAAEgAAAAAAAAAAAAlwFgAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-05T12:41:54.057Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "App.axaml",
+              "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\App.axaml",
+              "RelativeDocumentMoniker": "24Cxx_Copier_Porg\\App.axaml",
+              "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\App.axaml",
+              "RelativeToolTip": "24Cxx_Copier_Porg\\App.axaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-10-05T11:40:32.026Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "app.manifest",
+              "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\app.manifest",
+              "RelativeDocumentMoniker": "24Cxx_Copier_Porg\\app.manifest",
+              "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\app.manifest",
+              "RelativeToolTip": "24Cxx_Copier_Porg\\app.manifest",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvwAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001203|",
+              "WhenOpened": "2026-10-05T11:40:31.51Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "24Cxx_Copier_Porg.csproj",
+              "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj",
+              "RelativeDocumentMoniker": "24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj",
+              "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj",
+              "RelativeToolTip": "24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAgwBoAAABEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-10-05T11:29:02.847Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "MainWindow.axaml.cs",
+              "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\Views\\MainWindow.axaml.cs",
+              "RelativeDocumentMoniker": "24Cxx_Copier_Porg\\Views\\MainWindow.axaml.cs",
+              "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\Views\\MainWindow.axaml.cs",
+              "RelativeToolTip": "24Cxx_Copier_Porg\\Views\\MainWindow.axaml.cs",
+              "ViewState": "AgIAACAAAAAAAAAAAAAQwCwAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-05T10:37:09.563Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "OpearationPanel.axaml.cs",
+              "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\Views\\OpearationPanel.axaml.cs",
+              "RelativeDocumentMoniker": "24Cxx_Copier_Porg\\Views\\OpearationPanel.axaml.cs",
+              "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\Views\\OpearationPanel.axaml.cs",
+              "RelativeToolTip": "24Cxx_Copier_Porg\\Views\\OpearationPanel.axaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvwoAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-05T10:36:59.107Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "OpearationPanel.axaml",
+              "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\Views\\OpearationPanel.axaml",
+              "RelativeDocumentMoniker": "24Cxx_Copier_Porg\\Views\\OpearationPanel.axaml",
+              "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\Views\\OpearationPanel.axaml",
+              "RelativeToolTip": "24Cxx_Copier_Porg\\Views\\OpearationPanel.axaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-10-05T10:36:51.109Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

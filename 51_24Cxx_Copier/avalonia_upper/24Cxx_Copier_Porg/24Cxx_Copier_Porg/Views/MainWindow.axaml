@@ -1,0 +1,102 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:_24Cxx_Copier_Porg.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="520" d:DesignHeight="320"
+        x:Class="_24Cxx_Copier_Porg.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Select COM Port"
+        Width="520" Height="240"
+        CanResize="False" WindowStartupLocation="CenterScreen">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Main Title -->
+        <TextBlock Grid.Row="0"
+                   Text="Select the port from the dropdown list (if none appears, check the connection and CH340 driver installation)"
+                   FontWeight="SemiBold"
+                   FontSize="15"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,20"/>
+
+        <!-- Refresh row -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+            <TextBlock Text="Available ports:" FontWeight="Medium" VerticalAlignment="Center"/>
+            <Button Content="Refresh" Margin="12,0,0,0" Padding="8,2" Command="{Binding RefreshCommand}" FontSize="12"/>
+            <ProgressBar IsIndeterminate="True"
+                         Width="80" Height="6"
+                         Margin="12,0,0,0"
+                         VerticalAlignment="Center"
+                         IsVisible="{Binding IsScanning}"/>
+        </StackPanel>
+
+        <!-- ComboBox: item = bold PortName + muted Description -->
+        <ComboBox Grid.Row="2"
+                  ItemsSource="{Binding AvailablePorts}"
+                  SelectedItem="{Binding SelectedPort}"
+                  Height="36"
+                  Width="400"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Top"
+                  FontSize="14">
+            <ComboBox.ItemTemplate>
+                <DataTemplate DataType="vm:ComPortInfo">
+                    <Grid Margin="4,2" ColumnDefinitions="Auto,*,Auto">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding DisplayText}"
+                                   FontWeight="Bold"/>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding Description}"
+                                   Foreground="{DynamicResource ThemeForegroundMutedBrush}"
+                                   Margin="12,0,0,0"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2"
+                                   Text="probing…"
+                                   FontSize="10"
+                                   Opacity="0.6"
+                                   Margin="12,0,0,0"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding IsProbing}"/>
+                    </Grid>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <!-- Status line -->
+        <StackPanel Grid.Row="3" Margin="0,10,0,0" Spacing="3" VerticalAlignment="Top">
+            <TextBlock Text="{Binding StatusText}"
+                       FontSize="11"
+                       Opacity="0.75"
+                       TextWrapping="Wrap"/>
+            <!-- Small detection note: "Device auto-discovered" / "Device detected" -->
+            <TextBlock Text="{Binding DetectionText}"
+                       FontSize="11"
+                       FontWeight="SemiBold"
+                       Foreground="#2E7D32"
+                       IsVisible="{Binding DetectionText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+        </StackPanel>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="OK"
+                    Command="{Binding OkCommand}"
+                    Classes="accent"
+                    Width="90" Height="34" Margin="0,0,12,0" IsDefault="True"/>
+            <Button Content="Close" Command="{Binding CloseCommand}" Width="90" Height="34" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+
+</Window>

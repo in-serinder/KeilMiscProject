@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:_24Cxx_Copier_Porg.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="260"
+             x:Class="_24Cxx_Copier_Porg.Views.ChipInfoPanel"
+             x:DataType="vm:OpearationPanelViewModel">
+
+    <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            CornerRadius="7"
+            Padding="12">
+        <StackPanel Spacing="6">
+
+            <TextBlock Text="Chip Parameters"
+                       FontSize="11"
+                       FontWeight="SemiBold"/>
+
+            <Separator Opacity="0.5"/>
+
+            <!-- Uses the selected chip's raw model as the data source -->
+            <StackPanel Spacing="5"
+                        DataContext="{Binding SelectedChip.Model}">
+
+                <Grid ColumnDefinitions="88,*">
+                    <TextBlock Grid.Column="0" Text="Model" FontSize="10" Opacity="0.7"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Name}"
+                               FontSize="10" FontWeight="SemiBold"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="88,*">
+                    <TextBlock Grid.Column="0" Text="Capacity" FontSize="10" Opacity="0.7"/>
+                    <TextBlock Grid.Column="1" Text="{Binding BitsText}" FontSize="10"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="88,*">
+                    <TextBlock Grid.Column="0" Text="Capacity (Byte)" FontSize="10" Opacity="0.7"/>
+                    <TextBlock Grid.Column="1" Text="{Binding BytesText}" FontSize="10"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="88,*">
+                    <TextBlock Grid.Column="0" Text="Address range" FontSize="10" Opacity="0.7"/>
+                    <TextBlock Grid.Column="1" Text="{Binding AddressRangeText}"
+                               FontSize="10"
+                               FontFamily="Consolas,Menlo,Monospace"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="88,*">
+                    <TextBlock Grid.Column="0" Text="Page size" FontSize="10" Opacity="0.7"/>
+                    <TextBlock Grid.Column="1" Text="{Binding PageSize, StringFormat='{}{0} Byte'}"
+                               FontSize="10"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="88,*">
+                    <TextBlock Grid.Column="0" Text="Storage addr" FontSize="10" Opacity="0.7"/>
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding AddressBytes, StringFormat='{}{0} byte(s)'}"
+                               FontSize="10"/>
+                </Grid>
+
+                <TextBlock Text="{Binding Note}"
+                           FontSize="9"
+                           Opacity="0.6"
+                           TextWrapping="Wrap"
+                           Margin="0,3,0,0"/>
+            </StackPanel>
+
+            <!-- Placeholder when no chip is selected -->
+            <TextBlock Text="No chip selected"
+                       FontSize="10"
+                       Opacity="0.5"
+                       IsVisible="{Binding !HasSelectedChip}"/>
+        </StackPanel>
+    </Border>
+</UserControl>

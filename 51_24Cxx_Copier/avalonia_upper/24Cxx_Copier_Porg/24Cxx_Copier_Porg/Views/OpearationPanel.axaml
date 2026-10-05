@@ -2,8 +2,130 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="24Cxx_Copier_Porg.Views.OpearationPanel"
-        Title="OpearationPanel">
-    Welcome to Avalonia!
+        xmlns:vm="using:_24Cxx_Copier_Porg.ViewModels"
+        xmlns:views="using:_24Cxx_Copier_Porg.Views"
+        mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="460"
+        x:Class="_24Cxx_Copier_Porg.Views.OpearationPanel"
+        x:DataType="vm:OpearationPanelViewModel"
+        Title="24Cxx Copier"
+        Width="1100" Height="700"
+        MinWidth="1000" MinHeight="700"
+        WindowStartupLocation="CenterScreen">
+
+    <Design.DataContext>
+        <vm:OpearationPanelViewModel/>
+    </Design.DataContext>
+
+    <Grid Margin="14" ColumnDefinitions="280,*" RowDefinitions="*,Auto">
+
+        <!-- Left column: chip selection + parameters + writing mode + write info -->
+        <ScrollViewer Grid.Column="0"
+                      Grid.Row="0"
+                      Margin="0,0,12,0"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="10">
+
+                <!-- Chip drop-down -->
+                <views:ChipSelector/>
+
+                <!-- Selected chip parameters -->
+                <views:ChipInfoPanel/>
+
+                <!-- Writing mode + payload -->
+                <views:WritingModeSelector/>
+
+                <!-- Reserved write info -->
+                <views:WriteInfoPanel/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Right column: addresses + log + total progress -->
+        <Grid Grid.Column="1" Grid.Row="0" RowDefinitions="Auto,*,Auto">
+
+            <!-- Slaved address selection (fixed 0x50 - 0x57, bound by data) -->
+            <views:AddressSelectionPanel Grid.Row="0" MinHeight="170"/>
+
+            <!-- Scrolling log -->
+            <views:LogViewer Grid.Row="1" Margin="0,12,0,0"/>
+
+            <!-- Total progress -->
+            <Border Grid.Row="2"
+                    Margin="0,12,0,0"
+                    Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                    CornerRadius="7"
+                    Padding="12">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Total Progress"
+                               FontSize="11"
+                               FontWeight="SemiBold"/>
+                    <Separator Opacity="0.5"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <ProgressBar Grid.Column="0"
+                                     Minimum="0"
+                                     Maximum="{Binding TotalMaximum}"
+                                     Value="{Binding TotalProgress}"
+                                     Height="18"
+                                     CornerRadius="4"
+                                     VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding TotalProgressText}"
+                                   MinWidth="40"
+                                   TextAlignment="Right"
+                                   VerticalAlignment="Center"
+                                   Margin="8,0,0,0"
+                                   FontSize="10"
+                                   FontWeight="SemiBold"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Bottom row: footer link (left) + action buttons (right) -->
+        <Grid Grid.Row="1"
+              Grid.Column="0"
+              Grid.ColumnSpan="2"
+              ColumnDefinitions="Auto,*,Auto"
+              Margin="0,12,0,0">
+
+            <!-- Footer hyperlink -->
+            <Button Grid.Column="0"
+                    Classes="link"
+                    Padding="0"
+                    VerticalAlignment="Center"
+                    Cursor="Hand"
+                    Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                    ToolTip.Tip="https://github.com/in-serinder/KeilMiscProject/tree/master/51_24Cxx_Copier"
+                    Command="{Binding OpenProjectLinkCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <Image Source="avares://24Cxx_Copier_Porg/Assets/GitHub.png"
+                           Width="14" Height="14"
+                           Stretch="Uniform"/>
+                    <TextBlock Text="Powered by 51_24Cxx_Copier"
+                               FontSize="10"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Action buttons -->
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="8">
+                <Button Content="Cancel"
+                        Width="80" Height="27"
+                        FontSize="10"
+                        IsCancel="True"
+                        Command="{Binding CancelCommand}"/>
+                <Button Content="Submit"
+                        Width="80" Height="27"
+                        FontSize="10"
+                        FontWeight="SemiBold"
+                        IsDefault="True"
+                        Classes="accent"
+                        Command="{Binding SubmitCommand}"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
 </Window>
+

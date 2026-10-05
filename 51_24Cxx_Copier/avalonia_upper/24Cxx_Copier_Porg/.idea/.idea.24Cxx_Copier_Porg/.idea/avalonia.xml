@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="24Cxx_Copier_Porg/Views/AddressSelectionPanel.axaml" value="24Cxx_Copier_Porg/24Cxx_Copier_Porg.csproj" />
+        <entry key="24Cxx_Copier_Porg/Views/AddressSlotRow.axaml" value="24Cxx_Copier_Porg/24Cxx_Copier_Porg.csproj" />
+        <entry key="24Cxx_Copier_Porg/Views/ChipInfoPanel.axaml" value="24Cxx_Copier_Porg/24Cxx_Copier_Porg.csproj" />
+        <entry key="24Cxx_Copier_Porg/Views/ChipSelector.axaml" value="24Cxx_Copier_Porg/24Cxx_Copier_Porg.csproj" />
+        <entry key="24Cxx_Copier_Porg/Views/HexViewer.axaml" value="24Cxx_Copier_Porg/24Cxx_Copier_Porg.csproj" />
+        <entry key="24Cxx_Copier_Porg/Views/MainWindow.axaml" value="24Cxx_Copier_Porg/24Cxx_Copier_Porg.csproj" />
+        <entry key="24Cxx_Copier_Porg/Views/OpearationPanel.axaml" value="24Cxx_Copier_Porg/24Cxx_Copier_Porg.csproj" />
+        <entry key="24Cxx_Copier_Porg/Views/WriteInfoPanel.axaml" value="24Cxx_Copier_Porg/24Cxx_Copier_Porg.csproj" />
+      </map>
+    </option>
+  </component>
+</project>

@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:_24Cxx_Copier_Porg.ViewModels"
+        xmlns:views="using:_24Cxx_Copier_Porg.Views"
+        mc:Ignorable="d" d:DesignWidth="720" d:DesignHeight="520"
+        x:Class="_24Cxx_Copier_Porg.Views.HexViewWindow"
+        x:DataType="vm:HexViewViewModel"
+        Title="{Binding Title}"
+        Width="720" Height="520"
+        MinWidth="520" MinHeight="360"
+        WindowStartupLocation="CenterOwner">
+
+    <Design.DataContext>
+        <vm:HexViewViewModel/>
+    </Design.DataContext>
+
+    <Grid Margin="14" RowDefinitions="Auto,*">
+
+        <TextBlock Grid.Row="0"
+                   Text="{Binding Title}"
+                   FontSize="12"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,8"/>
+
+        <views:HexViewer Grid.Row="1"/>
+    </Grid>
+</Window>

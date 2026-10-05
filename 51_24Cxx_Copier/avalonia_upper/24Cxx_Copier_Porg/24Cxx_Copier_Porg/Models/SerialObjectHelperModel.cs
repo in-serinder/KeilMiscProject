@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ArchivumU.Models
+namespace _24Cxx_Copier_Porg.Models
 {
     /// <summary>
     /// 串口对象帮助器模型 - 用于管理多个串口的交互
@@ -586,6 +586,92 @@ namespace ArchivumU.Models
                 // 确保关闭并释放资源
                 tempPort?.Close();
                 tempPort?.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// 探测指定串口上是否连接着协议下位机。
+        ///
+        /// 以 CMD.md 规定的 115200 8N1 参数打开串口，发送
+        /// <c>&gt;TYPE_ECHO&lt;\r\n</c>，若在超时时间内收到 <c>&gt;YES&lt;</c>
+        /// 则认为该端口即为目标下位机。
+        /// </summary>
+        /// <param name="portName">要探测的串口名称。</param>
+        /// <param name="timeoutMs">整个探测（打开 + 应答）的超时时间（毫秒）。</param>
+        /// <param name="cancellationToken">取消标记。</param>
+        /// <returns>true 表示该端口应答了 <c>&gt;YES&lt;</c>。</returns>
+        public static async Task<bool> ProbeDeviceAsync(string portName, int timeoutMs = 800,
+            System.Threading.CancellationToken cancellationToken = default)
+        {
+            SerialPort tempPort = null;
+            var echo = ParserTXModel.TypeEcho();
+
+            try
+            {
+                tempPort = new SerialPort(portName, 115200, Parity.None, 8, StopBits.One)
+                {
+                    ReadTimeout = 120,
+                    WriteTimeout = timeoutMs,
+                    Handshake = Handshake.None,
+                    DtrEnable = true,
+                    RtsEnable = true,
+                };
+
+                // 打开串口（打开本身可能阻塞，放进 Task.Run 由调用方并发执行）。
+                tempPort.Open();
+
+                // 清空打开瞬间的残留字节。
+                try { tempPort.DiscardInBuffer(); } catch { }
+                try { tempPort.DiscardOutBuffer(); } catch { }
+
+                tempPort.Write(echo);
+
+                var parser = new ParserRXModel();
+                var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+
+                while (DateTime.UtcNow < deadline)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    int available;
+                    try { available = tempPort.BytesToRead; }
+                    catch { break; }
+
+                    if (available > 0)
+                    {
+                        var buffer = new byte[available];
+                        int read;
+                        try { read = tempPort.Read(buffer, 0, available); }
+                        catch { break; }
+
+                        var text = Encoding.ASCII.GetString(buffer, 0, read);
+                        foreach (var frame in parser.Feed(text))
+                        {
+                            if (frame.Kind == SerialResponseKind.Yes)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+
+                    await Task.Delay(20, cancellationToken).ConfigureAwait(false);
+                }
+
+                return false;
+            }
+            catch (OperationCanceledException)
+            {
+                return false;
+            }
+            catch
+            {
+                // 端口被占用 / 不存在 / 打开失败等都视为“不是目标设备”。
+                return false;
+            }
+            finally
+            {
+                try { tempPort?.Close(); } catch { }
+                try { tempPort?.Dispose(); } catch { }
             }
         }
 

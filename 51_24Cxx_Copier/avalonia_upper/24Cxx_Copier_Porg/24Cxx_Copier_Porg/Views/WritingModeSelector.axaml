@@ -1,0 +1,118 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:_24Cxx_Copier_Porg.ViewModels"
+             xmlns:conv="using:_24Cxx_Copier_Porg.Converters"
+             xmlns:models="using:_24Cxx_Copier_Porg.Models"
+             mc:Ignorable="d" d:DesignWidth="260"
+             x:Class="_24Cxx_Copier_Porg.Views.WritingModeSelector"
+             x:DataType="vm:OpearationPanelViewModel">
+
+    <UserControl.Resources>
+        <conv:EnumToBoolConverter x:Key="EnumToBool"/>
+    </UserControl.Resources>
+
+    <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            CornerRadius="7"
+            Padding="12">
+        <StackPanel Spacing="7">
+
+            <TextBlock Text="Writing Mode"
+                       FontSize="11"
+                       FontWeight="SemiBold"/>
+
+            <Separator Opacity="0.5"/>
+
+            <!-- Mode selection -->
+            <StackPanel Spacing="1">
+                <RadioButton GroupName="WritingMode" Content="Text write mode"
+                             FontSize="10"
+                             IsChecked="{Binding WritingMode, Converter={StaticResource EnumToBool}, ConverterParameter=Text}"/>
+                <RadioButton GroupName="WritingMode" Content="Binary file write mode"
+                             FontSize="10"
+                             IsChecked="{Binding WritingMode, Converter={StaticResource EnumToBool}, ConverterParameter=BinaryFile}"/>
+                <RadioButton GroupName="WritingMode" Content="Fill 0xFF mode"
+                             FontSize="10"
+                             IsChecked="{Binding WritingMode, Converter={StaticResource EnumToBool}, ConverterParameter=Fill0xFF}"/>
+                <RadioButton GroupName="WritingMode" Content="Fill 0x00 mode"
+                             FontSize="10"
+                             IsChecked="{Binding WritingMode, Converter={StaticResource EnumToBool}, ConverterParameter=Fill0x00}"/>
+                <RadioButton GroupName="WritingMode" Content="Custom fill mode"
+                             FontSize="10"
+                             IsChecked="{Binding WritingMode, Converter={StaticResource EnumToBool}, ConverterParameter=FillCustom}"/>
+            </StackPanel>
+
+            <Separator Opacity="0.5"/>
+
+            <!-- Payload area (depends on the selected mode) -->
+            <StackPanel Spacing="6">
+
+                <!-- Text write mode -->
+                <StackPanel Spacing="3" IsVisible="{Binding IsTextMode}">
+                    <TextBlock Text="Text content" FontSize="9" Opacity="0.8"/>
+                    <TextBox Text="{Binding TextContent}"
+                             Watermark="Enter the text to write"
+                             FontSize="10"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             MinHeight="56"
+                             CornerRadius="4"/>
+                </StackPanel>
+
+                <!-- Binary file write mode -->
+                <StackPanel Spacing="3" IsVisible="{Binding IsBinaryFileMode}">
+                    <TextBlock Text="Target file" FontSize="9" Opacity="0.8"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding TargetFilePath}"
+                                 Watermark="Select a binary file to write"
+                                 FontSize="10"
+                                 IsReadOnly="True"
+                                 CornerRadius="4"/>
+                        <Button Grid.Column="1"
+                                Content="Browse…"
+                                FontSize="10"
+                                Margin="6,0,0,0"
+                                Padding="8,3"
+                                Click="OnBrowseClick"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- 0xFF fill mode (read-only constant) -->
+                <StackPanel Spacing="3" IsVisible="{Binding IsFill0XffMode}">
+                    <TextBlock Text="Fill value" FontSize="9" Opacity="0.8"/>
+                    <TextBox Text="0xFF"
+                             FontSize="10"
+                             IsReadOnly="True"
+                             CornerRadius="4"
+                             FontFamily="Consolas,Menlo,Monospace"
+                             Opacity="0.7"/>
+                </StackPanel>
+
+                <!-- 0x00 fill mode (read-only constant) -->
+                <StackPanel Spacing="3" IsVisible="{Binding IsFill0X00Mode}">
+                    <TextBlock Text="Fill value" FontSize="9" Opacity="0.8"/>
+                    <TextBox Text="0x00"
+                             FontSize="10"
+                             IsReadOnly="True"
+                             CornerRadius="4"
+                             FontFamily="Consolas,Menlo,Monospace"
+                             Opacity="0.7"/>
+                </StackPanel>
+
+                <!-- Custom fill mode -->
+                <StackPanel Spacing="3" IsVisible="{Binding IsFillCustomMode}">
+                    <TextBlock Text="Custom value (hex, e.g. 0xAA)" FontSize="9" Opacity="0.8"/>
+                    <TextBox Text="{Binding CustomFillValue}"
+                             Watermark="0x00 - 0xFF"
+                             FontSize="10"
+                             CornerRadius="4"
+                             FontFamily="Consolas,Menlo,Monospace"/>
+                </StackPanel>
+            </StackPanel>
+
+        </StackPanel>
+    </Border>
+</UserControl>
+

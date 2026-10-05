@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:_24Cxx_Copier_Porg.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="500"
+             x:Class="_24Cxx_Copier_Porg.Views.AddressSlotRow"
+             x:DataType="vm:AddressSlotViewModel">
+
+    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" VerticalAlignment="Center">
+
+        <!-- Selection checkbox -->
+        <CheckBox Grid.Column="0"
+                  IsChecked="{Binding IsSelected}"
+                  VerticalAlignment="Center"
+                  Margin="0,0,9,0"/>
+
+        <!-- Progress bar with centered description text -->
+        <Panel Grid.Column="1" VerticalAlignment="Center">
+            <ProgressBar Minimum="0"
+                         Maximum="{Binding Maximum}"
+                         Value="{Binding Progress}"
+                         IsIndeterminate="{Binding IsIndeterminate}"
+                         Height="20"
+                         CornerRadius="4"/>
+            <TextBlock Text="{Binding Description}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="9"
+                       FontWeight="Medium"
+                       IsHitTestVisible="False"/>
+        </Panel>
+
+        <!-- Progress percentage on the right of the bar -->
+        <TextBlock Grid.Column="2"
+                   Text="{Binding ProgressText}"
+                   MinWidth="34"
+                   TextAlignment="Right"
+                   VerticalAlignment="Center"
+                   Margin="9,0,9,0"
+                   FontSize="9"
+                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+
+        <!-- Read-only address box -->
+        <TextBox Grid.Column="3"
+                 Text="{Binding AddressText}"
+                 IsReadOnly="True"
+                 Width="62"
+                 Height="22"
+                 FontSize="9"
+                 VerticalAlignment="Center"
+                 VerticalContentAlignment="Center"
+                 FontFamily="Consolas,Menlo,Monospace"/>
+
+        <!-- Download (read from device) button -->
+        <Button Grid.Column="4"
+                Classes="toolbar"
+                Padding="3"
+                Margin="6,0,0,0"
+                VerticalAlignment="Center"
+                Command="{Binding DownloadCommand}"
+                ToolTip.Tip="Download from device (read)">
+            <PathIcon Data="M12 16l-5-5h3V4h4v7h3l-5 5zM5 18h14v2H5z"
+                      Width="12" Height="12"/>
+        </Button>
+    </Grid>
+</UserControl>
+

@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:_24Cxx_Copier_Porg.ViewModels"
+             xmlns:models="using:_24Cxx_Copier_Porg.Models"
+             xmlns:hex="clr-namespace:HexView.Avalonia.Controls;assembly=HexView"
+             mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="420"
+             x:Class="_24Cxx_Copier_Porg.Views.HexViewer"
+             x:DataType="vm:HexViewViewModel">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <!-- Hex content -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                CornerRadius="6"
+                Padding="4">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto">
+                <hex:HexViewControl x:Name="HexContent"
+                                    TextElement.FontFamily="Consolas,Menlo,Monospace"
+                                    TextElement.FontSize="12"
+                                    ToBase="{Binding ToBase}"
+                                    BytesWidth="{Binding BytesPerLine}"/>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Footer: size / length / encoding info (left) + decoder drop-down (right) -->
+        <Grid Grid.Row="1"
+              ColumnDefinitions="*,Auto"
+              Margin="2,6,2,0">
+
+            <TextBlock Grid.Column="0"
+                       Text="{Binding FooterText}"
+                       FontSize="10"
+                       Opacity="0.75"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap"
+                       FontFamily="Consolas,Menlo,Monospace"/>
+
+            <!-- Borderless encoding selector + download -->
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="4"
+                        VerticalAlignment="Center"
+                        Margin="8,0,0,0">
+
+                <ComboBox Classes="borderless"
+                          ItemsSource="{Binding EncodingOptions}"
+                          SelectedItem="{Binding SelectedEncoding}"
+                          Padding="0"
+                          MinHeight="22"
+                          FontSize="10"
+                          VerticalAlignment="Center"
+                          ToolTip.Tip="Decoding / encoding format">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate DataType="models:EncodingOption">
+                            <TextBlock Text="{Binding DisplayName}"
+                                       FontSize="10"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <!-- Download as .bin -->
+                <Button x:Name="DownloadButton"
+                        Classes="toolbar"
+                        Padding="4"
+                        VerticalAlignment="Center"
+                        ToolTip.Tip="Download as .bin">
+                    <PathIcon Data="M12 16l-5-5h3V4h4v7h3l-5 5zM5 18h14v2H5z"
+                              Width="13" Height="13"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>
+
