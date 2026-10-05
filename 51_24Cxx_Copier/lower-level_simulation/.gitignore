@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+eeprom_data/
+*.bin
+demo_out.txt
+demo_err.txt
+demo_tmp/
+tmp_test*/
