@@ -1,0 +1,53 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:NFG_Reader.ViewModels"
+        xmlns:views="using:NFG_Reader.Views"
+        xmlns:components="using:NFG_Reader.Views.Components"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="560"
+        x:Class="NFG_Reader.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Width="900" Height="560"
+        MinWidth="720" MinHeight="460"
+        Background="{StaticResource NfgBackgroundBrush}"
+        Title="NFG Reader - AS6C62256 SRAM Tool">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <!-- Two-column shell: fixed sidebar (left) + content/operation area (right). -->
+    <Grid ColumnDefinitions="248, *">
+
+        <!-- ============================ LEFT SIDEBAR ============================ -->
+        <Border Grid.Column="0"
+                Background="{StaticResource NfgSidebarBrush}"
+                BorderBrush="{StaticResource NfgBorderBrush}"
+                BorderThickness="0,0,1,0">
+            <Grid RowDefinitions="Auto, *, Auto" Margin="10">
+                <!-- Connection block (top) -->
+                <components:ConnectionPanel Grid.Row="0" Margin="0,0,0,10" />
+
+                <!-- Device info (stretch) -->
+                <components:DeviceInfoPanel Grid.Row="1" />
+
+                <!-- Attribution (bottom) -->
+                <TextBlock Grid.Row="2" Classes="caption"
+                           Text="v1.0.0" Margin="0,8,0,0" />
+            </Grid>
+        </Border>
+
+        <!-- ============================ CONTENT AREA ============================ -->
+        <TabControl Grid.Column="1" Classes="nfg" Margin="10,8">
+            <TabItem Header="Read">
+                <views:ReadTabView />
+            </TabItem>
+            <TabItem Header="Write">
+                <views:WriteTabView />
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
+

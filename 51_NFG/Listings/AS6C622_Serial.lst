@@ -1,0 +1,163 @@
+C51 COMPILER V9.59.0.0   AS6C622_SERIAL                                                    10/06/2026 16:46:53 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE AS6C622_SERIAL
+OBJECT MODULE PLACED IN .\Objects\AS6C622_Serial.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE hardware\AS6C622_Serial.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Displa
+                    -y;.\hardware;.\system) DEBUG OBJECTEXTEND PRINT(.\Listings\AS6C622_Serial.lst) TABS(2) OBJECT(.\Objects\AS6C622_Serial.o
+                    -bj)
+
+line level    source
+
+   1          #include "AS6C622_Serial.h"
+   2          #include "SN74HC595N.h"
+   3          #include "SN74HC165N.h"
+   4          
+   5          /* =========================================================================
+   6           *  595-CTL 控制字约定 (见 SN74HC595N.h 的 CTL_BIT_xxx):
+   7           *    CTL_BIT_RAM_OE   : 1 = RAM /OE 拉高(不驱动总线)  0 = RAM /OE 拉低(驱动总线)
+   8           *    CTL_BIT_RAM_CE   : 1 = RAM /CE 拉高(未选中)      0 = RAM /CE 拉低(选中)
+   9           *    CTL_BIT_DQ_OE    : 1 = 595-DQ 输出关闭(高阻)      0 = 595-DQ 驱动总线
+  10           *    CTL_BIT_PL165    : 1 = 165 移位模式              0 = 165 装载
+  11           *    CTL_BIT_A16_RCLR : 1 = 正常                     0 = 595-A16 清零
+  12           *    CTL_BIT_DQ_RCLR  : 1 = 正常                     0 = 595-DQ  清零
+  13           *
+  14           *  常态控制字 (RCLR 保持正常、165 保持移位、总线空闲):
+  15           * ========================================================================= */
+  16          #define CTL_BASE  (CTL_BIT_RAM_OE | CTL_BIT_RAM_CE | CTL_BIT_DQ_OE \
+  17                                              | CTL_BIT_PL165  | CTL_BIT_A16_RCLR | CTL_BIT_DQ_RCLR)
+  18          
+  19          /* =========================================================================
+  20           *  初始化
+  21           * ========================================================================= */
+  22          void AS6C622_Init(void)
+  23          {
+  24   1        init_SN74HC595N();
+  25   1        init_SN74HC165N();
+  26   1      
+  27   1        /* 先上电复位两组 595 寄存器, 再进入空闲 */
+  28   1        SR595_A16_RCLR(0); SR595_A16_RCLR(1);
+  29   1        SR595_DQ_RCLR(0);  SR595_DQ_RCLR(1);
+  30   1      
+  31   1        AS6C622_Idle();
+  32   1      }
+  33          
+  34          /* 进入空闲: OE/CE 都拉高, 595-DQ 输出关闭 */
+  35          void AS6C622_Idle(void)
+  36          {
+  37   1        SR595_CTL_Write(CTL_BASE);
+  38   1      }
+  39          
+  40          void AS6C622_Select(void)
+  41          {
+  42   1        SR595_RAM_CE(1);   /* enable 参数 1 -> CE 输出低 (选中) */
+  43   1      }
+  44          
+  45          void AS6C622_Deselect(void)
+  46          {
+  47   1        SR595_RAM_CE(0);   /* enable 参数 0 -> CE 输出高 (未选中) */
+  48   1      }
+  49          
+  50          /* =========================================================================
+  51           *  写一个字节
+  52           *  1) 装入地址 (595-A16) 与数据 (595-DQ)
+  53           *  2) 595-DQ 输出使能, RAM /OE 拉高, RAM /CE 拉高(准备)
+C51 COMPILER V9.59.0.0   AS6C622_SERIAL                                                    10/06/2026 16:46:53 PAGE 2   
+
+  54           *  3) RAM /CE 拉低 -> 拉高  (上升沿锁存写入)
+  55           *  4) 回到空闲
+  56           * ========================================================================= */
+  57          void AS6C622_WriteByte(u16 addr, u8 dat)
+  58          {
+  59   1        /* 控制字: RAM /OE=1, RAM /CE=1(未选中), 595-DQ 输出使能, 165 移位 */
+  60   1        u8 wr_ctl = (u8)(CTL_BASE & (u8)~CTL_BIT_DQ_OE);
+  61   1      
+  62   1        /* 1. 地址与数据串行装入 */
+  63   1        SR595_A16_Write(addr);
+  64   1        SR595_DQ_Write(dat);
+  65   1      
+  66   1        /* 2. 使能 595-DQ 输出, 保持 RAM 未选中 */
+  67   1        SR595_CTL_Write(wr_ctl);
+  68   1      
+  69   1          /* 3. RAM /CE 低脉冲: 选中 -> 释放, 上升沿写入 */
+  70   1        SR595_RAM_CE(1);       /* CE = 0 (选中, 开始写) */
+  71   1        _nop_(); _nop_(); _nop_(); _nop_();   /* 写脉宽 (对 22MHz 足够) */
+  72   1        SR595_RAM_CE(0);       /* CE = 1 (释放, 数据被锁存) */
+  73   1      
+  74   1        /* 4. 空闲 */
+  75   1        AS6C622_Idle();
+  76   1      }
+  77          
+  78          /* =========================================================================
+  79           *  读一个字节
+  80           *  1) 装入地址 (595-A16) 与读地址回读(可选)
+  81           *  2) 关闭 595-DQ 输出(高阻), RAM /OE 拉低, RAM /CE 拉低
+  82           *  3) 用 165-DQ 采集总线
+  83           *  4) 回到空闲
+  84           *
+  85           *  注意: 读完之后必须把 RAM /OE 拉回高、恢复 595-DQ 输出, 否则总线争用。
+  86           * ========================================================================= */
+  87          u8 AS6C622_ReadByte(u16 addr)
+  88          {
+  89   1        u8 dat;
+  90   1        /* 控制字: RAM /OE=0(驱动), RAM /CE=0(选中), 595-DQ 输出关闭(高阻),
+  91   1         *         165 移位, RCLR 正常 */
+  92   1        u8 rd_ctl = (u8)(CTL_BASE
+  93   1                         & (u8)~CTL_BIT_RAM_OE
+  94   1                         & (u8)~CTL_BIT_RAM_CE);
+  95   1      
+  96   1        /* 1. 地址装入 (读操作也需要地址; 若读地址由 165 回读提供, 这里仍先写 595) */
+  97   1        SR595_A16_Write(addr);
+  98   1      
+  99   1        /* 2. RAM 驱动总线, 595-DQ 让出总线 */
+ 100   1        SR595_CTL_Write(rd_ctl);
+ 101   1      
+ 102   1          /* 采样前给 RAM 一点建立时间 */
+ 103   1        _nop_(); _nop_(); _nop_(); _nop_();
+ 104   1      
+ 105   1        /* 3. 165 采集当前总线数据 */
+ 106   1        dat = SR165_DQ_Read();
+ 107   1      
+ 108   1        /* 4. 释放总线并回到空闲 */
+ 109   1        AS6C622_Idle();
+ 110   1      
+ 111   1        return dat;
+ 112   1      }
+ 113          
+ 114          /* =========================================================================
+ 115           *  连续写: 从 addr 开始, 顺序写入 len 个字节 (地址自增)
+C51 COMPILER V9.59.0.0   AS6C622_SERIAL                                                    10/06/2026 16:46:53 PAGE 3   
+
+ 116           * ========================================================================= */
+ 117          void AS6C622_WriteBuffer(u16 addr, u8 *buf, u16 len)
+ 118          {
+ 119   1        u16 i;
+ 120   1        for (i = 0; i < len; i++) {
+ 121   2          AS6C622_WriteByte((u16)(addr + i), buf[i]);
+ 122   2        }
+ 123   1      }
+ 124          
+ 125          /* =========================================================================
+ 126           *  连续读: 从 addr 开始, 顺序读入 len 个字节到 buf
+ 127           * ========================================================================= */
+ 128          void AS6C622_ReadBuffer(u16 addr, u8 *buf, u16 len)
+ 129          {
+ 130   1        u16 i;
+ 131   1        for (i = 0; i < len; i++) {
+ 132   2          buf[i] = AS6C622_ReadByte((u16)(addr + i));
+ 133   2        }
+ 134   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    329    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      22
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

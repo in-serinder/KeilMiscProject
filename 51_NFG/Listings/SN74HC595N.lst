@@ -1,0 +1,224 @@
+C51 COMPILER V9.59.0.0   SN74HC595N                                                        10/06/2026 16:37:35 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE SN74HC595N
+OBJECT MODULE PLACED IN .\Objects\SN74HC595N.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE hardware\SN74HC595N.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Display;.\
+                    -hardware;.\system) DEBUG OBJECTEXTEND PRINT(.\Listings\SN74HC595N.lst) TABS(2) OBJECT(.\Objects\SN74HC595N.obj)
+
+line level    source
+
+   1          #include "SN74HC595N.h"
+   2          
+   3          /* =========================================================================
+   4           *  内部: 595-CTL 控制字缓存
+   5           *  所有 SR595_xxx (CTL 相关) 函数都基于这个缓存, 只改其中的目标位,
+   6           *  保证每项独立控制时其它位不受影响。
+   7           * ========================================================================= */
+   8          static u8 s_ctl = 0;
+   9          
+  10          /* =========================================================================
+  11           *  内部: 往指定 595 移位寄存器打入一个字节
+  12           *  先传 bit0 (QA), 后传 bit7 (QH); 打完 8 位后拉高 SRCLK 锁存输出。
+  13           *  ser/clk/latch 用宏传入对应的引脚 (如 DQ_CTL_SER, DQ_CTL_CLK, DQ_CTL_SRCLK)
+  14           * ========================================================================= */
+  15          #define SR595_SHIFT_BYTE(ser, clk, latch, dat)      \
+  16            do {                                              \
+  17              u8 i;                                           \
+  18              for (i = 0; i < 8; i++) {                       \
+  19                (ser)   = ((dat) >> i) & 0x01;                \
+  20                (clk)   = 0;                                  \
+  21                (clk)   = 1;                                  \
+  22              }                                               \
+  23              (latch) = 0;                                    \
+  24              (latch) = 1;                                    \
+  25            } while (0)
+  26          
+  27          /* 只移位不锁存, 用于级联多片时连续打数据 */
+  28          #define SR595_SHIFT_BYTE_NOLATCH(ser, clk, dat)     \
+  29            do {                                              \
+  30              u8 i;                                           \
+  31              for (i = 0; i < 8; i++) {                       \
+  32                (ser)   = ((dat) >> i) & 0x01;                \
+  33                (clk)   = 0;                                  \
+  34                (clk)   = 1;                                  \
+  35              }                                               \
+  36            } while (0)
+  37          
+  38          /* =========================================================================
+  39           *  初始化: 所有 595 引脚复位, 并给 595-CTL 一个安全默认值
+  40           *  默认: RAM OE/CE 都拉高(不使能), 595-DQ 不使能, PL=1(165 移位),
+  41           *        两组 RCLR 都拉高(正常) -> 避免上电误动作。
+  42           * ========================================================================= */
+  43          void init_SN74HC595N(void)
+  44          {
+  45   1        /* 595-DQ */
+  46   1        DQ_CTL_SER   = 0;
+  47   1        DQ_CTL_CLK   = 0;
+  48   1        DQ_CTL_SRCLK = 0;
+  49   1      
+  50   1        /* 595-A16 */
+  51   1        A_CTL_SER   = 0;
+  52   1        A_CTL_CLK   = 0;
+  53   1        A_CTL_SRCLK = 0;
+  54   1      
+C51 COMPILER V9.59.0.0   SN74HC595N                                                        10/06/2026 16:37:35 PAGE 2   
+
+  55   1        /* 595-CTL */
+  56   1        IC_CTL_SER   = 0;
+  57   1        IC_CTL_CLK   = 0;
+  58   1        IC_CTL_SRCLK = 0;
+  59   1      
+  60   1        /* 默认控制字: 除 RCLR 位外全部为 1, RCLR 位也置 1 (正常) */
+  61   1        s_ctl = CTL_BIT_RAM_OE | CTL_BIT_RAM_CE | CTL_BIT_DQ_OE
+  62   1              | CTL_BIT_PL165  | CTL_BIT_A16_RCLR | CTL_BIT_DQ_RCLR;
+  63   1      
+  64   1        SR595_CTL_Write(s_ctl);
+  65   1      }
+  66          
+  67          /* =========================================================================
+  68           *  595-DQ: 输出 1 字节数据 (DQ0-DQ7)
+  69           * ========================================================================= */
+  70          void SR595_DQ_Write(u8 dat)
+  71          {
+  72   1        SR595_SHIFT_BYTE(DQ_CTL_SER, DQ_CTL_CLK, DQ_CTL_SRCLK, dat);
+  73   1      }
+  74          
+  75          /* =========================================================================
+  76           *  595-A16: 两片级联输出 16 位地址 A0-A15
+  77           *  级联顺序: 先发的数据最终会落在后级(末片)。
+  78           *  这里先发高 8 位 (A8-A15 所在末片), 再发低 8 位 (A0-A7 所在前片),
+  79           *  发完 16 位后统一锁存。
+  80           * ========================================================================= */
+  81          void SR595_A16_Write(u16 dat)
+  82          {
+  83   1        /* 高字节先进移位链 (级联后处于末位) */
+  84   1        SR595_SHIFT_BYTE_NOLATCH(A_CTL_SER, A_CTL_CLK, (u8)(dat >> 8));
+  85   1        /* 低字节后进 */
+  86   1        SR595_SHIFT_BYTE_NOLATCH(A_CTL_SER, A_CTL_CLK, (u8)(dat & 0xFF));
+  87   1      
+  88   1        /* 统一锁存 */
+  89   1        A_CTL_SRCLK = 0;
+  90   1        A_CTL_SRCLK = 1;
+  91   1      }
+  92          
+  93          /* =========================================================================
+  94           *  595-CTL: 写入 8 位控制字 (QA-QH)
+  95           * ========================================================================= */
+  96          void SR595_CTL_Write(u8 ctl)
+  97          {
+  98   1        s_ctl = ctl;
+  99   1        SR595_SHIFT_BYTE(IC_CTL_SER, IC_CTL_CLK, IC_CTL_SRCLK, ctl);
+ 100   1      }
+ 101          
+ 102          /* =========================================================================
+ 103           *  统一接口
+ 104           * ========================================================================= */
+ 105          void SR595_Write(u8 chip, u16 dat)
+ 106          {
+ 107   1        switch (chip) {
+ 108   2          case SR_DQ:
+ 109   2            SR595_DQ_Write((u8)dat);
+ 110   2            break;
+ 111   2          case SR_A16:
+ 112   2            SR595_A16_Write(dat);
+ 113   2            break;
+ 114   2          case SR_CTL:
+ 115   2            SR595_CTL_Write((u8)dat);
+ 116   2            break;
+C51 COMPILER V9.59.0.0   SN74HC595N                                                        10/06/2026 16:37:35 PAGE 3   
+
+ 117   2          default:
+ 118   2            break;
+ 119   2        }
+ 120   1      }
+ 121          
+ 122          /* =========================================================================
+ 123           *  595-A16 地址设置
+ 124           * ========================================================================= */
+ 125          void SR595_A16_SetAddr(u16 addr)
+ 126          {
+ 127   1        SR595_A16_Write(addr);
+ 128   1      }
+ 129          
+ 130          /* =========================================================================
+ 131           *  内部: 修改 595-CTL 中某一位并立即输出
+ 132           * ========================================================================= */
+ 133          static void ctl_apply(void)
+ 134          {
+ 135   1        SR595_CTL_Write(s_ctl);
+ 136   1      }
+ 137          
+ 138          static void ctl_set_bit(u8 mask, u8 level)
+ 139          {
+ 140   1        if (level)
+ 141   1          s_ctl |= mask;
+ 142   1        else
+ 143   1          s_ctl &= (u8)~mask;
+ 144   1        ctl_apply();
+ 145   1      }
+ 146          
+ 147          /* =========================================================================
+ 148           *  595-CTL 各项独立控制
+ 149           *  注意: OE/CE 为低有效, 所以 enable 参数直接映射为电平:
+ 150           *        enable=1 -> 输出 0 (使能); enable=0 -> 输出 1 (禁止)
+ 151           *  RCLR/PL 等直接按电平控制。
+ 152           * ========================================================================= */
+ 153          
+ 154          /* RAM OE 输出使能 (低有效) */
+ 155          void SR595_RAM_OE(u8 enable)
+ 156          {
+ 157   1        ctl_set_bit(CTL_BIT_RAM_OE, enable ? 0 : 1);
+ 158   1      }
+ 159          
+ 160          /* RAM 片选 CE (低有效) */
+ 161          void SR595_RAM_CE(u8 enable)
+ 162          {
+ 163   1        ctl_set_bit(CTL_BIT_RAM_CE, enable ? 0 : 1);
+ 164   1      }
+ 165          
+ 166          /* 595-DQ 输出使能 (低有效) */
+ 167          void SR595_DQ_OE(u8 enable)
+ 168          {
+ 169   1        ctl_set_bit(CTL_BIT_DQ_OE, enable ? 0 : 1);
+ 170   1      }
+ 171          
+ 172          /* 165 的 PL 电平: high=1 正常(可控移位), high=0 装载(并行读入) */
+ 173          void SR595_PL165(u8 high)
+ 174          {
+ 175   1        ctl_set_bit(CTL_BIT_PL165, high ? 1 : 0);
+ 176   1      }
+ 177          
+ 178          /* 595-A16 寄存器清零 (低有效): high=1 正常, high=0 清零 */
+C51 COMPILER V9.59.0.0   SN74HC595N                                                        10/06/2026 16:37:35 PAGE 4   
+
+ 179          void SR595_A16_RCLR(u8 high)
+ 180          {
+ 181   1        ctl_set_bit(CTL_BIT_A16_RCLR, high ? 1 : 0);
+ 182   1      }
+ 183          
+ 184          /* 595-DQ 寄存器清零 (低有效): high=1 正常, high=0 清零 */
+ 185          void SR595_DQ_RCLR(u8 high)
+ 186          {
+ 187   1        ctl_set_bit(CTL_BIT_DQ_RCLR, high ? 1 : 0);
+ 188   1      }
+ 189          
+ 190          /* 读取当前控制字缓存 */
+ 191          u8 SR595_CTL_Get(void)
+ 192          {
+ 193   1        return s_ctl;
+ 194   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    403    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      1       5
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

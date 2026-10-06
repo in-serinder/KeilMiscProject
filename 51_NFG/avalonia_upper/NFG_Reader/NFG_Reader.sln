@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35312.102
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NFG_Reader", "NFG_Reader\NFG_Reader.csproj", "{F012C893-4A24-430C-BAF0-FD7D7058DC29}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "render_test", "render_test\render_test.csproj", "{BF21317F-490E-46F6-B543-9C908921AC19}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F012C893-4A24-430C-BAF0-FD7D7058DC29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F012C893-4A24-430C-BAF0-FD7D7058DC29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F012C893-4A24-430C-BAF0-FD7D7058DC29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F012C893-4A24-430C-BAF0-FD7D7058DC29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF21317F-490E-46F6-B543-9C908921AC19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF21317F-490E-46F6-B543-9C908921AC19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF21317F-490E-46F6-B543-9C908921AC19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF21317F-490E-46F6-B543-9C908921AC19}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1DEF9DAE-8223-4BBB-ADEA-9F1589DD0606}
+	EndGlobalSection
+EndGlobal

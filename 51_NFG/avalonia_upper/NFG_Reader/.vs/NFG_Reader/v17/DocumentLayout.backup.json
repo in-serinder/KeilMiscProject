@@ -1,0 +1,82 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG\\avalonia_upper\\NFG_Reader\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{F012C893-4A24-430C-BAF0-FD7D7058DC29}|NFG_Reader\\NFG_Reader.csproj|f:\\sysfile\\desktop\\misc.git\\keilmiscproject\\51_nfg\\avalonia_upper\\nfg_reader\\nfg_reader\\nfg_reader.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{F012C893-4A24-430C-BAF0-FD7D7058DC29}|NFG_Reader\\NFG_Reader.csproj|solutionrelative:nfg_reader\\nfg_reader.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F012C893-4A24-430C-BAF0-FD7D7058DC29}|NFG_Reader\\NFG_Reader.csproj|f:\\sysfile\\desktop\\misc.git\\keilmiscproject\\51_nfg\\avalonia_upper\\nfg_reader\\nfg_reader\\views\\mainwindow.axaml||{62A225A0-D448-4681-8CB7-5F403067404B}",
+      "RelativeMoniker": "D:0:0:{F012C893-4A24-430C-BAF0-FD7D7058DC29}|NFG_Reader\\NFG_Reader.csproj|solutionrelative:nfg_reader\\views\\mainwindow.axaml||{62A225A0-D448-4681-8CB7-5F403067404B}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F012C893-4A24-430C-BAF0-FD7D7058DC29}|NFG_Reader\\NFG_Reader.csproj|f:\\sysfile\\desktop\\misc.git\\keilmiscproject\\51_nfg\\avalonia_upper\\nfg_reader\\nfg_reader\\viewmodels\\mainwindowviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F012C893-4A24-430C-BAF0-FD7D7058DC29}|NFG_Reader\\NFG_Reader.csproj|solutionrelative:nfg_reader\\viewmodels\\mainwindowviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "NFG_Reader",
+              "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG\\avalonia_upper\\NFG_Reader\\NFG_Reader\\NFG_Reader.csproj",
+              "RelativeDocumentMoniker": "NFG_Reader\\NFG_Reader.csproj",
+              "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG\\avalonia_upper\\NFG_Reader\\NFG_Reader\\NFG_Reader.csproj",
+              "RelativeToolTip": "NFG_Reader\\NFG_Reader.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvyAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-10-06T04:31:31.58Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "MainWindow.axaml",
+              "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG\\avalonia_upper\\NFG_Reader\\NFG_Reader\\Views\\MainWindow.axaml",
+              "RelativeDocumentMoniker": "NFG_Reader\\Views\\MainWindow.axaml",
+              "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG\\avalonia_upper\\NFG_Reader\\NFG_Reader\\Views\\MainWindow.axaml",
+              "RelativeToolTip": "NFG_Reader\\Views\\MainWindow.axaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-10-06T04:13:29.213Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "MainWindowViewModel.cs",
+              "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG\\avalonia_upper\\NFG_Reader\\NFG_Reader\\ViewModels\\MainWindowViewModel.cs",
+              "RelativeDocumentMoniker": "NFG_Reader\\ViewModels\\MainWindowViewModel.cs",
+              "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG\\avalonia_upper\\NFG_Reader\\NFG_Reader\\ViewModels\\MainWindowViewModel.cs",
+              "RelativeToolTip": "NFG_Reader\\ViewModels\\MainWindowViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvwgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-06T04:13:28.752Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

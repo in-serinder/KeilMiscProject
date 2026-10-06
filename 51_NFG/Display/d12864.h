@@ -1,7 +1,7 @@
 #ifndef __D12864_H__
 #define __D12864_H__
 
-#include "stc90c52.h"
+#include "stc90c58.h"
 
 /* ================= 类型定义 ================= */
 typedef unsigned char  uchar;

@@ -1,0 +1,147 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ===================================================================
+         NFG Reader - Compact flat theme
+         Shrinks the default Avalonia control metrics into a dense,
+         modern, flat "pocket" look.
+         =================================================================== -->
+
+    <Styles.Resources>
+        <!-- Palette -->
+        <Color x:Key="NfgBackgroundColor">#FFFFFFFF</Color>
+        <Color x:Key="NfgSurfaceColor">#FFF6F7F9</Color>
+        <Color x:Key="NfgSidebarColor">#FFF2F3F5</Color>
+        <Color x:Key="NfgBorderColor">#FFD9DCE1</Color>
+        <Color x:Key="NfgAccentColor">#FF2F6FED</Color>
+        <Color x:Key="NfgAccentHoverColor">#FF3B7BF7</Color>
+        <Color x:Key="NfgTextColor">#FF1B1E23</Color>
+        <Color x:Key="NfgSubTextColor">#FF8A9099</Color>
+        <Color x:Key="NfgSuccessColor">#FF16A34A</Color>
+        <Color x:Key="NfgDangerColor">#FFDC2626</Color>
+
+        <SolidColorBrush x:Key="NfgBackgroundBrush" Color="{StaticResource NfgBackgroundColor}" />
+        <SolidColorBrush x:Key="NfgSurfaceBrush" Color="{StaticResource NfgSurfaceColor}" />
+        <SolidColorBrush x:Key="NfgSidebarBrush" Color="{StaticResource NfgSidebarColor}" />
+        <SolidColorBrush x:Key="NfgBorderBrush" Color="{StaticResource NfgBorderColor}" />
+        <SolidColorBrush x:Key="NfgAccentBrush" Color="{StaticResource NfgAccentColor}" />
+        <SolidColorBrush x:Key="NfgAccentHoverBrush" Color="{StaticResource NfgAccentHoverColor}" />
+        <SolidColorBrush x:Key="NfgTextBrush" Color="{StaticResource NfgTextColor}" />
+        <SolidColorBrush x:Key="NfgSubTextBrush" Color="{StaticResource NfgSubTextColor}" />
+        <SolidColorBrush x:Key="NfgSuccessBrush" Color="{StaticResource NfgSuccessColor}" />
+        <SolidColorBrush x:Key="NfgDangerBrush" Color="{StaticResource NfgDangerColor}" />
+    </Styles.Resources>
+
+    <!-- ================= Buttons ================= -->
+    <Style Selector="Button.nfg">
+        <Setter Property="Background" Value="{StaticResource NfgAccentBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="MinHeight" Value="24" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.12" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.nfg:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource NfgAccentHoverBrush}" />
+    </Style>
+    <Style Selector="Button.nfg:disabled /template/ ContentPresenter">
+        <Setter Property="Background" Value="#FFC4CBD4" />
+    </Style>
+
+    <Style Selector="Button.nfg.ghost">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource NfgTextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource NfgBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Button.nfg.ghost:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#FFE9ECF1" />
+    </Style>
+
+    <!-- ================= ComboBox ================= -->
+    <Style Selector="ComboBox.nfg">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="BorderBrush" Value="{StaticResource NfgBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="MinHeight" Value="26" />
+        <Setter Property="Padding" Value="8,2" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ComboBox.nfg /template/ Border#Background">
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+
+    <!-- ================= TextBox ================= -->
+    <Style Selector="TextBox.nfg">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="BorderBrush" Value="{StaticResource NfgBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Padding" Value="6,4" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="SelectionBrush" Value="#662F6FED" />
+    </Style>
+
+    <!-- ================= TabControl ================= -->
+    <Style Selector="TabControl.nfg">
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="TabControl.nfg /template/ ItemsPresenter#PART_ItemsPresenter">
+        <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+    <Style Selector="TabControl.nfg TabItem">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="12,4" />
+        <Setter Property="MinHeight" Value="26" />
+        <Setter Property="Foreground" Value="{StaticResource NfgSubTextBrush}" />
+    </Style>
+    <Style Selector="TabControl.nfg TabItem:selected">
+        <Setter Property="Foreground" Value="{StaticResource NfgAccentBrush}" />
+    </Style>
+
+    <!-- ================= ProgressBar ================= -->
+    <Style Selector="ProgressBar.nfg">
+        <Setter Property="MinHeight" Value="6" />
+        <Setter Property="Height" Value="6" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Foreground" Value="{StaticResource NfgAccentBrush}" />
+        <Setter Property="Background" Value="#FFE5E8ED" />
+    </Style>
+    <Style Selector="ProgressBar.nfg /template/ Border#ProgressBarIndicator">
+        <Setter Property="CornerRadius" Value="3" />
+    </Style>
+
+    <!-- ================= Typography helpers ================= -->
+    <Style Selector="TextBlock.h1">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource NfgTextBrush}" />
+    </Style>
+    <Style Selector="TextBlock.section">
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource NfgSubTextBrush}" />
+    </Style>
+    <Style Selector="TextBlock.caption">
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="Foreground" Value="{StaticResource NfgSubTextBrush}" />
+    </Style>
+    <Style Selector="TextBlock.body">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Foreground" Value="{StaticResource NfgTextBrush}" />
+    </Style>
+
+</Styles>

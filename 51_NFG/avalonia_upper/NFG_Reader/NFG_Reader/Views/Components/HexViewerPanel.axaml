@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:hex="clr-namespace:HexView.Avalonia.Controls;assembly=HexView"
+             mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="360"
+             x:Class="NFG_Reader.Views.Components.HexViewerPanel"
+             x:Name="Root">
+
+    <!-- Reusable hex viewer: HexView control + compact footer showing size / length.
+    Bind Data (byte[]) from the host to refresh the displayed bytes. -->
+    <Border Background="White"
+            BorderBrush="{StaticResource NfgBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="4">
+        <Grid RowDefinitions="*, Auto">
+
+            <!-- Hex viewer (HexViewControl is ILogicalScrollable, so it must live in a ScrollViewer).
+            A monospace font is essential so the hex byte columns line up. -->
+            <ScrollViewer Grid.Row="0"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto">
+                <hex:HexViewControl x:Name="HexView"
+                                    TextElement.FontFamily="Consolas,Menlo,Monospace"
+                                    TextElement.FontSize="12"
+                                    TextElement.Foreground="#FF1F2937"
+                                    ToBase="16"
+                                    BytesWidth="8" />
+            </ScrollViewer>
+            <!-- Empty placeholder shown when there is no data -->
+            <TextBlock Grid.Row="0"
+                       Text="[ no data ]"
+                       FontSize="11"
+                       IsHitTestVisible="False"
+                       Foreground="{StaticResource NfgSubTextBrush}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding IsEmpty, ElementName=Root}" />
+
+            <!-- Footer: file name / size -->
+            <Border Grid.Row="1"
+                    Background="{StaticResource NfgSurfaceBrush}"
+                    BorderBrush="{StaticResource NfgBorderBrush}"
+                    BorderThickness="0,1,0,0"
+                    Padding="8,3">
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock Grid.Column="0"
+                               Classes="caption"
+                               Text="{Binding FileName, ElementName=Root}"
+                               TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1"
+                               Classes="caption"
+                               Text="{Binding FileSizeText, ElementName=Root}"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>
+

@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:NFG_Reader.ViewModels"
+             xmlns:components="using:NFG_Reader.Views.Components"
+             mc:Ignorable="d" d:DesignWidth="760" d:DesignHeight="480"
+             x:Class="NFG_Reader.Views.ReadTabView"
+             x:DataType="vm:MainWindowViewModel">
+
+    <!-- Read tab: hex viewer (left) + rich-text reader (right) + action bar (bottom). -->
+    <Grid RowDefinitions="*, Auto" RowSpacing="8">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,*" ColumnSpacing="8">
+            <components:HexViewerPanel Grid.Column="0"
+                                       FileName="{Binding ReadFileName}"
+                                       FileSizeText="{Binding ReadFileSizeText}"
+                                       Data="{Binding ReadBytes}" />
+
+            <components:TextEditorPanel Grid.Column="1"
+                                        IsReadOnly="True"
+                                        ShowEncodingBar="True"
+                                        Text="{Binding ReadTextContent, Mode=TwoWay}"
+                                        Encodings="{Binding Encodings}"
+                                        SelectedEncoding="{Binding SelectedEncoding, Mode=TwoWay}"
+                                        CountText="{Binding ReadTextCountText}"
+                                        EncodingCaption="{Binding SelectedEncoding}"
+                                        SaveAsTxtCommand="{Binding SaveTextAsTxtCommand}" />
+        </Grid>
+
+        <components:ActionBar Grid.Row="1"
+                              ActionText="Read"
+                              ActionCommand="{Binding ReadCommand}"
+                              ProgressText="{Binding ProgressText}"
+                              ProgressValue="{Binding ProgressValue}"
+                              ProgressPercent="{Binding ProgressPercent, StringFormat='{}{0}%'}" />
+    </Grid>
+</UserControl>
+
+

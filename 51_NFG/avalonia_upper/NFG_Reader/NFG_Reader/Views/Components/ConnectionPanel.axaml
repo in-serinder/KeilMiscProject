@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="using:NFG_Reader.Models"
+             xmlns:vm="using:NFG_Reader.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="240" d:DesignHeight="64"
+             x:Class="NFG_Reader.Views.Components.ConnectionPanel"
+             x:DataType="vm:MainWindowViewModel">
+
+    <!-- Top-left connection block: port drop-down + status caption. -->
+    <StackPanel Spacing="3">
+        <ComboBox Classes="nfg"
+                  HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding ComPorts}"
+                  SelectedItem="{Binding SelectedComPort, Mode=TwoWay}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="models:ComPortInfo">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding PortName}"
+                                   FontWeight="Bold"
+                                   FontSize="11"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding Description}"
+                                   FontSize="10"
+                                   Foreground="{StaticResource NfgSubTextBrush}"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <!-- Connection status caption: dot + text -->
+        <StackPanel Orientation="Horizontal" Spacing="5" Margin="2,0,0,0">
+            <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                     Fill="{Binding StatusBrush}" />
+            <TextBlock Classes="caption"
+                       Text="{Binding ConnectionStatusText}"
+                       VerticalAlignment="Center" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>
+
+

@@ -1,0 +1,1 @@
+"hardware\AS6C622_Serial.c" LARGE OPTIMIZE (8,SPEED) BROWSE INCDIR(.\Display;.\hardware;.\system) DEBUG OBJECTEXTEND PRINT(.\Listings\AS6C622_Serial.lst) TABS (2) OBJECT(.\Objects\AS6C622_Serial.obj)

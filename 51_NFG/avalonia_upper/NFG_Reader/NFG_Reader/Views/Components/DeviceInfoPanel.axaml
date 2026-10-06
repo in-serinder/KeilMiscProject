@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="230" d:DesignHeight="260"
+             x:Class="NFG_Reader.Views.Components.DeviceInfoPanel"
+             xmlns:vm="using:NFG_Reader.ViewModels"
+             x:DataType="vm:MainWindowViewModel">
+
+    <!-- Left sidebar: device specification + attribution link. -->
+    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8">
+
+        <StackPanel Grid.Row="0" Spacing="8">
+            <TextBlock Classes="h1" Text="Device Information" />
+
+            <Border Background="White"
+                    BorderBrush="{StaticResource NfgBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="8">
+                <StackPanel Spacing="7">
+                    <TextBlock Classes="section" Text="DEVICE" />
+                    <TextBlock Classes="body" FontWeight="Bold" Text="{Binding DeviceNameText}" />
+
+                    <TextBlock Classes="section" Text="DENSITY" />
+                    <TextBlock Classes="body" Text="{Binding DeviceDensityText}" />
+
+                    <TextBlock Classes="section" Text="ORGANIZATION" />
+                    <TextBlock Classes="body" Text="{Binding DeviceOrganizationText}" TextWrapping="Wrap" />
+
+                    <TextBlock Classes="section" Text="ADDRESS RANGE" />
+                    <TextBlock Classes="body" Text="{Binding DeviceAddressRangeText}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- Bottom attribution -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4">
+            <TextBlock Classes="caption" Text="Power by" VerticalAlignment="Center" />
+            <TextBlock VerticalAlignment="Center">
+                <HyperlinkButton Padding="0"
+                                 Content="NFG (in-serinder)"
+                                 FontSize="10"
+                                 Foreground="{StaticResource NfgAccentBrush}"
+                                 NavigateUri="{Binding RepositoryUrl}">
+                    <HyperlinkButton.ContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="3">
+                                <Image Source="avares://NFG_Reader/Assets/GitHub.png"
+                                       Width="12" Height="12"
+                                       VerticalAlignment="Center" />
+                                <TextBlock Text="NFG (in-serinder)"
+                                           FontSize="10"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </HyperlinkButton.ContentTemplate>
+                </HyperlinkButton>
+            </TextBlock>
+        </StackPanel>
+    </Grid>
+</UserControl>
+

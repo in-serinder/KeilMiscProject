@@ -324,7 +324,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\Display</IncludePath>
+              <IncludePath>.\Display;.\hardware;.\system</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -390,6 +390,46 @@
               <FileName>d12864.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Display\d12864.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>hardware</GroupName>
+          <Files>
+            <File>
+              <FileName>24c64.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hardware\24c64.c</FilePath>
+            </File>
+            <File>
+              <FileName>AS6C622_Serial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hardware\AS6C622_Serial.c</FilePath>
+            </File>
+            <File>
+              <FileName>SN74HC165N.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hardware\SN74HC165N.c</FilePath>
+            </File>
+            <File>
+              <FileName>SN74HC595N.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hardware\SN74HC595N.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>system</GroupName>
+          <Files>
+            <File>
+              <FileName>delay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\system\delay.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\system\uart.c</FilePath>
             </File>
           </Files>
         </Group>

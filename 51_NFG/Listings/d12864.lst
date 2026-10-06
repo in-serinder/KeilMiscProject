@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   D12864                                                            09/12/2026 21:49:23 PAGE 1   
+C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE D12864
 OBJECT MODULE PLACED IN .\Objects\d12864.obj
-COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Display\d12864.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Display) DEBUG 
-                    -OBJECTEXTEND PRINT(.\Listings\d12864.lst) TABS(2) OBJECT(.\Objects\d12864.obj)
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE Display\d12864.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Display;.\hardw
+                    -are;.\system) DEBUG OBJECTEXTEND PRINT(.\Listings\d12864.lst) TABS(2) OBJECT(.\Objects\d12864.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   52          
   53          /* ================= LCD 初始化 ================= */
   54          void initial_lcd(void)
-C51 COMPILER V9.59.0.0   D12864                                                            09/12/2026 21:49:23 PAGE 2   
+C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 2   
 
   55          {
   56   1          LCD_RST = 0;          /* 低电平复位 */
@@ -126,7 +126,7 @@ line level    source
  114   3              }
  115   2          }
  116   1      }
-C51 COMPILER V9.59.0.0   D12864                                                            09/12/2026 21:49:23 PAGE 3   
+C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 3   
 
  117          
  118          /* 16x16 点阵(汉字/图标) */
@@ -190,7 +190,7 @@ line level    source
  176          
  177          /* 从字库IC读取1字节 */
  178          uchar get_data_from_ROM(void)
-C51 COMPILER V9.59.0.0   D12864                                                            09/12/2026 21:49:23 PAGE 4   
+C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 4   
 
  179          {
  180   1          uchar i;
@@ -254,7 +254,7 @@ line level    source
  238   1          uchar i, disp_data;
  239   1          ROM_CS = 0;
  240   1          send_command_to_ROM(0x03);
-C51 COMPILER V9.59.0.0   D12864                                                            09/12/2026 21:49:23 PAGE 5   
+C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 5   
 
  241   1          send_command_to_ROM((fontaddr & 0xFF0000) >> 16);
  242   1          send_command_to_ROM((fontaddr & 0xFF00) >> 8);
@@ -318,7 +318,7 @@ line level    source
  300          {
  301   1          uchar i = 0;
  302   1          ulong fontaddr;
-C51 COMPILER V9.59.0.0   D12864                                                            09/12/2026 21:49:23 PAGE 6   
+C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 6   
 
  303   1          while (text[i] > 0x00)
  304   1          {
@@ -382,7 +382,7 @@ line level    source
  362           *       col  - 起始列 (1~128)
  363           *       buf  - 字符串指针 (GB2312编码, 含\0结束)
  364           * 输出: 无
-C51 COMPILER V9.59.0.0   D12864                                                            09/12/2026 21:49:23 PAGE 7   
+C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 7   
 
  365           * 说明: 显示15x16大号GB2312汉字 (占16列宽, 2个page).
  366           *       遇到ASCII字符(0x20~0x7E)自动切换为8x16点阵 (占8列宽).
@@ -446,7 +446,7 @@ line level    source
  424   3                  if (col > (LCD_WIDTH - 8 + 1)) break;
  425   3                  fontaddr  = (ulong)(buf[i] - 0x20) * 16;
  426   3                  fontaddr += ASCII8_BASE;
-C51 COMPILER V9.59.0.0   D12864                                                            09/12/2026 21:49:23 PAGE 8   
+C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 8   
 
  427   3                  rom_read_bytes(fontaddr, tmp, 16);      /* 读16字节点阵 */
  428   3                  for (j = 0; j < 2; j++)
@@ -510,7 +510,7 @@ line level    source
  486   3                  /* 边界: 剩余列数 >= 6 (5数据列+1间距) 才显示 */
  487   3                  if (col > (LCD_WIDTH - 6 + 1)) break;
  488   3                  /* 地址计算: (char - 0x20) * 8 + ASCII5_BASE */
-C51 COMPILER V9.59.0.0   D12864                                                            09/12/2026 21:49:23 PAGE 9   
+C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 9   
 
  489   3                  fontaddr  = (ulong)(buf[i] - 0x20) * 8;
  490   3                  fontaddr += ASCII5_BASE;

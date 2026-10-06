@@ -4,6 +4,8 @@
             "name": "Target 1",
             "includePath": [
                 "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG\\Display",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG\\hardware",
+                "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG\\system",
                 "D:\\Keil_v5\\C51\\INC",
                 "f:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG"
             ],

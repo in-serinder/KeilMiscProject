@@ -1,0 +1,1 @@
+"system\uart.c" LARGE OPTIMIZE (8,SPEED) BROWSE INCDIR(.\Display;.\hardware;.\system) DEBUG OBJECTEXTEND PRINT(.\Listings\uart.lst) TABS (2) OBJECT(.\Objects\uart.obj)

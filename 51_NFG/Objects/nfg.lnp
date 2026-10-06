@@ -1,4 +1,10 @@
 ".\Objects\main.obj",
-".\Objects\d12864.obj" 
+".\Objects\d12864.obj",
+".\Objects\24c64.obj",
+".\Objects\AS6C622_Serial.obj",
+".\Objects\SN74HC165N.obj",
+".\Objects\SN74HC595N.obj",
+".\Objects\delay.obj",
+".\Objects\uart.obj" 
 TO ".\Objects\nfg" 
 PRINT(".\Listings\nfg.m51") RAMSIZE(256) 

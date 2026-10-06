@@ -1,0 +1,50 @@
+is_global = true
+build_property.AvaloniaNameGeneratorIsEnabled = true
+build_property.AvaloniaNameGeneratorBehavior = InitializeComponent
+build_property.AvaloniaNameGeneratorDefaultFieldModifier = internal
+build_property.AvaloniaNameGeneratorFilterByPath = *
+build_property.AvaloniaNameGeneratorFilterByNamespace = *
+build_property.AvaloniaNameGeneratorViewFileNamingStrategy = NamespaceAndClassName
+build_property.AvaloniaNameGeneratorAttachDevTools = true
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = NFG_Reader
+build_property.ProjectDir = F:\SYSFILE\DeskTop\Misc.Git\KeilMiscProject\51_NFG\avalonia_upper\NFG_Reader\NFG_Reader\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_NFG/avalonia_upper/NFG_Reader/NFG_Reader/App.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_NFG/avalonia_upper/NFG_Reader/NFG_Reader/Styles/CompactTheme.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_NFG/avalonia_upper/NFG_Reader/NFG_Reader/Views/Components/ActionBar.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_NFG/avalonia_upper/NFG_Reader/NFG_Reader/Views/Components/ConnectionPanel.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_NFG/avalonia_upper/NFG_Reader/NFG_Reader/Views/Components/DeviceInfoPanel.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_NFG/avalonia_upper/NFG_Reader/NFG_Reader/Views/Components/HexViewerPanel.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_NFG/avalonia_upper/NFG_Reader/NFG_Reader/Views/Components/TextEditorPanel.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_NFG/avalonia_upper/NFG_Reader/NFG_Reader/Views/MainWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_NFG/avalonia_upper/NFG_Reader/NFG_Reader/Views/ReadTabView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_NFG/avalonia_upper/NFG_Reader/NFG_Reader/Views/WriteTabView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

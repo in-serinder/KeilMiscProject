@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="40"
+             x:Class="NFG_Reader.Views.Components.ActionBar"
+             x:Name="Root">
+
+    <!-- Bottom action bar: progress bar + progress text + primary action button.
+    All values are provided by the hosting view through styled properties. -->
+    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+        <TextBlock Grid.Column="0"
+                   Classes="caption"
+                   Text="{Binding ProgressText, ElementName=Root}"
+                   VerticalAlignment="Center"
+                   Width="140"
+                   TextTrimming="CharacterEllipsis" />
+
+        <ProgressBar Grid.Column="1"
+                     Classes="nfg"
+                     Minimum="0" Maximum="100"
+                     Value="{Binding ProgressValue, ElementName=Root}"
+                     VerticalAlignment="Center" />
+
+        <TextBlock Grid.Column="2"
+                   Classes="caption"
+                   Width="42"
+                   HorizontalAlignment="Right"
+                   Text="{Binding ProgressPercent, ElementName=Root}"
+                   VerticalAlignment="Center" />
+
+        <Button Grid.Column="3"
+                Classes="nfg"
+                MinWidth="76"
+                Command="{Binding ActionCommand, ElementName=Root}"
+                Content="{Binding ActionText, ElementName=Root}" />
+    </Grid>
+</UserControl>
+
