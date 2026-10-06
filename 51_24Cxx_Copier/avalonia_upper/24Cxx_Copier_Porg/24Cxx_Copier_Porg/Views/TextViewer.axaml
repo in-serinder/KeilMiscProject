@@ -4,29 +4,30 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:_24Cxx_Copier_Porg.ViewModels"
              xmlns:models="using:_24Cxx_Copier_Porg.Models"
-             xmlns:hex="clr-namespace:HexView.Avalonia.Controls;assembly=HexView"
              mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="420"
-             x:Class="_24Cxx_Copier_Porg.Views.HexViewer"
-             x:DataType="vm:HexViewViewModel">
+             x:Class="_24Cxx_Copier_Porg.Views.TextViewer"
+             x:DataType="vm:TextViewViewModel">
 
     <Grid RowDefinitions="*,Auto">
 
-        <!-- Hex content -->
+        <!-- Read-only text content -->
         <Border Grid.Row="0"
                 Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
                 CornerRadius="6"
                 Padding="4">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Auto">
-                <hex:HexViewControl x:Name="HexContent"
-                                    TextElement.FontFamily="Consolas,Menlo,Monospace"
-                                    TextElement.FontSize="12"
-                                    ToBase="{Binding ToBase}"
-                                    BytesWidth="{Binding BytesPerLine}"/>
-            </ScrollViewer>
+            <TextBox x:Name="TextContent"
+                     Text="{Binding DisplayText}"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     BorderThickness="0"
+                     Background="Transparent"
+                     FontFamily="Consolas,Menlo,Monospace"
+                     FontSize="12"
+                     VerticalContentAlignment="Top"/>
         </Border>
 
-        <!-- Footer: size / length / encoding info (left) + decoder drop-down (right) -->
+        <!-- Footer: size / count / encoding info (left) + controls (right) -->
         <Grid Grid.Row="1"
               ColumnDefinitions="*,Auto"
               Margin="2,6,2,0">
@@ -53,7 +54,7 @@
                           MinHeight="22"
                           FontSize="10"
                           VerticalAlignment="Center"
-                          ToolTip.Tip="Decoding / encoding format">
+                          ToolTip.Tip="Switch text encoding">
                     <ComboBox.ItemTemplate>
                         <DataTemplate DataType="models:EncodingOption">
                             <TextBlock Text="{Binding DisplayName}"
@@ -62,22 +63,12 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
 
-                <!-- Open in the rich-text reader -->
-                <Button x:Name="ReadTextButton"
-                        Classes="toolbar"
-                        Padding="4"
-                        VerticalAlignment="Center"
-                        ToolTip.Tip="Read as text">
-                    <PathIcon Data="M4 4h16v2H4zM4 8h16v2H4zM4 12h12v2H4zM4 16h16v2H4zM4 20h12v2H4z"
-                              Width="13" Height="13"/>
-                </Button>
-
-                <!-- Download as .bin -->
+                <!-- Download as .txt -->
                 <Button x:Name="DownloadButton"
                         Classes="toolbar"
                         Padding="4"
                         VerticalAlignment="Center"
-                        ToolTip.Tip="Download as .bin">
+                        ToolTip.Tip="Download as .txt">
                     <PathIcon Data="M12 16l-5-5h3V4h4v7h3l-5 5zM5 18h14v2H5z"
                               Width="13" Height="13"/>
                 </Button>
@@ -85,4 +76,3 @@
         </Grid>
     </Grid>
 </UserControl>
-

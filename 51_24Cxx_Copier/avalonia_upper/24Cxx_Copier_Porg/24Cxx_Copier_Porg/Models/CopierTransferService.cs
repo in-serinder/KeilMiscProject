@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -58,6 +59,7 @@ public sealed class CopierTransferService
 
         var total = payload.Length;
         var endAddress = Math.Max(0, total - 1);
+        var stopwatch = Stopwatch.StartNew();
 
         // 1) Route to the chip.
         _log($"[OPT] Writing {total} byte(s) to 0x{chipAddress:X2} (edge 0x{endAddress:X})");
@@ -115,8 +117,10 @@ public sealed class CopierTransferService
         _session.QuietHandshake = false;
         var over = await _session.SendTxOverAsync(ct: ct).ConfigureAwait(false);
         EnsureAck(over, "TX-OVER");
-        _log($"[DATA] ChipAddr:0x{chipAddress:X2} | Write Complete | {total} bytes (100%)");
-        _log($"[OPT] Write to 0x{chipAddress:X2} complete ({total} bytes).");
+
+        stopwatch.Stop();
+        _log($"[DATA] ChipAddr:0x{chipAddress:X2} | Write Complete | {total} bytes (100%) | Elapsed {FormatElapsed(stopwatch.Elapsed)}");
+        _log($"[OPT] Write to 0x{chipAddress:X2} complete ({total} bytes in {FormatElapsed(stopwatch.Elapsed)}).");
     }
 
     // ---------------------------------------------------------------------
@@ -140,6 +144,7 @@ public sealed class CopierTransferService
 
         var endAddress = length - 1;
         var buffer = new List<byte>(length);
+        var stopwatch = Stopwatch.StartNew();
 
         // 1) Route to the chip.
         _log($"[OPT] Reading {length} byte(s) from 0x{chipAddress:X2} (edge 0x{endAddress:X})");
@@ -211,8 +216,9 @@ public sealed class CopierTransferService
             progress?.Invoke(buffer.Count, length);
         }
 
-        _log($"[DATA] [0x{chipAddress:X2}] Read completed, {buffer.Count} bytes (100%)");
-        _log($"[OPT] Read from 0x{chipAddress:X2} complete ({buffer.Count} bytes).");
+        stopwatch.Stop();
+        _log($"[DATA] [0x{chipAddress:X2}] Read completed, {buffer.Count} bytes (100%) | Elapsed {FormatElapsed(stopwatch.Elapsed)}");
+        _log($"[OPT] Read from 0x{chipAddress:X2} complete ({buffer.Count} bytes in {FormatElapsed(stopwatch.Elapsed)}).");
         return buffer.ToArray();
     }
 
@@ -223,6 +229,25 @@ public sealed class CopierTransferService
             throw new CopierProtocolException(
                 $"{step} failed: expected R-S, got {response.Kind}.");
         }
+    }
+
+    /// <summary>
+    /// Formats a transfer duration in a compact, human-readable form:
+    /// "1.234 s", "2 m 05.4 s" or "45 ms".
+    /// </summary>
+    private static string FormatElapsed(TimeSpan elapsed)
+    {
+        if (elapsed.TotalMinutes >= 1)
+        {
+            return $"{(int)elapsed.TotalMinutes} m {elapsed.Seconds:00}.{elapsed.Milliseconds / 100} s";
+        }
+
+        if (elapsed.TotalSeconds >= 1)
+        {
+            return $"{elapsed.TotalSeconds:0.000} s";
+        }
+
+        return $"{elapsed.TotalMilliseconds:0} ms";
     }
 
     /// <summary>Formats a clamped whole-number progress percentage, e.g. "20%".</summary>

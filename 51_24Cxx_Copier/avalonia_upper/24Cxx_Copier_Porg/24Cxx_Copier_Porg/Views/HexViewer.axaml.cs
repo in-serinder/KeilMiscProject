@@ -22,6 +22,7 @@ public partial class HexViewer : UserControl
     private HexViewControl? _hexView;
     private HexViewViewModel? _viewModel;
     private Button? _downloadButton;
+    private Button? _readTextButton;
 
     public HexViewer()
     {
@@ -34,7 +35,38 @@ public partial class HexViewer : UserControl
             _downloadButton.Click += OnDownloadClick;
         }
 
+        _readTextButton = this.FindControl<Button>("ReadTextButton");
+        if (_readTextButton is not null)
+        {
+            _readTextButton.Click += OnReadTextClick;
+        }
+
         DataContextChanged += OnDataContextChanged;
+    }
+
+    // ---- Open in rich-text reader ----
+
+    private void OnReadTextClick(object? sender, RoutedEventArgs e)
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        // Reuse the footer's decoding encoding as the initial text encoding.
+        var textVm = new TextViewViewModel(BuildExportBytes(), _viewModel.Title);
+
+        if (_viewModel.SelectedEncoding is { } enc)
+        {
+            textVm.SelectedEncoding = textVm.EncodingOptions
+                .FirstOrDefault(o => o.DisplayName == enc.DisplayName) ?? textVm.SelectedEncoding;
+        }
+
+        new TextViewerWindow(textVm)
+        {
+            Width = 780,
+            Height = 520,
+        }.ShowDialog((Window)TopLevel.GetTopLevel(this)!);
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)

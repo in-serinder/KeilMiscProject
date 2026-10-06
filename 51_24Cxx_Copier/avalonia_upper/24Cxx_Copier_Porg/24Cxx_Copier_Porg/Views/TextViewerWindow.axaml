@@ -5,8 +5,8 @@
         xmlns:vm="using:_24Cxx_Copier_Porg.ViewModels"
         xmlns:views="using:_24Cxx_Copier_Porg.Views"
         mc:Ignorable="d" d:DesignWidth="720" d:DesignHeight="520"
-        x:Class="_24Cxx_Copier_Porg.Views.HexViewWindow"
-        x:DataType="vm:HexViewViewModel"
+        x:Class="_24Cxx_Copier_Porg.Views.TextViewerWindow"
+        x:DataType="vm:TextViewViewModel"
         Icon="/Assets/favicon.ico"
         Title="{Binding Title}"
         Width="720" Height="520"
@@ -14,7 +14,7 @@
         WindowStartupLocation="CenterOwner">
 
     <Design.DataContext>
-        <vm:HexViewViewModel/>
+        <vm:TextViewViewModel/>
     </Design.DataContext>
 
     <Grid Margin="14" RowDefinitions="Auto,*">
@@ -25,6 +25,6 @@
                    FontWeight="SemiBold"
                    Margin="0,0,0,8"/>
 
-        <views:HexViewer Grid.Row="1"/>
+        <views:TextViewer Grid.Row="1"/>
     </Grid>
 </Window>

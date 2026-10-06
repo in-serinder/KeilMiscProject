@@ -6,7 +6,7 @@
         mc:Ignorable="d" d:DesignWidth="520" d:DesignHeight="320"
         x:Class="_24Cxx_Copier_Porg.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/favicon.ico"
         Title="Select COM Port"
         Width="520" Height="240"
         CanResize="False" WindowStartupLocation="CenterScreen">

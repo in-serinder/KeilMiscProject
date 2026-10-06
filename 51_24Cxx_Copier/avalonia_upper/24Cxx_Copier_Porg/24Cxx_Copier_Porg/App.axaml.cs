@@ -6,6 +6,7 @@ using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using System.Linq;
+using System.Text;
 
 namespace _24Cxx_Copier_Porg
 {
@@ -13,6 +14,10 @@ namespace _24Cxx_Copier_Porg
     {
         public override void Initialize()
         {
+            // Enable the legacy code-page encodings (Windows-1252, GB2312, GBK,
+            // GB18030, Shift_JIS, …) used by the hex / text viewer drop-downs.
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             AvaloniaXamlLoader.Load(this);
         }
 

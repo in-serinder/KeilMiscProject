@@ -49,6 +49,12 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 [F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_24Cxx_Copier/avalonia_upper/24Cxx_Copier_Porg/24Cxx_Copier_Porg/Views/OpearationPanel.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_24Cxx_Copier/avalonia_upper/24Cxx_Copier_Porg/24Cxx_Copier_Porg/Views/TextViewer.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_24Cxx_Copier/avalonia_upper/24Cxx_Copier_Porg/24Cxx_Copier_Porg/Views/TextViewerWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_24Cxx_Copier/avalonia_upper/24Cxx_Copier_Porg/24Cxx_Copier_Porg/Views/WriteInfoPanel.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 

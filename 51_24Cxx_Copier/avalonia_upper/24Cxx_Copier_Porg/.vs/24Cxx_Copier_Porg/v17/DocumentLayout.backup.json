@@ -65,8 +65,7 @@
               "RelativeToolTip": "24Cxx_Copier_Porg\\Views\\MainWindow.axaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
               "WhenOpened": "2026-10-05T10:01:34.42Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Bookmark",
@@ -85,11 +84,11 @@
               "DocumentIndex": 0,
               "Title": "_24Cxx_Copier_Porg.ViewModels.MainWindowViewModel.g.cs",
               "DocumentMoniker": "C:\\Users\\jyag\\AppData\\Local\\Temp\\.vsdbgsrc\\04d90ecf2764256136072fe079c58613cdca554b\\_24Cxx_Copier_Porg.ViewModels.MainWindowViewModel.g.cs",
-              "ToolTip": "C:\\Users\\jyag\\AppData\\Local\\Temp\\.vsdbgsrc\\04d90ecf2764256136072fe079c58613cdca554b\\_24Cxx_Copier_Porg.ViewModels.MainWindowViewModel.g.cs [\u53EA\u8BFB]",
+              "ToolTip": "C:\\Users\\jyag\\AppData\\Local\\Temp\\.vsdbgsrc\\04d90ecf2764256136072fe079c58613cdca554b\\_24Cxx_Copier_Porg.ViewModels.MainWindowViewModel.g.cs",
               "ViewState": "AgIAACAAAAAAAAAAAAAQwDUAAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-10-05T16:02:13.73Z",
-              "EditorCaption": " [\u53EA\u8BFB]"
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -101,8 +100,7 @@
               "RelativeToolTip": "24Cxx_Copier_Porg\\Models\\SerialObjectHelperModel.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-10-05T15:24:57.13Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-10-05T15:24:57.13Z"
             },
             {
               "$type": "Document",
@@ -114,8 +112,7 @@
               "RelativeToolTip": "24Cxx_Copier_Porg\\Program.cs",
               "ViewState": "AgIAAAsAAAAAAAAAAAAIwB4AAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-10-05T12:44:44.769Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-10-05T12:44:44.769Z"
             },
             {
               "$type": "Document",
@@ -127,8 +124,7 @@
               "RelativeToolTip": "24Cxx_Copier_Porg\\ViewModels\\HexViewViewModel.cs",
               "ViewState": "AgIAAEgAAAAAAAAAAAAlwFgAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-10-05T12:41:54.057Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-10-05T12:41:54.057Z"
             },
             {
               "$type": "Document",
@@ -139,8 +135,7 @@
               "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\App.axaml",
               "RelativeToolTip": "24Cxx_Copier_Porg\\App.axaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-10-05T11:40:32.026Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-10-05T11:40:32.026Z"
             },
             {
               "$type": "Document",
@@ -152,8 +147,7 @@
               "RelativeToolTip": "24Cxx_Copier_Porg\\app.manifest",
               "ViewState": "AgIAAAAAAAAAAAAAAADwvwAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001203|",
-              "WhenOpened": "2026-10-05T11:40:31.51Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-10-05T11:40:31.51Z"
             },
             {
               "$type": "Document",
@@ -165,8 +159,7 @@
               "RelativeToolTip": "24Cxx_Copier_Porg\\24Cxx_Copier_Porg.csproj",
               "ViewState": "AgIAAAwAAAAAAAAAAAAgwBoAAABEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-10-05T11:29:02.847Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-10-05T11:29:02.847Z"
             },
             {
               "$type": "Document",
@@ -178,8 +171,7 @@
               "RelativeToolTip": "24Cxx_Copier_Porg\\Views\\MainWindow.axaml.cs",
               "ViewState": "AgIAACAAAAAAAAAAAAAQwCwAAAAlAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-10-05T10:37:09.563Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-10-05T10:37:09.563Z"
             },
             {
               "$type": "Document",
@@ -191,8 +183,7 @@
               "RelativeToolTip": "24Cxx_Copier_Porg\\Views\\OpearationPanel.axaml.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAADwvwoAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-10-05T10:36:59.107Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-10-05T10:36:59.107Z"
             },
             {
               "$type": "Document",
@@ -203,8 +194,7 @@
               "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_24Cxx_Copier\\avalonia_upper\\24Cxx_Copier_Porg\\24Cxx_Copier_Porg\\Views\\OpearationPanel.axaml",
               "RelativeToolTip": "24Cxx_Copier_Porg\\Views\\OpearationPanel.axaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-10-05T10:36:51.109Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-10-05T10:36:51.109Z"
             }
           ]
         }
