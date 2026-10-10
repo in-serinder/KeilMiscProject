@@ -45,8 +45,12 @@ namespace NFG_Reader.ViewModels
         [ObservableProperty]
         private ComPortInfo? _selectedComPort;
 
-        [ObservableProperty]
+                [ObservableProperty]
         private bool _isConnected;
+
+        /// <summary>Password supplied via the authentication dialog for the current port.</summary>
+        [ObservableProperty]
+        private string _password = string.Empty;
 
         /// <summary>Small status caption shown beneath the port combo box.</summary>
         public string ConnectionStatusText => IsConnected

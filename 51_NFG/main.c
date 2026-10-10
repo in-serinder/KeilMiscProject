@@ -61,58 +61,69 @@ static void UART_Bin16(u16 v)
 
 void main(void)
 {
-  u8 dq, a07, a812;
-  u16 cnt = 0;
+  /*测试域*/
+  P24 = 1;
+init_SN74HC595N();
+SR595_CTL_Write(0x00);
 
-  AS6C622_Init();    /* 初始化 595/165 及 RAM 空闲态 */
-  UART_Init();       /* 初始化串口 115200@22.061MHz(12T) */
 
-  UART_SendString((uint8_t *)"\r\n=== 165 real-time bit monitor ===\r\n");
-  UART_SendString((uint8_t *)"short a pin to GND, watch the column change\r\n");
-  UART_SendString((uint8_t *)"DQ=P21  A0_7=P16  A8_12=P17\r\n\r\n");
+while (1) ;
 
-  /* 让 595-DQ 驱动总线为 0x00, 并让 RAM 不选中(不干扰总线),
-   * 这样 165#1 采集到的应该是 595-DQ 输出的 0x00 (如果链路正常)。
-   * 你也可以把 595-DQ 输出改成 0xFF 观察。 */
-  SR595_RAM_OE(0);   /* RAM 不驱动 */
-  SR595_RAM_CE(0);   /* RAM 不选中 */
-  SR595_DQ_OE(1);    /* 595-DQ 输出使能, 驱动 DQ 总线 */
-  SR595_DQ_Write(0x00);
+  /*测试域*/
 
-  /* P1.6 / P1.7 / P2.1 设为输入(准双向口读前先写 1) */
-  AR_CTL_SER = 1;
-  AL_CTL_OUT = 1;
-  DQ_CTL_OUT = 1;
 
-  while (1) {
-    /* PL 脉冲: 三片同时锁存当前总线电平 (PL 由 595-CTL 的 QD 控制) */
-    SR595_PL165(0);
-    SR595_PL165(1);
+  // u8 dq, a07, a812;
+  // u16 cnt = 0;
 
-    /* 分别读三片 165 (每片读 8 位, 共享 CLK) */
-    dq   = rd_165_pin(DQ_CTL_OUT);   /* P2.1 */
-    a07  = rd_165_pin(AR_CTL_SER);   /* P1.6 */
-    a812 = rd_165_pin(AL_CTL_OUT);   /* P1.7 */
+  // AS6C622_Init();    /* 初始化 595/165 及 RAM 空闲态 */
+  // UART_Init();       /* 初始化串口 115200@22.061MHz(12T) */
 
-    /* 打印 */
-    UART_SendString((uint8_t *)"DQ =");
-    UART_Bin8(dq);
-    UART_SendString((uint8_t *)"  A07=");
-    UART_Bin8(a07);
-    UART_SendString((uint8_t *)"  A8_12=");
-    UART_Bin8(a812);
-    UART_SendString((uint8_t *)"\r\n");
+  // UART_SendString((uint8_t *)"\r\n=== 165 real-time bit monitor ===\r\n");
+  // UART_SendString((uint8_t *)"short a pin to GND, watch the column change\r\n");
+  // UART_SendString((uint8_t *)"DQ=P21  A0_7=P16  A8_12=P17\r\n\r\n");
 
-    cnt++;
-    delay_ms(500);
+  // /* 让 595-DQ 驱动总线为 0x00, 并让 RAM 不选中(不干扰总线),
+  //  * 这样 165#1 采集到的应该是 595-DQ 输出的 0x00 (如果链路正常)。
+  //  * 你也可以把 595-DQ 输出改成 0xFF 观察。 */
+  // SR595_RAM_OE(0);   /* RAM 不驱动 */
+  // SR595_RAM_CE(0);   /* RAM 不选中 */
+  // SR595_DQ_OE(1);    /* 595-DQ 输出使能, 驱动 DQ 总线 */
+  // SR595_DQ_Write(0x00);
 
-    /* 每约 5 秒换一次 595-DQ 总线电平, 便于观察总线是否被 165 采到
-     * (若 '===' 行出现则说明串口活着) */
-    if ((cnt % 10) == 0) {
-      UART_SendString((uint8_t *)"--- toggle bus ---\r\n");
-      SR595_DQ_Write(0xFF);
-    } else if ((cnt % 10) == 5) {
-      SR595_DQ_Write(0x00);
-    }
-  }
+  // /* P1.6 / P1.7 / P2.1 设为输入(准双向口读前先写 1) */
+  // AR_CTL_SER = 1;
+  // AL_CTL_OUT = 1;
+  // DQ_CTL_OUT = 1;
+
+  // while (1) {
+  //   /* PL 脉冲: 三片同时锁存当前总线电平 (PL 由 595-CTL 的 QD 控制) */
+  //   SR595_PL165(0);
+  //   SR595_PL165(1);
+
+  //   /* 分别读三片 165 (每片读 8 位, 共享 CLK) */
+  //   dq   = rd_165_pin(DQ_CTL_OUT);   /* P2.1 */
+  //   a07  = rd_165_pin(AR_CTL_SER);   /* P1.6 */
+  //   a812 = rd_165_pin(AL_CTL_OUT);   /* P1.7 */
+
+  //   /* 打印 */
+  //   UART_SendString((uint8_t *)"DQ =");
+  //   UART_Bin8(dq);
+  //   UART_SendString((uint8_t *)"  A07=");
+  //   UART_Bin8(a07);
+  //   UART_SendString((uint8_t *)"  A8_12=");
+  //   UART_Bin8(a812);
+  //   UART_SendString((uint8_t *)"\r\n");
+
+  //   cnt++;
+  //   delay_ms(500);
+
+  //   /* 每约 5 秒换一次 595-DQ 总线电平, 便于观察总线是否被 165 采到
+  //    * (若 '===' 行出现则说明串口活着) */
+  //   if ((cnt % 10) == 0) {
+  //     UART_SendString((uint8_t *)"--- toggle bus ---\r\n");
+  //     SR595_DQ_Write(0xFF);
+  //   } else if ((cnt % 10) == 5) {
+  //     SR595_DQ_Write(0x00);
+  //   }
+  // }
 }

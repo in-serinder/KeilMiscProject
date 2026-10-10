@@ -39,12 +39,12 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "NFG_Reader",
+              "Title": "NFG_Reader.csproj",
               "DocumentMoniker": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG\\avalonia_upper\\NFG_Reader\\NFG_Reader\\NFG_Reader.csproj",
               "RelativeDocumentMoniker": "NFG_Reader\\NFG_Reader.csproj",
               "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG\\avalonia_upper\\NFG_Reader\\NFG_Reader\\NFG_Reader.csproj",
               "RelativeToolTip": "NFG_Reader\\NFG_Reader.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAADwvyAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAiwCEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
               "WhenOpened": "2026-10-06T04:31:31.58Z",
               "EditorCaption": ""
@@ -58,8 +58,7 @@
               "ToolTip": "F:\\SYSFILE\\DeskTop\\Misc.Git\\KeilMiscProject\\51_NFG\\avalonia_upper\\NFG_Reader\\NFG_Reader\\Views\\MainWindow.axaml",
               "RelativeToolTip": "NFG_Reader\\Views\\MainWindow.axaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-10-06T04:13:29.213Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-10-06T04:13:29.213Z"
             },
             {
               "$type": "Document",
@@ -71,8 +70,7 @@
               "RelativeToolTip": "NFG_Reader\\ViewModels\\MainWindowViewModel.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAADwvwgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-10-06T04:13:28.752Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-10-06T04:13:28.752Z"
             }
           ]
         }

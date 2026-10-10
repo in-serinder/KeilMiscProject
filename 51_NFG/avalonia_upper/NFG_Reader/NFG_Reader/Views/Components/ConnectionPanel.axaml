@@ -33,6 +33,13 @@
             </ComboBox.ItemTemplate>
         </ComboBox>
 
+        <!-- Connect button: opens the password authentication dialog -->
+        <Button x:Name="ConnectButton"
+                Classes="nfg"
+                HorizontalAlignment="Stretch"
+                Content="Authenticate &amp; Connect"
+                Click="OnConnectClick" />
+
         <!-- Connection status caption: dot + text -->
         <StackPanel Orientation="Horizontal" Spacing="5" Margin="2,0,0,0">
             <Ellipse Width="7" Height="7" VerticalAlignment="Center"

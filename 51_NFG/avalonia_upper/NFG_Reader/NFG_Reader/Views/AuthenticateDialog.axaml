@@ -1,0 +1,52 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="360" d:DesignHeight="180"
+        x:Class="NFG_Reader.Views.AuthenticateDialog"
+        Width="360" SizeToContent="Height"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource NfgBackgroundBrush}"
+        Title="Serial port authentication">
+
+    <Border Padding="18"
+            Background="{StaticResource NfgBackgroundBrush}">
+        <Grid RowDefinitions="Auto, Auto, Auto" RowSpacing="12">
+
+            <!-- Prompt: "Enter password for COMx" -->
+            <StackPanel Grid.Row="0" Spacing="4">
+                <TextBlock Classes="h1" Text="Serial port authentication" />
+                <TextBlock x:Name="PromptText"
+                           Classes="body"
+                           TextWrapping="Wrap"
+                           Text="Enter the password for the selected port." />
+            </StackPanel>
+
+            <!-- Password input -->
+            <TextBox Grid.Row="1"
+                     x:Name="PasswordBox"
+                     Classes="nfg"
+                     PasswordChar="●"
+                     Watermark="Password"
+                     MinHeight="28" />
+
+            <!-- Confirm / Cancel -->
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="8">
+                <Button x:Name="CancelButton"
+                        Classes="nfg ghost"
+                        Content="Cancel"
+                        MinWidth="72" />
+                <Button x:Name="ConfirmButton"
+                        Classes="nfg"
+                        Content="Confirm"
+                        MinWidth="72"
+                        IsDefault="True" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
