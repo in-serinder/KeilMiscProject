@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NFG_Reader")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+edebd997bde7ee5a1c67131fca5c9cccd82bb74e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fe57fe337fb75e24f78b3fd0d901a21608d97a31")]
 [assembly: System.Reflection.AssemblyProductAttribute("NFG_Reader")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NFG_Reader")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

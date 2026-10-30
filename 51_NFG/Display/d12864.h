@@ -17,10 +17,10 @@ sbit LCD_SDA  = P2^6;   /* 串行数据 (SID) */
 sbit LCD_SCL  = P2^5;   /* 串行时钟 (SCLK) */
 
 /* ================= 字库 IC 引脚定义 ================= */
-sbit ROM_IN   = P1^2;   /* 字库IC 数据输入 (SI) */
-sbit ROM_OUT  = P1^3;   /* 字库IC 数据输出 (SO) */
-sbit ROM_SCK  = P1^4;   /* 字库IC 时钟 (SCK) */
-sbit ROM_CS   = P1^5;   /* 字库IC 片选 (CS#) */
+sbit ROM_IN   = P2^7;   /* 字库IC 数据输入 (SI) */
+sbit ROM_OUT  = P0^6;   /* 字库IC 数据输出 (SO) */
+sbit ROM_SCK  = P0^5;   /* 字库IC 时钟 (SCK) */
+sbit ROM_CS   = P1^5;   /* 字库IC 片选 (CS#) */  /* 已长期固定为低电平，无需引脚 */
 
 /* ================= 屏幕参数 ================= */
 #define LCD_WIDTH    128    /* LCD 列数: 128 */
@@ -62,5 +62,8 @@ void rom_read_bytes(ulong addr, uchar *buf, uchar n);
 void show_str_16x16(uchar page, uchar col, uchar *buf);
 void show_str_8x16 (uchar page, uchar col, uchar *buf);
 void show_str_5x7  (uchar page, uchar col, uchar *buf);
+
+/* ============ 字库ROM单字节读取(诊断用) ============ */
+uchar rom_simple_read(ulong addr);
 
 #endif /* __D12864_H__ */

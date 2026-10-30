@@ -181,11 +181,13 @@ uchar get_data_from_ROM(void)
     uchar ret_data = 0;
     for (i = 0; i < 8; i++)
     {
-        ROM_OUT = 1;
-        ROM_SCK = 0;
+        ROM_OUT = 1;            /* 准双向口: 写1置为输入态 */
+        ROM_SCK = 0;            /* 下降沿后ROM输出下一位到SO */
+        delay_us(5);            /* 等待SO数据稳定(STC8G主频高,必须延时) */
         ret_data <<= 1;
         if (ROM_OUT) ret_data |= 0x01;
         ROM_SCK = 1;
+        delay_us(5);
     }
     return ret_data;
 }
@@ -344,7 +346,6 @@ void display_string_5x8(uchar page, uchar column, uchar *text)
 void rom_read_bytes(ulong addr, uchar *buf, uchar n)
 {
     uchar i;
-    ROM_CS = 0;                                  /* 片选选中字库IC */
     send_command_to_ROM(0x03);                   /* 读数据指令 */
     send_command_to_ROM((uchar)((addr >> 16) & 0xFF));  /* 地址高8位 */
     send_command_to_ROM((uchar)((addr >> 8)  & 0xFF));  /* 地址中8位 */
@@ -353,7 +354,6 @@ void rom_read_bytes(ulong addr, uchar *buf, uchar n)
     {
         buf[i] = get_data_from_ROM();
     }
-    ROM_CS = 1;                                  /* 释放片选 */
 }
 
 /*
@@ -501,4 +501,26 @@ void show_str_5x7(uchar page, uchar col, uchar *buf)
             i++;   /* 非ASCII跳过 */
         }
     }
+}
+
+/*
+ * 函数: rom_simple_read
+ * 输入: addr - 字库ROM 24位地址
+ * 输出: 读回的1字节数据
+ * 说明: 诊断用. 从字库ROM指定地址读取单个字节并返回.
+ *       若返回0xFF -> ROM_OUT未接或字库无响应;
+ *       若返回0x00 -> ROM_OUT被拉低或数据确实为0;
+ *       若返回其他值 -> 通讯正常.
+ */
+uchar rom_simple_read(ulong addr)
+{
+    uchar ret;
+    ROM_CS = 0;
+    send_command_to_ROM(0x03);
+    send_command_to_ROM((uchar)((addr >> 16) & 0xFF));
+    send_command_to_ROM((uchar)((addr >> 8)  & 0xFF));
+    send_command_to_ROM((uchar)( addr        & 0xFF));
+    ret = get_data_from_ROM();
+    ROM_CS = 1;
+    return ret;
 }

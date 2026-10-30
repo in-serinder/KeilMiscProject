@@ -1,129 +1,65 @@
 #include "stc90c58.h"
-#include "AS6C622_Serial.h"
-#include "SN74HC595N.h"
-#include "SN74HC165N.h"
-#include "uart.h"
-#include "delay.h"
+#include "Display\d12864.h"
 
-/* =========================================================================
- *  165 实时位响应诊断程序
+/*
+ *  JLX12864G-086-PC 汉字显示测试
+ *  LCD驱动: UC1701X (模拟SPI, 引脚见 d12864.h)
+ *  字库:   JLX-GB2312 独立ROM (引脚见 d12864.h)
+ *  字号:   16x16大汉字 / 8x16中字符 / 5x7小ASCII
  *
- *  目的: 不依赖 AS6C622, 直接观察三片 165 读回的真实电平, 便于你用镊子/
- *        导线短接某个引脚到 GND(), 立刻看到对应位在串口上变化。
- *
- *  三片 165 (各自独立或级联均可, 本程序分别读三个 GPIO):
- *    165#1 采集 DQ0-DQ7    QH7 -> P2.1  (DQ_CTL_OUT)
- *    165#2 采集 A0-A7      QH7 -> P1.6  (AR_CTL_SER)
- *    165#3 采集 A8-A12     QH7 -> P1.7  (AL_CTL_OUT)
- *
- *  输出格式 (约每 0.5s 刷新一次):
- *    DQ=P21:11111111  A0_7=P16:11111111  A8_12=P17:11111111
- *
- *  判读:
- *    - 短接某个 165#1 的 Dn 到 GND  -> DQ 那一列对应位应变 0
- *    - 短接 165#1 的 QH(pin9) 到 GND -> DQ 那一列应全部变 0 (00000000)
- *    若短接引脚后某一列毫无变化, 说明 MCU 该引脚与对应 165 的 QH 没接通。
- * ========================================================================= */
+ *  硬件接线:
+ *    LCD:  CS=P3.7  RST=P3.6  AO=P3.5  LEDA=P3.4  SDA=P2.6  SCL=P2.5
+ *    ROM:  SI=P2.7  SO=P0.6   SCK=P0.5  CS=P1.5(固定低, 硬件接地)
+ */
 
-/* 直接读一个 165 的 8 位原始数据 (从指定引脚)
- * 165 装载后 QH 先输出 bit7, 每个 CLK 输出下一位, 所以先读的放高位 */
-static u8 rd_165_pin(u8 pin)
-{
-  u8 i;
-  u8 dat = 0;
-
-  for (i = 0; i < 8; i++) {
-    dat <<= 1;
-    dat |= (pin ? 1 : 0);
-    /* CLK 脉冲: P2.0 (三片 165 共享) */
-    CLK165 = 0;
-    CLK165 = 1;
-  }
-  return dat;
-}
-
-/* 打印 8 位二进制 */
-static void UART_Bin8(u8 v)
-{
-  u8 i;
-  for (i = 0; i < 8; i++) {
-    UART_SendByte((v & 0x80) ? '1' : '0');
-    v <<= 1;
-  }
-}
-
-/* 打印 16 位二进制 */
-static void UART_Bin16(u16 v)
-{
-  UART_Bin8((u8)(v >> 8));
-  UART_Bin8((u8)(v & 0xFF));
-}
+/* GB2312 编码的测试字符串(用十六进制避免编码依赖)
+ * "测试" GB2312: 测=0xB2,0xE2  试=0xCA,0xD4
+ * "我是傻鸟" GB2312:
+ *   我=0xCE,D2  是=0xCA,C0  傻=0xC9,B1  鸟=0xC4,FA
+ * 注意: 字符串必须以 0x00 结尾! */
+uchar code test_gb[]    = {0xB2, 0xE2, 0xCA, 0xD4, 0x00};  /* "测试" */
+uchar code woshan_gb[]  = {0xCE, 0xD2, 0xCA, 0xC0, 0xC9, 0xB1, 0xC4, 0xFA, 0x00};  /* "我是傻鸟" */
 
 void main(void)
 {
-  /*测试域*/
-  P24 = 1;
-init_SN74HC595N();
-SR595_CTL_Write(0x00);
+    uchar i;
+    uchar rom_diag[16];
 
+    initial_lcd();
+    clear_screen();
 
-while (1) ;
+    /* ===== 诊断: 读字库ROM地址0~15的原始数据 =====
+     * 正常字库这些地址有非0xFF非0x00的实际数据.
+     * 如果全0xFF -> ROM_OUT(P0.6)未接或字库无响应.
+     * 如果全0x00 -> ROM_OUT被拉低或CS未生效.
+     * 有变化 -> 通讯正常, 问题在地址计算. */
+    for (i = 0; i < 16; i++)
+        rom_diag[i] = rom_simple_read((ulong)i);
+    /* 以位图显示在屏幕第1页(128列), 全0xFF则全黑, 全0x00则全白 */
+    lcd_address(1, 1);
+    for (i = 0; i < 16; i++)
+        transfer_data_lcd(rom_diag[i]);
+    delay(3000);
+    clear_screen();
 
-  /*测试域*/
+    while (1)
+    {
+        /* ===== 大号 16x16: "测试" ===== */
+        show_str_16x16(1, 1, (uchar *)test_gb);
 
+        /* ===== 中号 8x16: "我是傻鸟" ===== */
+        show_str_8x16(4, 1, (uchar *)woshan_gb);
 
-  // u8 dq, a07, a812;
-  // u16 cnt = 0;
+        /* ===== 小号 5x7: ASCII ===== */
+        show_str_5x7(7, 1, "TEST 2025");
 
-  // AS6C622_Init();    /* 初始化 595/165 及 RAM 空闲态 */
-  // UART_Init();       /* 初始化串口 115200@22.061MHz(12T) */
+        delay(4000);
 
-  // UART_SendString((uint8_t *)"\r\n=== 165 real-time bit monitor ===\r\n");
-  // UART_SendString((uint8_t *)"short a pin to GND, watch the column change\r\n");
-  // UART_SendString((uint8_t *)"DQ=P21  A0_7=P16  A8_12=P17\r\n\r\n");
-
-  // /* 让 595-DQ 驱动总线为 0x00, 并让 RAM 不选中(不干扰总线),
-  //  * 这样 165#1 采集到的应该是 595-DQ 输出的 0x00 (如果链路正常)。
-  //  * 你也可以把 595-DQ 输出改成 0xFF 观察。 */
-  // SR595_RAM_OE(0);   /* RAM 不驱动 */
-  // SR595_RAM_CE(0);   /* RAM 不选中 */
-  // SR595_DQ_OE(1);    /* 595-DQ 输出使能, 驱动 DQ 总线 */
-  // SR595_DQ_Write(0x00);
-
-  // /* P1.6 / P1.7 / P2.1 设为输入(准双向口读前先写 1) */
-  // AR_CTL_SER = 1;
-  // AL_CTL_OUT = 1;
-  // DQ_CTL_OUT = 1;
-
-  // while (1) {
-  //   /* PL 脉冲: 三片同时锁存当前总线电平 (PL 由 595-CTL 的 QD 控制) */
-  //   SR595_PL165(0);
-  //   SR595_PL165(1);
-
-  //   /* 分别读三片 165 (每片读 8 位, 共享 CLK) */
-  //   dq   = rd_165_pin(DQ_CTL_OUT);   /* P2.1 */
-  //   a07  = rd_165_pin(AR_CTL_SER);   /* P1.6 */
-  //   a812 = rd_165_pin(AL_CTL_OUT);   /* P1.7 */
-
-  //   /* 打印 */
-  //   UART_SendString((uint8_t *)"DQ =");
-  //   UART_Bin8(dq);
-  //   UART_SendString((uint8_t *)"  A07=");
-  //   UART_Bin8(a07);
-  //   UART_SendString((uint8_t *)"  A8_12=");
-  //   UART_Bin8(a812);
-  //   UART_SendString((uint8_t *)"\r\n");
-
-  //   cnt++;
-  //   delay_ms(500);
-
-  //   /* 每约 5 秒换一次 595-DQ 总线电平, 便于观察总线是否被 165 采到
-  //    * (若 '===' 行出现则说明串口活着) */
-  //   if ((cnt % 10) == 0) {
-  //     UART_SendString((uint8_t *)"--- toggle bus ---\r\n");
-  //     SR595_DQ_Write(0xFF);
-  //   } else if ((cnt % 10) == 5) {
-  //     SR595_DQ_Write(0x00);
-  //   }
-  // }
+        /* ===== 混合中英文 ===== */
+        clear_screen();
+        show_str_16x16(1, 1, (uchar *)test_gb);
+        show_str_8x16(4,  1, (uchar *)woshan_gb);
+        show_str_5x7(7,  1, "ABC 123 abc");
+        delay(4000);
+    }
 }

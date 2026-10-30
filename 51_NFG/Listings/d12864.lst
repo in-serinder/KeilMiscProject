@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 1   
+C51 COMPILER V9.59.0.0   D12864                                                            10/12/2026 13:53:00 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE D12864
@@ -62,7 +62,7 @@ line level    source
   52          
   53          /* ================= LCD 初始化 ================= */
   54          void initial_lcd(void)
-C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 2   
+C51 COMPILER V9.59.0.0   D12864                                                            10/12/2026 13:53:00 PAGE 2   
 
   55          {
   56   1          LCD_RST = 0;          /* 低电平复位 */
@@ -126,7 +126,7 @@ line level    source
  114   3              }
  115   2          }
  116   1      }
-C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 3   
+C51 COMPILER V9.59.0.0   D12864                                                            10/12/2026 13:53:00 PAGE 3   
 
  117          
  118          /* 16x16 点阵(汉字/图标) */
@@ -190,190 +190,190 @@ line level    source
  176          
  177          /* 从字库IC读取1字节 */
  178          uchar get_data_from_ROM(void)
-C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 4   
+C51 COMPILER V9.59.0.0   D12864                                                            10/12/2026 13:53:00 PAGE 4   
 
  179          {
  180   1          uchar i;
  181   1          uchar ret_data = 0;
  182   1          for (i = 0; i < 8; i++)
  183   1          {
- 184   2              ROM_OUT = 1;
- 185   2              ROM_SCK = 0;
- 186   2              ret_data <<= 1;
- 187   2              if (ROM_OUT) ret_data |= 0x01;
- 188   2              ROM_SCK = 1;
- 189   2          }
- 190   1          return ret_data;
- 191   1      }
- 192          
- 193          /* 从字库IC读出16x16点阵并显示 */
- 194          void get_and_write_16x16(ulong fontaddr, uchar page, uchar column)
- 195          {
- 196   1          uchar i, j, disp_data;
- 197   1          ROM_CS = 0;
- 198   1          send_command_to_ROM(0x03);
- 199   1          send_command_to_ROM((fontaddr & 0xFF0000) >> 16);
- 200   1          send_command_to_ROM((fontaddr & 0xFF00) >> 8);
- 201   1          send_command_to_ROM(fontaddr & 0xFF);
- 202   1          for (j = 0; j < 2; j++)
- 203   1          {
- 204   2              lcd_address(page + j, column);
- 205   2              for (i = 0; i < 16; i++)
- 206   2              {
- 207   3                  disp_data = get_data_from_ROM();
- 208   3                  transfer_data_lcd(disp_data);
- 209   3              }
- 210   2          }
- 211   1          ROM_CS = 1;
- 212   1      }
- 213          
- 214          /* 从字库IC读出8x16点阵并显示 */
- 215          void get_and_write_8x16(ulong fontaddr, uchar page, uchar column)
- 216          {
- 217   1          uchar i, j, disp_data;
- 218   1          ROM_CS = 0;
- 219   1          send_command_to_ROM(0x03);
- 220   1          send_command_to_ROM((fontaddr & 0xFF0000) >> 16);
- 221   1          send_command_to_ROM((fontaddr & 0xFF00) >> 8);
- 222   1          send_command_to_ROM(fontaddr & 0xFF);
- 223   1          for (j = 0; j < 2; j++)
- 224   1          {
- 225   2              lcd_address(page + j, column);
- 226   2              for (i = 0; i < 8; i++)
- 227   2              {
- 228   3                  disp_data = get_data_from_ROM();
- 229   3                  transfer_data_lcd(disp_data);
- 230   3              }
- 231   2          }
- 232   1          ROM_CS = 1;
- 233   1      }
- 234          
- 235          /* 从字库IC读出5x8点阵并显示 */
- 236          void get_and_write_5x8(ulong fontaddr, uchar page, uchar column)
- 237          {
- 238   1          uchar i, disp_data;
- 239   1          ROM_CS = 0;
- 240   1          send_command_to_ROM(0x03);
-C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 5   
+ 184   2              ROM_OUT = 1;            /* 准双向口: 写1置为输入态 */
+ 185   2              ROM_SCK = 0;            /* 下降沿后ROM输出下一位到SO */
+ 186   2              delay_us(5);            /* 等待SO数据稳定(STC8G主频高,必须延时) */
+ 187   2              ret_data <<= 1;
+ 188   2              if (ROM_OUT) ret_data |= 0x01;
+ 189   2              ROM_SCK = 1;
+ 190   2              delay_us(5);
+ 191   2          }
+ 192   1          return ret_data;
+ 193   1      }
+ 194          
+ 195          /* 从字库IC读出16x16点阵并显示 */
+ 196          void get_and_write_16x16(ulong fontaddr, uchar page, uchar column)
+ 197          {
+ 198   1          uchar i, j, disp_data;
+ 199   1          ROM_CS = 0;
+ 200   1          send_command_to_ROM(0x03);
+ 201   1          send_command_to_ROM((fontaddr & 0xFF0000) >> 16);
+ 202   1          send_command_to_ROM((fontaddr & 0xFF00) >> 8);
+ 203   1          send_command_to_ROM(fontaddr & 0xFF);
+ 204   1          for (j = 0; j < 2; j++)
+ 205   1          {
+ 206   2              lcd_address(page + j, column);
+ 207   2              for (i = 0; i < 16; i++)
+ 208   2              {
+ 209   3                  disp_data = get_data_from_ROM();
+ 210   3                  transfer_data_lcd(disp_data);
+ 211   3              }
+ 212   2          }
+ 213   1          ROM_CS = 1;
+ 214   1      }
+ 215          
+ 216          /* 从字库IC读出8x16点阵并显示 */
+ 217          void get_and_write_8x16(ulong fontaddr, uchar page, uchar column)
+ 218          {
+ 219   1          uchar i, j, disp_data;
+ 220   1          ROM_CS = 0;
+ 221   1          send_command_to_ROM(0x03);
+ 222   1          send_command_to_ROM((fontaddr & 0xFF0000) >> 16);
+ 223   1          send_command_to_ROM((fontaddr & 0xFF00) >> 8);
+ 224   1          send_command_to_ROM(fontaddr & 0xFF);
+ 225   1          for (j = 0; j < 2; j++)
+ 226   1          {
+ 227   2              lcd_address(page + j, column);
+ 228   2              for (i = 0; i < 8; i++)
+ 229   2              {
+ 230   3                  disp_data = get_data_from_ROM();
+ 231   3                  transfer_data_lcd(disp_data);
+ 232   3              }
+ 233   2          }
+ 234   1          ROM_CS = 1;
+ 235   1      }
+ 236          
+ 237          /* 从字库IC读出5x8点阵并显示 */
+ 238          void get_and_write_5x8(ulong fontaddr, uchar page, uchar column)
+ 239          {
+ 240   1          uchar i, disp_data;
+C51 COMPILER V9.59.0.0   D12864                                                            10/12/2026 13:53:00 PAGE 5   
 
- 241   1          send_command_to_ROM((fontaddr & 0xFF0000) >> 16);
- 242   1          send_command_to_ROM((fontaddr & 0xFF00) >> 8);
- 243   1          send_command_to_ROM(fontaddr & 0xFF);
- 244   1          lcd_address(page, column);
- 245   1          for (i = 0; i < 5; i++)
- 246   1          {
- 247   2              disp_data = get_data_from_ROM();
- 248   2              transfer_data_lcd(disp_data);
- 249   2          }
- 250   1          ROM_CS = 1;
- 251   1      }
- 252          
- 253          /* ================= 字符串显示 ================= */
- 254          /* 显示GB2312字符串(16x16汉字 / 8x16 ASCII) */
- 255          void display_GB2312_string(uchar page, uchar column, uchar *text)
- 256          {
- 257   1          uchar i = 0;
- 258   1          ulong fontaddr;
- 259   1          while (text[i] > 0x00)
- 260   1          {
- 261   2              if (((text[i] >= 0xB0) && (text[i] <= 0xF7)) && (text[i + 1] >= 0xA1))
- 262   2              {
- 263   3                  /* GB2312 简体汉字地址: ((MSB-0xB0)*94 + (LSB-0xA1) + 846) * 32 */
- 264   3                  fontaddr  = (text[i] - 0xB0) * 94;
- 265   3                  fontaddr += (text[i + 1] - 0xA1) + 846;
- 266   3                  fontaddr  = (ulong)(fontaddr * 32);
- 267   3                  get_and_write_16x16(fontaddr, page, column);
- 268   3                  i += 2;
- 269   3                  column += 16;
- 270   3              }
- 271   2              else if (((text[i] >= 0xA1) && (text[i] <= 0xA3)) && (text[i + 1] >= 0xA1))
- 272   2              {
- 273   3                  /* GB2312 15x16 字符地址: ((MSB-0xA1)*94 + (LSB-0xA1)) * 32 */
- 274   3                  fontaddr  = (text[i] - 0xA1) * 94;
- 275   3                  fontaddr += (text[i + 1] - 0xA1);
- 276   3                  fontaddr  = (ulong)(fontaddr * 32);
- 277   3                  get_and_write_16x16(fontaddr, page, column);
- 278   3                  i += 2;
- 279   3                  column += 16;
- 280   3              }
- 281   2              else if ((text[i] >= 0x20) && (text[i] <= 0x7E))
- 282   2              {
- 283   3                  /* 8x16 ASCII 基址 0x3CF80 */
- 284   3                  fontaddr  = (text[i] - 0x20);
- 285   3                  fontaddr  = (ulong)(fontaddr * 16);
- 286   3                  fontaddr  = (ulong)(fontaddr + 0x3CF80);
- 287   3                  get_and_write_8x16(fontaddr, page, column);
- 288   3                  i += 1;
- 289   3                  column += 8;
- 290   3              }
- 291   2              else
- 292   2              {
- 293   3                  i++;
- 294   3              }
- 295   2          }
- 296   1      }
- 297          
- 298          /* 显示5x8 ASCII字符串 */
- 299          void display_string_5x8(uchar page, uchar column, uchar *text)
- 300          {
- 301   1          uchar i = 0;
- 302   1          ulong fontaddr;
-C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 6   
+ 241   1          ROM_CS = 0;
+ 242   1          send_command_to_ROM(0x03);
+ 243   1          send_command_to_ROM((fontaddr & 0xFF0000) >> 16);
+ 244   1          send_command_to_ROM((fontaddr & 0xFF00) >> 8);
+ 245   1          send_command_to_ROM(fontaddr & 0xFF);
+ 246   1          lcd_address(page, column);
+ 247   1          for (i = 0; i < 5; i++)
+ 248   1          {
+ 249   2              disp_data = get_data_from_ROM();
+ 250   2              transfer_data_lcd(disp_data);
+ 251   2          }
+ 252   1          ROM_CS = 1;
+ 253   1      }
+ 254          
+ 255          /* ================= 字符串显示 ================= */
+ 256          /* 显示GB2312字符串(16x16汉字 / 8x16 ASCII) */
+ 257          void display_GB2312_string(uchar page, uchar column, uchar *text)
+ 258          {
+ 259   1          uchar i = 0;
+ 260   1          ulong fontaddr;
+ 261   1          while (text[i] > 0x00)
+ 262   1          {
+ 263   2              if (((text[i] >= 0xB0) && (text[i] <= 0xF7)) && (text[i + 1] >= 0xA1))
+ 264   2              {
+ 265   3                  /* GB2312 简体汉字地址: ((MSB-0xB0)*94 + (LSB-0xA1) + 846) * 32 */
+ 266   3                  fontaddr  = (text[i] - 0xB0) * 94;
+ 267   3                  fontaddr += (text[i + 1] - 0xA1) + 846;
+ 268   3                  fontaddr  = (ulong)(fontaddr * 32);
+ 269   3                  get_and_write_16x16(fontaddr, page, column);
+ 270   3                  i += 2;
+ 271   3                  column += 16;
+ 272   3              }
+ 273   2              else if (((text[i] >= 0xA1) && (text[i] <= 0xA3)) && (text[i + 1] >= 0xA1))
+ 274   2              {
+ 275   3                  /* GB2312 15x16 字符地址: ((MSB-0xA1)*94 + (LSB-0xA1)) * 32 */
+ 276   3                  fontaddr  = (text[i] - 0xA1) * 94;
+ 277   3                  fontaddr += (text[i + 1] - 0xA1);
+ 278   3                  fontaddr  = (ulong)(fontaddr * 32);
+ 279   3                  get_and_write_16x16(fontaddr, page, column);
+ 280   3                  i += 2;
+ 281   3                  column += 16;
+ 282   3              }
+ 283   2              else if ((text[i] >= 0x20) && (text[i] <= 0x7E))
+ 284   2              {
+ 285   3                  /* 8x16 ASCII 基址 0x3CF80 */
+ 286   3                  fontaddr  = (text[i] - 0x20);
+ 287   3                  fontaddr  = (ulong)(fontaddr * 16);
+ 288   3                  fontaddr  = (ulong)(fontaddr + 0x3CF80);
+ 289   3                  get_and_write_8x16(fontaddr, page, column);
+ 290   3                  i += 1;
+ 291   3                  column += 8;
+ 292   3              }
+ 293   2              else
+ 294   2              {
+ 295   3                  i++;
+ 296   3              }
+ 297   2          }
+ 298   1      }
+ 299          
+ 300          /* 显示5x8 ASCII字符串 */
+ 301          void display_string_5x8(uchar page, uchar column, uchar *text)
+ 302          {
+C51 COMPILER V9.59.0.0   D12864                                                            10/12/2026 13:53:00 PAGE 6   
 
- 303   1          while (text[i] > 0x00)
- 304   1          {
- 305   2              if ((text[i] >= 0x20) && (text[i] <= 0x7E))
- 306   2              {
- 307   3                  /* 5x8 ASCII 基址 0x3BFC0 */
- 308   3                  fontaddr  = (text[i] - 0x20);
- 309   3                  fontaddr  = (ulong)(fontaddr * 8);
- 310   3                  fontaddr  = (ulong)(fontaddr + 0x3BFC0);
- 311   3                  get_and_write_5x8(fontaddr, page, column);
- 312   3                  i += 1;
- 313   3                  column += 6;
- 314   3              }
- 315   2              else
- 316   2              {
- 317   3                  i++;
- 318   3              }
- 319   2          }
- 320   1      }
- 321          
- 322          /* ============================================================
- 323           *  新增函数: 字库通用读取 + 三种字号字符串显示
- 324           *  自查要点:
- 325           *   - fontaddr 使用 unsigned long, 防止8位变量溢出
- 326           *   - 16点阵汉字写连续2个page(page, page+1), 避免只显示半个
- 327           *   - LCD SPI 引脚 (LCD_SCL/LCD_SDA) 与 字库ROM SPI 引脚
- 328           *     (ROM_SCK/ROM_IN/ROM_OUT) 完全独立, 不共用
- 329           *   - 字库读取使用指令 0x03, 24位地址顺序: 高8 -> 中8 -> 低8
- 330           *   - 点阵竖置横排, 读取后直接送LCD, 不翻转字节
- 331           *   - 边界判断: page 1~8, col 1~128, 超出则跳过该字符
- 332           * ============================================================ */
- 333          
- 334          /*
- 335           * 函数: rom_read_bytes
- 336           * 输入: addr  - 字库ROM 24位起始地址 (unsigned long)
- 337           *       buf   - 数据存放缓冲区指针
- 338           *       n     - 读取字节数 (1~255)
- 339           * 输出: 无 (数据写入 buf)
- 340           * 说明: 从字库ROM指定24bit地址连续读取n个字节.
- 341           *       使用SPI读指令 0x03, 地址发送顺序: 高8位->中8位->低8位.
- 342           *       引脚: ROM_CS(P1.5), ROM_SCK(P1.4), ROM_IN(P1.2), ROM_OUT(P1.3)
- 343           */
- 344          void rom_read_bytes(ulong addr, uchar *buf, uchar n)
- 345          {
- 346   1          uchar i;
- 347   1          ROM_CS = 0;                                  /* 片选选中字库IC */
- 348   1          send_command_to_ROM(0x03);                   /* 读数据指令 */
- 349   1          send_command_to_ROM((uchar)((addr >> 16) & 0xFF));  /* 地址高8位 */
- 350   1          send_command_to_ROM((uchar)((addr >> 8)  & 0xFF));  /* 地址中8位 */
- 351   1          send_command_to_ROM((uchar)( addr        & 0xFF));  /* 地址低8位 */
- 352   1          for (i = 0; i < n; i++)
- 353   1          {
- 354   2              buf[i] = get_data_from_ROM();
- 355   2          }
- 356   1          ROM_CS = 1;                                  /* 释放片选 */
+ 303   1          uchar i = 0;
+ 304   1          ulong fontaddr;
+ 305   1          while (text[i] > 0x00)
+ 306   1          {
+ 307   2              if ((text[i] >= 0x20) && (text[i] <= 0x7E))
+ 308   2              {
+ 309   3                  /* 5x8 ASCII 基址 0x3BFC0 */
+ 310   3                  fontaddr  = (text[i] - 0x20);
+ 311   3                  fontaddr  = (ulong)(fontaddr * 8);
+ 312   3                  fontaddr  = (ulong)(fontaddr + 0x3BFC0);
+ 313   3                  get_and_write_5x8(fontaddr, page, column);
+ 314   3                  i += 1;
+ 315   3                  column += 6;
+ 316   3              }
+ 317   2              else
+ 318   2              {
+ 319   3                  i++;
+ 320   3              }
+ 321   2          }
+ 322   1      }
+ 323          
+ 324          /* ============================================================
+ 325           *  新增函数: 字库通用读取 + 三种字号字符串显示
+ 326           *  自查要点:
+ 327           *   - fontaddr 使用 unsigned long, 防止8位变量溢出
+ 328           *   - 16点阵汉字写连续2个page(page, page+1), 避免只显示半个
+ 329           *   - LCD SPI 引脚 (LCD_SCL/LCD_SDA) 与 字库ROM SPI 引脚
+ 330           *     (ROM_SCK/ROM_IN/ROM_OUT) 完全独立, 不共用
+ 331           *   - 字库读取使用指令 0x03, 24位地址顺序: 高8 -> 中8 -> 低8
+ 332           *   - 点阵竖置横排, 读取后直接送LCD, 不翻转字节
+ 333           *   - 边界判断: page 1~8, col 1~128, 超出则跳过该字符
+ 334           * ============================================================ */
+ 335          
+ 336          /*
+ 337           * 函数: rom_read_bytes
+ 338           * 输入: addr  - 字库ROM 24位起始地址 (unsigned long)
+ 339           *       buf   - 数据存放缓冲区指针
+ 340           *       n     - 读取字节数 (1~255)
+ 341           * 输出: 无 (数据写入 buf)
+ 342           * 说明: 从字库ROM指定24bit地址连续读取n个字节.
+ 343           *       使用SPI读指令 0x03, 地址发送顺序: 高8位->中8位->低8位.
+ 344           *       引脚: ROM_CS(P1.5), ROM_SCK(P1.4), ROM_IN(P1.2), ROM_OUT(P1.3)
+ 345           */
+ 346          void rom_read_bytes(ulong addr, uchar *buf, uchar n)
+ 347          {
+ 348   1          uchar i;
+ 349   1          send_command_to_ROM(0x03);                   /* 读数据指令 */
+ 350   1          send_command_to_ROM((uchar)((addr >> 16) & 0xFF));  /* 地址高8位 */
+ 351   1          send_command_to_ROM((uchar)((addr >> 8)  & 0xFF));  /* 地址中8位 */
+ 352   1          send_command_to_ROM((uchar)( addr        & 0xFF));  /* 地址低8位 */
+ 353   1          for (i = 0; i < n; i++)
+ 354   1          {
+ 355   2              buf[i] = get_data_from_ROM();
+ 356   2          }
  357   1      }
  358          
  359          /*
@@ -382,7 +382,7 @@ line level    source
  362           *       col  - 起始列 (1~128)
  363           *       buf  - 字符串指针 (GB2312编码, 含\0结束)
  364           * 输出: 无
-C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 7   
+C51 COMPILER V9.59.0.0   D12864                                                            10/12/2026 13:53:00 PAGE 7   
 
  365           * 说明: 显示15x16大号GB2312汉字 (占16列宽, 2个page).
  366           *       遇到ASCII字符(0x20~0x7E)自动切换为8x16点阵 (占8列宽).
@@ -446,7 +446,7 @@ line level    source
  424   3                  if (col > (LCD_WIDTH - 8 + 1)) break;
  425   3                  fontaddr  = (ulong)(buf[i] - 0x20) * 16;
  426   3                  fontaddr += ASCII8_BASE;
-C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 8   
+C51 COMPILER V9.59.0.0   D12864                                                            10/12/2026 13:53:00 PAGE 8   
 
  427   3                  rom_read_bytes(fontaddr, tmp, 16);      /* 读16字节点阵 */
  428   3                  for (j = 0; j < 2; j++)
@@ -510,7 +510,7 @@ line level    source
  486   3                  /* 边界: 剩余列数 >= 6 (5数据列+1间距) 才显示 */
  487   3                  if (col > (LCD_WIDTH - 6 + 1)) break;
  488   3                  /* 地址计算: (char - 0x20) * 8 + ASCII5_BASE */
-C51 COMPILER V9.59.0.0   D12864                                                            10/06/2026 16:37:35 PAGE 9   
+C51 COMPILER V9.59.0.0   D12864                                                            10/12/2026 13:53:00 PAGE 9   
 
  489   3                  fontaddr  = (ulong)(buf[i] - 0x20) * 8;
  490   3                  fontaddr += ASCII5_BASE;
@@ -528,12 +528,34 @@ line level    source
  502   3              }
  503   2          }
  504   1      }
+ 505          
+ 506          /*
+ 507           * 函数: rom_simple_read
+ 508           * 输入: addr - 字库ROM 24位地址
+ 509           * 输出: 读回的1字节数据
+ 510           * 说明: 诊断用. 从字库ROM指定地址读取单个字节并返回.
+ 511           *       若返回0xFF -> ROM_OUT未接或字库无响应;
+ 512           *       若返回0x00 -> ROM_OUT被拉低或数据确实为0;
+ 513           *       若返回其他值 -> 通讯正常.
+ 514           */
+ 515          uchar rom_simple_read(ulong addr)
+ 516          {
+ 517   1          uchar ret;
+ 518   1          ROM_CS = 0;
+ 519   1          send_command_to_ROM(0x03);
+ 520   1          send_command_to_ROM((uchar)((addr >> 16) & 0xFF));
+ 521   1          send_command_to_ROM((uchar)((addr >> 8)  & 0xFF));
+ 522   1          send_command_to_ROM((uchar)( addr        & 0xFF));
+ 523   1          ret = get_data_from_ROM();
+ 524   1          ROM_CS = 1;
+ 525   1          return ret;
+ 526   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   3543    ----
+   CODE SIZE        =   3723    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----     135
+   XDATA SIZE       =   ----     146
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----

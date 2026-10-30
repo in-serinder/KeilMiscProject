@@ -1,0 +1,7 @@
+# 下位机模拟程序生成的 SRAM 持久化文件（运行时产生，不纳入版本管理）
+sram.bin
+*.bin
+
+# Python
+__pycache__/
+*.pyc
