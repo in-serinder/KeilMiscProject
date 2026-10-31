@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Capsa.ViewModels.Editors"
+             mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="360"
+             x:Class="Capsa.Views.Editors.HexEditorView"
+             x:DataType="vm:EditorSessionViewModel">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <!-- HexView 控件由代码后置创建（控件的 HexFormatter / LineReader 只能命令式赋值） -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource Capsa.EditorBg}"
+                ClipToBounds="True">
+            <ContentControl x:Name="HexHost" />
+        </Border>
+
+        <!-- 状态栏（记事本风格） -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource Capsa.SurfaceAlt}"
+                BorderBrush="{DynamicResource Capsa.Border}"
+                BorderThickness="0,1,0,0"
+                Padding="12,5">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding HexStatsText}"
+                           Classes="caption"
+                           FontFamily="Cascadia Mono,Consolas,Menlo,Monospace" />
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14">
+                    <TextBlock Text="{Binding EncodingText}" Classes="caption" />
+                    <TextBlock Text="HEX" Classes="caption" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

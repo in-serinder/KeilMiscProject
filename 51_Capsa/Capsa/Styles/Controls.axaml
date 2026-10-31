@@ -1,0 +1,311 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- =========================================================
+         控件样式（扁平 / 现代化）
+         ========================================================= -->
+
+    <!-- ================ 文本语义 ================ -->
+
+    <Style Selector="TextBlock.title">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.Text}" />
+    </Style>
+
+    <Style Selector="TextBlock.caption">
+        <Setter Property="FontSize" Value="9" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.TextFaint}" />
+    </Style>
+
+    <Style Selector="TextBlock.label">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.TextMuted}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="TextBlock.value">
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.Text}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+
+    <Style Selector="TextBlock.mono">
+        <Setter Property="FontFamily" Value="Cascadia Mono,Consolas,Menlo,Monospace" />
+    </Style>
+
+    <Style Selector="TextBlock.hint">
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.TextMuted}" />
+    </Style>
+
+    <!-- ================ 卡片 / 表面 ================ -->
+
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{DynamicResource Capsa.Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Capsa.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="BoxShadow" Value="0 6 20 0 #0E000000" />
+    </Style>
+
+    <Style Selector="Border.editorSurface">
+        <Setter Property="Background" Value="{DynamicResource Capsa.EditorBg}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Capsa.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+
+    <Style Selector="Border.pill">
+        <Setter Property="Background" Value="{DynamicResource Capsa.SurfaceMuted}" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Padding" Value="8,3" />
+    </Style>
+
+    <Style Selector="Border.segmentGroup">
+        <Setter Property="Background" Value="{DynamicResource Capsa.SurfaceMuted}" />
+        <Setter Property="CornerRadius" Value="9" />
+        <Setter Property="Padding" Value="3" />
+    </Style>
+
+    <Style Selector="Border.separator">
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Background" Value="{DynamicResource Capsa.Border}" />
+    </Style>
+
+    <Style Selector="Border.slot">
+        <Setter Property="Background" Value="{DynamicResource Capsa.Surface}" />
+    </Style>
+
+    <Style Selector="Border.slot.empty">
+        <Setter Property="Opacity" Value="0.6" />
+    </Style>
+
+    <!-- ================ Button ================ -->
+
+    <Style Selector="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.Text}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="14,7" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="PART_Root"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}">
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="Button:pointerover /template/ Border#PART_Root">
+        <Setter Property="Background" Value="{DynamicResource Capsa.Hover}" />
+    </Style>
+
+    <Style Selector="Button:pressed /template/ Border#PART_Root">
+        <Setter Property="Background" Value="{DynamicResource Capsa.SurfaceMuted}" />
+    </Style>
+
+    <Style Selector="Button:disabled">
+        <Setter Property="Opacity" Value="0.5" />
+        <Setter Property="Cursor" Value="Arrow" />
+    </Style>
+
+    <!-- 主按钮 -->
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="{DynamicResource Capsa.Accent}" />
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.OnAccent}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="Button.primary:pointerover /template/ Border#PART_Root">
+        <Setter Property="Background" Value="{DynamicResource Capsa.AccentHover}" />
+    </Style>
+
+    <Style Selector="Button.primary:pressed /template/ Border#PART_Root">
+        <Setter Property="Background" Value="{DynamicResource Capsa.AccentPressed}" />
+    </Style>
+
+    <!-- 次要按钮 -->
+    <Style Selector="Button.ghost">
+        <Setter Property="Background" Value="{DynamicResource Capsa.SurfaceAlt}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Capsa.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.Text}" />
+    </Style>
+
+    <Style Selector="Button.ghost:pointerover /template/ Border#PART_Root">
+        <Setter Property="Background" Value="{DynamicResource Capsa.Hover}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Capsa.BorderStrong}" />
+    </Style>
+
+    <!-- 图标按钮 -->
+    <Style Selector="Button.icon">
+        <Setter Property="Width" Value="34" />
+        <Setter Property="Height" Value="34" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="{DynamicResource Capsa.SurfaceAlt}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Capsa.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+
+    <!-- 链接按钮 -->
+    <Style Selector="Button.link">
+        <Setter Property="Padding" Value="4,2" />
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.TextMuted}" />
+        <Setter Property="FontSize" Value="10.5" />
+    </Style>
+
+    <Style Selector="Button.link:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.Accent}" />
+    </Style>
+
+    <Style Selector="Button.link:pointerover /template/ Border#PART_Root">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <!-- ================ ComboBox ================ -->
+
+    <Style Selector="ComboBox">
+        <Setter Property="MinHeight" Value="34" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Background" Value="{DynamicResource Capsa.SurfaceAlt}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Capsa.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.Text}" />
+    </Style>
+
+    <Style Selector="ComboBox.borderless">
+        <Setter Property="MinHeight" Value="24" />
+        <Setter Property="Padding" Value="6,0" />
+        <Setter Property="FontSize" Value="10.5" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style Selector="ComboBox.borderless /template/ Border#Background">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style Selector="ComboBox.borderless /template/ Border#HighlightBackground">
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <!-- ================ 分段选择（RadioButton） ================ -->
+
+    <Style Selector="RadioButton.segment">
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.TextMuted}" />
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="PART_Root"
+                        Background="Transparent"
+                        CornerRadius="7"
+                        Padding="13,6">
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="RadioButton.segment:pointerover /template/ Border#PART_Root">
+        <Setter Property="Background" Value="{DynamicResource Capsa.Hover}" />
+    </Style>
+
+    <Style Selector="RadioButton.segment:checked">
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.Text}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="RadioButton.segment:checked /template/ Border#PART_Root">
+        <Setter Property="Background" Value="{DynamicResource Capsa.Surface}" />
+        <Setter Property="BoxShadow" Value="0 1 4 0 #16000000" />
+    </Style>
+
+    <!-- ================ 进度条 ================ -->
+
+    <Style Selector="ProgressBar.thin">
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="6" />
+        <Setter Property="Height" Value="6" />
+        <Setter Property="CornerRadius" Value="3" />
+    </Style>
+
+    <Style Selector="ProgressBar.hairline">
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="4" />
+        <Setter Property="Height" Value="4" />
+        <Setter Property="CornerRadius" Value="2" />
+    </Style>
+
+    <!-- ================ 编辑器 ================ -->
+
+    <Style Selector="TextBox.code">
+        <Setter Property="FontFamily" Value="Cascadia Mono,Consolas,Menlo,Monospace" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.Text}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource Capsa.Accent}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource Capsa.Text}" />
+    </Style>
+
+    <Style Selector="TextBox.code /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <!-- ================ 标签页 ================ -->
+
+    <Style Selector="TabControl">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="TabItem">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="16,10" />
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.TextMuted}" />
+    </Style>
+
+    <Style Selector="TabItem:selected">
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.Text}" />
+    </Style>
+
+    <!-- ================ 滚动条 ================ -->
+
+    <Style Selector="ScrollViewer">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+</Styles>

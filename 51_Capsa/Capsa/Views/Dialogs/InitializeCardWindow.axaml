@@ -1,0 +1,272 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:Capsa.ViewModels.Dialogs"
+        xmlns:models="using:Capsa.Models"
+        mc:Ignorable="d" d:DesignWidth="780" d:DesignHeight="700"
+        x:Class="Capsa.Views.Dialogs.InitializeCardWindow"
+        x:DataType="vm:InitializeCardViewModel"
+        Title="Initialize Storage Card"
+        Icon="/Assets/avalonia-logo.ico"
+        Width="780" Height="626"
+        MinWidth="720" MinHeight="620"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource Capsa.Bg}">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="22,18,22,18">
+
+        <!-- ================= 顶部：当前串口 ================= -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="2,0,2,16">
+
+            <Border Width="34" Height="34" CornerRadius="10" Background="{DynamicResource Capsa.Accent}">
+                <TextBlock Text="C"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource Capsa.OnAccent}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </Border>
+
+            <StackPanel Grid.Column="1" Margin="11,0,0,0" VerticalAlignment="Center" Spacing="2">
+                <TextBlock Text="Initialize Storage Card" FontSize="16" FontWeight="Bold" />
+                <TextBlock Text="CAPSA · CARD INITIALIZATION" Classes="caption" />
+            </StackPanel>
+
+            <Border Grid.Column="2" Classes="pill" Padding="11,6" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                    <Ellipse Width="7" Height="7" Fill="{DynamicResource Capsa.Ok}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding PortBadge}"
+                               FontSize="11"
+                               FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ================= 主体 ================= -->
+        <Grid Grid.Row="1" RowDefinitions="Auto,*">
+
+            <!-- 上半部分：设备参数 -->
+            <Border Grid.Row="0" Classes="card" Padding="18,16">
+                <StackPanel Spacing="14">
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Device Setup" Classes="title" />
+                            <TextBlock Text="DEVICE NAME · CHIP MODEL · STORAGE MEDIUM" Classes="caption" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="1"
+                                   Text="REQUIRED"
+                                   Classes="caption"
+                                   VerticalAlignment="Center" />
+                    </Grid>
+
+                    <!-- 独占一行：设备名 -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Device name" Classes="label" />
+                        <TextBox Text="{Binding DeviceName, Mode=TwoWay}"
+                                 Watermark="e.g. CAPSA-CARD-01"
+                                 MinHeight="36"
+                                 FontSize="12"
+                                 IsEnabled="{Binding !IsRunning}" />
+                    </StackPanel>
+
+                    <!-- 一行两个下拉框：芯片型号 + 介质 -->
+                    <Grid ColumnDefinitions="*,16,*">
+
+                        <StackPanel Grid.Column="0" Spacing="6">
+                            <TextBlock Text="Chip model" Classes="label" />
+                            <ComboBox HorizontalAlignment="Stretch"
+                                      ItemsSource="{Binding ChipOptions}"
+                                      SelectedItem="{Binding SelectedChip}"
+                                      IsEnabled="{Binding !IsRunning}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:ChipDefinition">
+                                        <Grid ColumnDefinitions="*,Auto" MinWidth="200">
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Name}"
+                                                       FontSize="12"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding CapacityText}"
+                                                       Classes="caption"
+                                                       Margin="12,0,0,0"
+                                                       VerticalAlignment="Center" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Spacing="6">
+                            <TextBlock Text="Storage medium" Classes="label" />
+                            <ComboBox HorizontalAlignment="Stretch"
+                                      ItemsSource="{Binding MediumOptions}"
+                                      SelectedItem="{Binding SelectedMedium}"
+                                      IsEnabled="{Binding !IsRunning}" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 下半部分：预初始化属性参数 -->
+            <Border Grid.Row="1" Classes="card" Padding="18,16" Margin="0,14,0,0">
+                <Grid RowDefinitions="Auto,*">
+
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Card Properties" Classes="title" />
+                            <TextBlock Text="PRE-INITIALIZATION PARAMETERS" Classes="caption" />
+                        </StackPanel>
+                        <Border Grid.Column="1" Classes="pill" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding InitFlagText, StringFormat='FLAG {0}'}"
+                                       FontSize="10"
+                                       FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                                       Foreground="{Binding InitFlagBrush}" />
+                        </Border>
+                    </Grid>
+
+                    <Grid Grid.Row="1"
+                          Margin="0,12,0,0"
+                          ColumnDefinitions="*,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto"
+                          RowSpacing="12">
+
+                        <!-- 初始化标志 -->
+                        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Init flag" Classes="caption" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{Binding InitFlagText}"
+                                           FontSize="20"
+                                           FontWeight="Bold"
+                                           FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                                           Foreground="{Binding InitFlagBrush}" />
+                                <TextBlock Text="0 = blank, 1 = initialized"
+                                           Classes="hint"
+                                           VerticalAlignment="Bottom"
+                                           Margin="0,0,0,4" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- 芯片健康检查 -->
+                        <StackPanel Grid.Row="0" Grid.Column="1" Spacing="4">
+                            <TextBlock Text="Chip health check" Classes="caption" />
+                            <StackPanel Orientation="Horizontal" Spacing="9">
+                                <Border Background="{Binding HealthSoftBrush}"
+                                        CornerRadius="6"
+                                        Padding="9,2"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding HealthCheckText}"
+                                               FontSize="16"
+                                               FontWeight="Bold"
+                                               FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                                               Foreground="{Binding HealthBrush}" />
+                                </Border>
+                                <TextBlock Text="{Binding HealthRangeText}"
+                                           Classes="hint"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- 卡名 -->
+                        <StackPanel Grid.Row="1" Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Card name" Classes="caption" />
+                            <TextBlock Text="{Binding CardNameText}" Classes="value" FontSize="13" />
+                        </StackPanel>
+
+                        <!-- 阵列容量 -->
+                        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4">
+                            <TextBlock Text="Array capacity" Classes="caption" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{Binding ArrayCapacityText}"
+                                           Classes="value"
+                                           FontSize="13"
+                                           FontFamily="Cascadia Mono,Consolas,Menlo,Monospace" />
+                                <TextBlock Text="{Binding ArrayCapacityHint}"
+                                           Classes="hint"
+                                           VerticalAlignment="Bottom"
+                                           Margin="0,0,0,2" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- 介质 -->
+                        <StackPanel Grid.Row="2" Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Storage medium" Classes="caption" />
+                            <TextBlock Text="{Binding MediumText}" Classes="value" FontSize="13" />
+                        </StackPanel>
+
+                        <!-- 型号 -->
+                        <StackPanel Grid.Row="2" Grid.Column="1" Spacing="4">
+                            <TextBlock Text="Chip model" Classes="caption" />
+                            <TextBlock Text="{Binding ModelText}" Classes="value" FontSize="13" />
+                        </StackPanel>
+
+                        <!-- UID -->
+                        <StackPanel Grid.Row="3" Grid.Column="0" Spacing="4">
+                            <TextBlock Text="Card UID" Classes="caption" />
+                            <TextBlock Text="{Binding UidText}"
+                                       Classes="value"
+                                       FontSize="13"
+                                       FontFamily="Cascadia Mono,Consolas,Menlo,Monospace" />
+                        </StackPanel>
+
+                        <!-- 初始化时间 -->
+                        <StackPanel Grid.Row="3" Grid.Column="1" Spacing="4">
+                            <TextBlock Text="Initialized at" Classes="caption" />
+                            <TextBlock Text="{Binding InitTimeText}"
+                                       Classes="value"
+                                       FontSize="12"
+                                       FontFamily="Cascadia Mono,Consolas,Menlo,Monospace" />
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ================= 底部：进度 + 按钮 ================= -->
+        <Grid Grid.Row="2" RowDefinitions="Auto,Auto" Margin="2,16,2,0">
+
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                <ProgressBar Grid.Column="0"
+                             Classes="thin"
+                             Minimum="0"
+                             Maximum="100"
+                             Value="{Binding ProgressValue}"
+                             Foreground="{DynamicResource Capsa.Accent}"
+                             VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding ProgressText}"
+                           Width="46"
+                           TextAlignment="Right"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center" />
+            </Grid>
+
+            <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Ellipse Width="6" Height="6" Fill="{DynamicResource Capsa.Accent}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding StageText}" Classes="hint" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <Button Classes="ghost"
+                            MinWidth="96"
+                            Content="{Binding SecondaryButtonText}"
+                            IsCancel="True"
+                            Command="{Binding CancelCommand}" />
+                    <Button Classes="primary"
+                            MinWidth="124"
+                            Content="{Binding PrimaryButtonText}"
+                            IsDefault="True"
+                            IsEnabled="{Binding CanInitialize}"
+                            Command="{Binding InitializeCommand}" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

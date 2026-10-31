@@ -1,0 +1,98 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Capsa.ViewModels.Panels"
+             xmlns:editors="using:Capsa.Views.Editors"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="420"
+             x:Class="Capsa.Views.Panels.ReadPanelView"
+             x:DataType="vm:ReadPanelViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- ===== 顶部工具栏 ===== -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
+
+            <Border Grid.Column="0" Classes="segmentGroup" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                    <RadioButton Classes="segment"
+                                 GroupName="ReadEditorMode"
+                                 Content="HEX editor"
+                                 IsChecked="{Binding Session.IsHexMode}" />
+                    <RadioButton Classes="segment"
+                                 GroupName="ReadEditorMode"
+                                 Content="Plain text"
+                                 IsChecked="{Binding Session.IsTextMode}" />
+                    <RadioButton Classes="segment"
+                                 GroupName="ReadEditorMode"
+                                 Content="Dual view"
+                                 IsChecked="{Binding Session.IsDualMode}" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        Spacing="8"
+                        VerticalAlignment="Center">
+                <Button Classes="ghost"
+                        FontSize="11"
+                        Padding="11,7"
+                        Content="Check chip health"
+                        IsEnabled="{Binding IsReady}"
+                        Command="{Binding HealthCheckCommand}" />
+                <Button Classes="ghost"
+                        FontSize="11"
+                        Padding="11,7"
+                        Content="Export to file"
+                        Command="{Binding ExportCommand}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- ===== 编辑器区（只读） ===== -->
+        <Border Grid.Row="1" Classes="editorSurface">
+            <editors:EditorWorkspaceView DataContext="{Binding Session}" />
+        </Border>
+
+        <!-- ===== 底部：进度 + 读取 & 校验 ===== -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,10,0,0">
+
+            <StackPanel Grid.Column="0" Spacing="6" VerticalAlignment="Center">
+                <Grid ColumnDefinitions="*,Auto">
+                    <ProgressBar Grid.Column="0"
+                                 Classes="thin"
+                                 Minimum="0"
+                                 Maximum="100"
+                                 Value="{Binding ProgressValue}"
+                                 Foreground="{DynamicResource Capsa.Accent}"
+                                 VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding ProgressText}"
+                               Width="42"
+                               TextAlignment="Right"
+                               FontSize="10.5"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
+                </Grid>
+
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding StatusText}"
+                               Classes="caption"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding ContentSummary}"
+                               Classes="caption"
+                               FontFamily="Cascadia Mono,Consolas,Menlo,Monospace" />
+                </Grid>
+            </StackPanel>
+
+            <Button Grid.Column="1"
+                    Classes="primary"
+                    MinWidth="140"
+                    MinHeight="38"
+                    Margin="16,0,0,0"
+                    Content="Read &amp; Verify"
+                    IsEnabled="{Binding IsReady}"
+                    Command="{Binding ReadVerifyCommand}" />
+        </Grid>
+    </Grid>
+</UserControl>

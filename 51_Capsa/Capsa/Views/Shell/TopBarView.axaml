@@ -1,0 +1,77 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Capsa.ViewModels.Shell"
+             xmlns:models="using:Capsa.Models"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="64"
+             x:Class="Capsa.Views.Shell.TopBarView"
+             x:DataType="vm:TopBarViewModel">
+
+    <Border Classes="card" Padding="14,10" CornerRadius="12">
+        <Grid ColumnDefinitions="Auto,Auto,*,Auto" VerticalAlignment="Center">
+
+            <!-- 品牌 -->
+            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <Border Width="34" Height="34" CornerRadius="10" Background="{DynamicResource Capsa.Accent}">
+                    <TextBlock Text="C"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource Capsa.OnAccent}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Capsa" FontSize="15" FontWeight="Bold" />
+                    <TextBlock Text="I2C EEPROM WORKBENCH" Classes="caption" />
+                </StackPanel>
+            </StackPanel>
+
+            <Border Grid.Column="1" Classes="separator" Width="1" Height="28" Margin="18,0" Background="{DynamicResource Capsa.Border}" />
+
+            <!-- 串口选择 -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <TextBlock Text="Port" Classes="label" />
+                <ComboBox Width="212"
+                          PlaceholderText="No port selected"
+                          ItemsSource="{Binding Ports}"
+                          SelectedItem="{Binding SelectedPort}"
+                          IsEnabled="{Binding !IsConnected}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:SerialPortDescriptor">
+                            <TextBlock Text="{Binding Display}" FontSize="12" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <Button Classes="icon"
+                        Command="{Binding RefreshPortsCommand}"
+                        IsEnabled="{Binding !IsConnected}"
+                        ToolTip.Tip="Refresh port list">
+                    <PathIcon Data="M12 5V2L16 6L12 10V7C9.24 7 7 9.24 7 12C7 12.85 7.21 13.65 7.58 14.34L6.13 15.79C5.42 14.7 5 13.4 5 12C5 8.14 8.14 5 12 5M12 17C14.76 17 17 14.76 17 12C17 11.15 16.79 10.35 16.42 9.66L17.87 8.21C18.58 9.3 19 10.6 19 12C19 15.86 15.86 19 12 19V22L8 18L12 14V17Z"
+                              Width="15" Height="15" />
+                </Button>
+
+                <Button Classes="primary"
+                        MinWidth="76"
+                        Content="Connect"
+                        Command="{Binding ToggleConnectionCommand}"
+                        IsVisible="{Binding !IsConnected}" />
+                <Button Classes="ghost"
+                        MinWidth="76"
+                        Content="Disconnect"
+                        Command="{Binding ToggleConnectionCommand}"
+                        IsVisible="{Binding IsConnected}" />
+            </StackPanel>
+
+            <!-- 连接状态 -->
+            <Border Grid.Column="3" Classes="pill" Padding="10,5">
+                <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                    <Ellipse Width="7" Height="7" Fill="{DynamicResource Capsa.TextFaint}" IsVisible="{Binding !IsConnected}" />
+                    <Ellipse Width="7" Height="7" Fill="{DynamicResource Capsa.Ok}" IsVisible="{Binding IsConnected}" />
+                    <TextBlock Text="{Binding StatusText}" FontSize="11" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

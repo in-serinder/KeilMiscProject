@@ -1,0 +1,77 @@
+is_global = true
+build_property.AvaloniaNameGeneratorIsEnabled = true
+build_property.AvaloniaNameGeneratorBehavior = InitializeComponent
+build_property.AvaloniaNameGeneratorDefaultFieldModifier = internal
+build_property.AvaloniaNameGeneratorFilterByPath = *
+build_property.AvaloniaNameGeneratorFilterByNamespace = *
+build_property.AvaloniaNameGeneratorViewFileNamingStrategy = NamespaceAndClassName
+build_property.AvaloniaNameGeneratorAttachDevTools = true
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = Capsa
+build_property.ProjectDir = F:\SYSFILE\DeskTop\Misc.Git\KeilMiscProject\51_Capsa\Capsa\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/App.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Styles/Controls.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Styles/Tokens.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Dialogs/ChipHealthWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Dialogs/InitializeCardWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Dialogs/MessageWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Dialogs/SlotTestCardView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Editors/EditorWorkspaceView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Editors/HexEditorView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Editors/TextEditorView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Illustrations/EmptyCardIllustration.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/MainWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Panels/ChipSlotBoardView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Panels/ChipSlotCardView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Panels/DeviceInfoPanelView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Panels/ReadPanelView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Panels/WritePanelView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Shell/FooterBarView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[F:/SYSFILE/DeskTop/Misc.Git/KeilMiscProject/51_Capsa/Capsa/Views/Shell/TopBarView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

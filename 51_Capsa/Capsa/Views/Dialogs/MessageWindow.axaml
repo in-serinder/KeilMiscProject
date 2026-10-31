@@ -1,0 +1,56 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="440" d:DesignHeight="230"
+        x:Class="Capsa.Views.Dialogs.MessageWindow"
+        Title="Notice"
+        Icon="/Assets/avalonia-logo.ico"
+        Width="452" Height="238"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource Capsa.Bg}">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="22,20,22,18">
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,12">
+            <Border Width="32" Height="32" CornerRadius="9" Background="{DynamicResource Capsa.Err.Soft}">
+                <TextBlock Text="!"
+                           FontSize="17"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource Capsa.Err}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </Border>
+
+            <TextBlock x:Name="TitleText"
+                       Grid.Column="1"
+                       Margin="11,0,0,0"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center" />
+        </Grid>
+
+        <Border Grid.Row="1" Classes="card" Padding="14,12">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBlock x:Name="MessageText"
+                           TextWrapping="Wrap"
+                           FontSize="11.5"
+                           LineHeight="18"
+                           Foreground="{DynamicResource Capsa.TextMuted}" />
+            </ScrollViewer>
+        </Border>
+
+        <Button Grid.Row="2"
+                Classes="primary"
+                MinWidth="96"
+                Height="34"
+                Margin="0,14,0,0"
+                HorizontalAlignment="Right"
+                Content="OK"
+                IsDefault="True"
+                IsCancel="True"
+                Click="OnOkClick" />
+    </Grid>
+</Window>

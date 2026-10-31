@@ -1,0 +1,117 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Capsa.ViewModels.Panels"
+             mc:Ignorable="d" d:DesignWidth="220" d:DesignHeight="92"
+             x:Class="Capsa.Views.Panels.ChipSlotCardView"
+             x:DataType="vm:ChipSlotViewModel">
+
+    <Border Classes="slot"
+            Classes.empty="{Binding !IsPresent}"
+            Height="92"
+            CornerRadius="0"
+            BorderThickness="1"
+            BorderBrush="{DynamicResource Capsa.Border}"
+            ClipToBounds="True">
+        <Panel>
+
+            <!-- 整卡进度：背景轨道 + 按占用率横向缩放的蓝色填充 -->
+            <Border Background="{DynamicResource Capsa.Surface}" />
+            <Border Background="{DynamicResource Capsa.CardFill}" ClipToBounds="True">
+                <Border.RenderTransformOrigin>0%,50%</Border.RenderTransformOrigin>
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="{Binding OccupancyRatio}" ScaleY="1" />
+                </Border.RenderTransform>
+            </Border>
+
+            <!-- 卡片内容 -->
+            <Grid ColumnDefinitions="*,Auto,1,Auto" Margin="13,9,9,9">
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="1">
+                    <TextBlock Text="{Binding AddressText}"
+                               FontSize="26"
+                               FontWeight="Bold"
+                               FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                               Foreground="{DynamicResource Capsa.Text}" />
+                    <TextBlock Text="{Binding CapacityText}"
+                               FontSize="9"
+                               Foreground="{DynamicResource Capsa.TextMuted}"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Right"
+                            Spacing="7">
+
+                    <Border Background="{Binding HealthSoftBrush}"
+                            CornerRadius="2"
+                            Padding="6,2"
+                            HorizontalAlignment="Right">
+                        <TextBlock Text="{Binding HealthText}"
+                                   FontSize="8.5"
+                                   FontWeight="Bold"
+                                   FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                                   Foreground="{Binding HealthBrush}" />
+                    </Border>
+
+                    <TextBlock Text="{Binding OccupancyText}"
+                               FontSize="11.5"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Right"
+                               Foreground="{DynamicResource Capsa.TextMuted}" />
+                </StackPanel>
+
+                <!-- 写保护标记：WP（写保护）/ WEL（写使能锁存） -->
+                <Border Grid.Column="2"
+                        Width="1"
+                        Margin="9,3,0,3"
+                        IsVisible="{Binding IsPresent}"
+                        Background="{DynamicResource Capsa.Border}" />
+
+                <StackPanel Grid.Column="3"
+                            Margin="9,0,0,0"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding IsPresent}"
+                            Spacing="5">
+
+                    <Border Background="{Binding WpSoftBrush}"
+                            CornerRadius="2"
+                            Padding="6,1"
+                            HorizontalAlignment="Right"
+                            ToolTip.Tip="{Binding WpTooltip}">
+                        <TextBlock Text="WP"
+                                   FontSize="8"
+                                   FontWeight="Bold"
+                                   FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                                   Foreground="{Binding WpBrush}" />
+                    </Border>
+
+                    <Border Background="{Binding WelSoftBrush}"
+                            CornerRadius="2"
+                            Padding="6,1"
+                            HorizontalAlignment="Right"
+                            ToolTip.Tip="{Binding WelTooltip}">
+                        <TextBlock Text="WEL"
+                                   FontSize="8"
+                                   FontWeight="Bold"
+                                   FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                                   Foreground="{Binding WelBrush}" />
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- 占用率的精确刻度线 -->
+            <Border VerticalAlignment="Bottom"
+                    Height="2"
+                    Background="{DynamicResource Capsa.Accent}"
+                    HorizontalAlignment="Stretch">
+                <Border.RenderTransformOrigin>0%,50%</Border.RenderTransformOrigin>
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="{Binding OccupancyRatio}" ScaleY="1" />
+                </Border.RenderTransform>
+            </Border>
+        </Panel>
+    </Border>
+</UserControl>

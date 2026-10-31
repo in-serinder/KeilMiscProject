@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Capsa.ViewModels.Panels"
+             xmlns:panels="using:Capsa.Views.Panels"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="200"
+             x:Class="Capsa.Views.Panels.ChipSlotBoardView"
+             x:DataType="vm:ChipBoardViewModel">
+
+    <ItemsControl ItemsSource="{Binding Slots}" Margin="0,0,-10,-10">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <UniformGrid Columns="4" Rows="2" />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+
+        <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ChipSlotViewModel">
+                <panels:ChipSlotCardView Margin="0,0,10,10" />
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>

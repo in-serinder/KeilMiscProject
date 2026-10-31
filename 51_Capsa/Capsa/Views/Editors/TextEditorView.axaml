@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Capsa.ViewModels.Editors"
+             xmlns:models="using:Capsa.Models"
+             mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="360"
+             x:Class="Capsa.Views.Editors.TextEditorView"
+             x:DataType="vm:EditorSessionViewModel">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <!-- 纯文本编辑区 -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource Capsa.EditorBg}"
+                ClipToBounds="True">
+            <TextBox x:Name="TextHost"
+                     Classes="code"
+                     Text="{Binding Text, Mode=TwoWay}"
+                     IsReadOnly="{Binding IsReadOnly}"
+                     AcceptsReturn="True"
+                     TextWrapping="NoWrap"
+                     VerticalContentAlignment="Top"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+        </Border>
+
+        <!-- 状态栏：总大小 / 字数 / 长度 + 编码下拉框 -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource Capsa.SurfaceAlt}"
+                BorderBrush="{DynamicResource Capsa.Border}"
+                BorderThickness="0,1,0,0"
+                Padding="12,4">
+            <Grid ColumnDefinitions="*,Auto">
+
+                <TextBlock Grid.Column="0"
+                           Text="{Binding TextStatsText}"
+                           VerticalAlignment="Center"
+                           Classes="caption"
+                           FontFamily="Cascadia Mono,Consolas,Menlo,Monospace" />
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <TextBlock Text="Encoding" Classes="caption" VerticalAlignment="Center" />
+                    <ComboBox Classes="borderless"
+                              Width="152"
+                              ItemsSource="{Binding EncodingOptions}"
+                              SelectedItem="{Binding SelectedEncoding}"
+                              IsEnabled="{Binding !IsReadOnly}"
+                              ToolTip.Tip="Text encoding">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:EncodingOption">
+                                <TextBlock Text="{Binding DisplayName}" FontSize="10.5" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

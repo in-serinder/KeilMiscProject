@@ -1,0 +1,293 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia.Threading;
+using Capsa.Models;
+using Capsa.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+
+namespace Capsa.ViewModels.Dialogs
+{
+    /// <summary>
+    /// “芯片健康检查”窗口：8 张卡片同步展示写入（紫）/ 读取（绿）两段测试进度，
+    /// 结束后按健康 / 警告 / 错误给卡片染色。
+    /// </summary>
+    public sealed partial class ChipHealthViewModel : ViewModelBase
+    {
+        private readonly IDeviceService _device;
+        private readonly IChipTestService _testService;
+
+        private CancellationTokenSource? _cancellation;
+        private bool _testRan;
+
+        // 整片测试每片要发 512 个工作包，逐包刷 UI 会让界面落后于硬件；
+        // 这里后台只登记“每片最新进度”，由定时器按固定节奏取一次。
+        private readonly ConcurrentDictionary<int, ChipTestProgress> _pending = new();
+        private readonly DispatcherTimer _pumpTimer;
+        private string _pendingAction = string.Empty;
+
+        public ChipHealthViewModel(string portName)
+            : this(portName, AppServices.Device, AppServices.ChipTest)
+        {
+        }
+
+        public ChipHealthViewModel(string portName, IDeviceService device, IChipTestService testService)
+        {
+            _device = device;
+            _testService = testService;
+
+            PortName = string.IsNullOrWhiteSpace(portName) ? "Not connected" : portName;
+
+            for (var i = 0; i < 8; i++)
+            {
+                Slots.Add(new SlotTestViewModel(0x50 + i));
+            }
+
+            _pumpTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+            _pumpTimer.Tick += (_, _) => Pump();
+        }
+
+        public string PortName { get; }
+
+        public string PortBadge => $"{PortName}  ·  115200 baud";
+
+        public ObservableCollection<SlotTestViewModel> Slots { get; } = new();
+
+        [ObservableProperty]
+        private bool _isRunning;
+
+        /// <summary>是否追加 0x00 图案的读写校验。</summary>
+        [ObservableProperty]
+        private bool _testPattern00 = true;
+
+        [ObservableProperty]
+        private string _actionText = "Ready to check chip health";
+
+        [ObservableProperty]
+        private string _summaryText = "8 slots · idle";
+
+        public bool CanStart => !IsRunning;
+
+        public string PrimaryButtonText => IsRunning ? "Testing…" : "Start test";
+
+        public string SecondaryButtonText => IsRunning ? "Cancel" : "Close";
+
+        /// <summary>窗口关闭请求，参数表示本次是否执行过测试。</summary>
+        public event EventHandler<bool>? CloseRequested;
+
+        /// <summary>本次会话是否跑过测试（用于调用方决定是否刷新主界面）。</summary>
+        public bool TestRan => _testRan;
+
+        /// <summary>窗口打开时读取一次槽位信息（地址 / 容量 / 在位状态）。</summary>
+        public async Task LoadAsync()
+        {
+            try
+            {
+                var slots = await _device.ReadSlotsAsync().ConfigureAwait(true);
+
+                for (var i = 0; i < Slots.Count; i++)
+                {
+                    Slots[i].Apply(i < slots.Count ? slots[i] : null);
+                }
+
+                var present = Slots.Count(s => s.IsPresent);
+                SummaryText = present == 0
+                    ? "No chip detected · idle"
+                    : $"{present} of 8 slots populated · full-chip overwrite (destructive) · idle";
+            }
+            catch (Exception ex)
+            {
+                ActionText = $"Failed to read slots: {ex.Message}";
+            }
+        }
+
+        [RelayCommand]
+        private async Task StartTestAsync()
+        {
+            if (IsRunning)
+            {
+                return;
+            }
+
+            IsRunning = true;
+            _testRan = true;
+            NotifyState();
+
+            foreach (var slot in Slots)
+            {
+                if (slot.IsPresent)
+                {
+                    slot.Reset();
+                }
+            }
+
+            _pending.Clear();
+            _pendingAction = string.Empty;
+            SummaryText = $"{Slots.Count(s => s.IsPresent)} of 8 slots · full-chip overwrite running";
+            _pumpTimer.Start();
+
+            _cancellation = new CancellationTokenSource();
+            var progress = new SnapshotProgress(this);
+
+            try
+            {
+                // 独立窗口用整片覆写：每片全写一遍图案，再全片读回逐字节比对。
+                var report = await _testService
+                    .RunAsync(
+                        new ChipTestOptions { TestPattern00 = TestPattern00, TestLengthBytes = 0 },
+                        progress,
+                        _cancellation.Token)
+                    .ConfigureAwait(true);
+
+                ApplyReport(report);
+
+                // 整片已被图案覆盖，实际占用归零，避免主界面继续显示旧的使用量。
+                await _device.SetUsedSpaceAsync(0).ConfigureAwait(true);
+            }
+            catch (OperationCanceledException)
+            {
+                _pending.Clear();
+                _pendingAction = string.Empty;
+                ActionText = "Test canceled";
+                SummaryText = "Test canceled · results are partial";
+            }
+            catch (Exception ex)
+            {
+                ActionText = $"Test failed: {ex.Message}";
+            }
+            finally
+            {
+                Pump();
+                _pumpTimer.Stop();
+                IsRunning = false;
+                _cancellation?.Dispose();
+                _cancellation = null;
+                NotifyState();
+            }
+        }
+
+        [RelayCommand]
+        private void Cancel()
+        {
+            if (IsRunning)
+            {
+                _cancellation?.Cancel();
+                return;
+            }
+
+            CloseRequested?.Invoke(this, _testRan);
+        }
+
+        /// <summary>定时把“每片最新进度”搬到界面，保证显示不落后于当前动作。</summary>
+        private void Pump()
+        {
+            if (_pendingAction.Length > 0)
+            {
+                ActionText = _pendingAction;
+            }
+
+            foreach (var address in _pending.Keys)
+            {
+                if (_pending.TryRemove(address, out var progress))
+                {
+                    ApplyProgress(progress);
+                }
+            }
+        }
+
+        private void ApplyProgress(ChipTestProgress progress)
+        {
+            if (!IsRunning)
+            {
+                return;
+            }
+
+
+            var slot = Slots.FirstOrDefault(s => s.Address == progress.Address);
+            if (slot is null)
+            {
+                return;
+            }
+
+            switch (progress.Phase)
+            {
+                case ChipTestPhase.Writing:
+                case ChipTestPhase.Reading:
+                    slot.EnterPhase(progress.Phase);
+                    slot.SetProgress(progress.Percent);
+                    break;
+
+                case ChipTestPhase.Completed:
+                    if (!slot.IsPresent)
+                    {
+                        slot.MarkEmpty();
+                    }
+                    else if (progress.Grade is { } grade)
+                    {
+                        slot.Complete(grade);
+                    }
+
+                    break;
+            }
+        }
+
+        private void ApplyReport(ChipTestReport report)
+        {
+            // 丢弃尚未上屏的中间进度，避免覆盖刚算出的最终结论
+            _pending.Clear();
+            _pendingAction = string.Empty;
+
+            foreach (var outcome in report.Outcomes)
+            {
+                var slot = Slots.FirstOrDefault(s => s.Address == outcome.Address);
+                if (slot is null)
+                {
+                    continue;
+                }
+
+                if (outcome.Present)
+                {
+                    slot.Complete(outcome.Grade);
+                }
+                else
+                {
+                    slot.MarkEmpty();
+                }
+            }
+
+            ActionText =
+                $"Test complete · {report.HealthyCount} healthy · {report.WarningCount} warning · " +
+                $"{report.MediumCount} medium · {report.ErrorCount} error";
+            var chipBytes = Slots.FirstOrDefault(s => s.CapacityBytes > 0)?.CapacityBytes ?? 0;
+            var scope = chipBytes > 0 ? $"{ByteSize.Format(chipBytes)}/chip · " : string.Empty;
+            SummaryText = TestPattern00
+                ? $"{scope}whole chip overwritten with 0x00 + 0xFF, read back and compared"
+                : $"{scope}whole chip overwritten with 0xFF, read back and compared";
+        }
+
+        /// <summary>后台线程只登记最新值，不直接碰 UI。</summary>
+        private sealed class SnapshotProgress : IProgress<ChipTestProgress>
+        {
+            private readonly ChipHealthViewModel _owner;
+
+            public SnapshotProgress(ChipHealthViewModel owner) => _owner = owner;
+
+            public void Report(ChipTestProgress value)
+            {
+                _owner._pending[value.Address] = value;
+                Volatile.Write(ref _owner._pendingAction, value.Action);
+            }
+        }
+
+        private void NotifyState()
+        {
+            OnPropertyChanged(nameof(CanStart));
+            OnPropertyChanged(nameof(PrimaryButtonText));
+            OnPropertyChanged(nameof(SecondaryButtonText));
+        }
+    }
+}

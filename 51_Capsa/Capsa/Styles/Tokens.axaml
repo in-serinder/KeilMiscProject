@@ -1,0 +1,87 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- =========================================================
+         设计令牌（Design Tokens）
+         所有视图只使用这里的语义化颜色，便于一次性换肤。
+         ========================================================= -->
+
+    <!-- 强调色：与 Fluent 主题色保持一致 -->
+    <Color x:Key="SystemAccentColor">#2F6BFF</Color>
+    <Color x:Key="SystemAccentColorLight1">#5C8CFF</Color>
+    <Color x:Key="SystemAccentColorLight2">#85AAFF</Color>
+    <Color x:Key="SystemAccentColorLight3">#B3C8FF</Color>
+    <Color x:Key="SystemAccentColorDark1">#2456D6</Color>
+    <Color x:Key="SystemAccentColorDark2">#1B41A8</Color>
+    <Color x:Key="SystemAccentColorDark3">#122C74</Color>
+
+    <!-- 品牌强调色（Brush 版本，供 Background / Foreground 直接使用） -->
+    <SolidColorBrush x:Key="Capsa.Accent" Color="#2F6BFF" />
+    <SolidColorBrush x:Key="Capsa.AccentHover" Color="#2456D6" />
+    <SolidColorBrush x:Key="Capsa.AccentPressed" Color="#1B41A8" />
+    <SolidColorBrush x:Key="Capsa.OnAccent" Color="#FFFFFF" />
+
+    <!-- 语义色：健康分 -->
+    <SolidColorBrush x:Key="Capsa.Ok" Color="#2F6BFF" />
+    <SolidColorBrush x:Key="Capsa.Ok.Soft" Color="#262F6BFF" />
+    <SolidColorBrush x:Key="Capsa.Warn" Color="#E8A33D" />
+    <SolidColorBrush x:Key="Capsa.Warn.Soft" Color="#26E8A33D" />
+    <SolidColorBrush x:Key="Capsa.Err" Color="#E5484D" />
+    <SolidColorBrush x:Key="Capsa.Err.Soft" Color="#26E5484D" />
+    <SolidColorBrush x:Key="Capsa.Medium" Color="#F97316" />
+    <SolidColorBrush x:Key="Capsa.Medium.Soft" Color="#26F97316" />
+
+    <!-- 测试相位色：写入紫 / 读取绿 -->
+    <SolidColorBrush x:Key="Capsa.Write" Color="#7C5CFF" />
+    <SolidColorBrush x:Key="Capsa.Write.Soft" Color="#3D7C5CFF" />
+    <SolidColorBrush x:Key="Capsa.Read" Color="#16A34A" />
+    <SolidColorBrush x:Key="Capsa.Read.Soft" Color="#3D16A34A" />
+
+    <ResourceDictionary.ThemeDictionaries>
+
+        <!-- ================= 亮色 ================= -->
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="Capsa.Bg" Color="#F2F5FA" />
+            <SolidColorBrush x:Key="Capsa.Surface" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="Capsa.SurfaceAlt" Color="#F8FAFD" />
+            <SolidColorBrush x:Key="Capsa.SurfaceMuted" Color="#EDF1F8" />
+            <SolidColorBrush x:Key="Capsa.Border" Color="#E1E6EF" />
+            <SolidColorBrush x:Key="Capsa.BorderStrong" Color="#CFD7E4" />
+            <SolidColorBrush x:Key="Capsa.Text" Color="#101623" />
+            <SolidColorBrush x:Key="Capsa.TextMuted" Color="#68718A" />
+            <SolidColorBrush x:Key="Capsa.TextFaint" Color="#96A0B4" />
+            <SolidColorBrush x:Key="Capsa.Track" Color="#E8EDF6" />
+            <SolidColorBrush x:Key="Capsa.Hover" Color="#EFF3FA" />
+            <SolidColorBrush x:Key="Capsa.EditorBg" Color="#FBFCFE" />
+            <SolidColorBrush x:Key="Capsa.AccentSoft" Color="#1A2F6BFF" />
+            <SolidColorBrush x:Key="Capsa.CardFill" Color="#2E2F6BFF" />
+            <SolidColorBrush x:Key="Capsa.Illustration.Light" Color="#E9E9E9" />
+            <SolidColorBrush x:Key="Capsa.Illustration.Strong" Color="#343535" />
+            <SolidColorBrush x:Key="Capsa.Icon" Color="#231F20" />
+            <SolidColorBrush x:Key="Capsa.Shadow" Color="#12000000" />
+        </ResourceDictionary>
+
+        <!-- ================= 暗色 ================= -->
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="Capsa.Bg" Color="#0D1016" />
+            <SolidColorBrush x:Key="Capsa.Surface" Color="#151920" />
+            <SolidColorBrush x:Key="Capsa.SurfaceAlt" Color="#1A1F28" />
+            <SolidColorBrush x:Key="Capsa.SurfaceMuted" Color="#20262F" />
+            <SolidColorBrush x:Key="Capsa.Border" Color="#242A35" />
+            <SolidColorBrush x:Key="Capsa.BorderStrong" Color="#333B49" />
+            <SolidColorBrush x:Key="Capsa.Text" Color="#E8ECF3" />
+            <SolidColorBrush x:Key="Capsa.TextMuted" Color="#98A2B3" />
+            <SolidColorBrush x:Key="Capsa.TextFaint" Color="#6E7889" />
+            <SolidColorBrush x:Key="Capsa.Track" Color="#232A35" />
+            <SolidColorBrush x:Key="Capsa.Hover" Color="#1F2530" />
+            <SolidColorBrush x:Key="Capsa.EditorBg" Color="#11151B" />
+            <SolidColorBrush x:Key="Capsa.AccentSoft" Color="#332F6BFF" />
+            <SolidColorBrush x:Key="Capsa.CardFill" Color="#552F6BFF" />
+            <SolidColorBrush x:Key="Capsa.Illustration.Light" Color="#242A34" />
+            <SolidColorBrush x:Key="Capsa.Illustration.Strong" Color="#8B95A8" />
+            <SolidColorBrush x:Key="Capsa.Icon" Color="#E8ECF3" />
+            <SolidColorBrush x:Key="Capsa.Shadow" Color="#40000000" />
+        </ResourceDictionary>
+
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

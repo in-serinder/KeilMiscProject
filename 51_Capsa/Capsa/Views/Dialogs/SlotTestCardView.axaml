@@ -1,0 +1,88 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Capsa.ViewModels.Dialogs"
+             mc:Ignorable="d" d:DesignWidth="250" d:DesignHeight="100"
+             x:Class="Capsa.Views.Dialogs.SlotTestCardView"
+             x:DataType="vm:SlotTestViewModel">
+
+    <Border Classes="slot"
+            Classes.empty="{Binding !IsPresent}"
+            Height="100"
+            CornerRadius="0"
+            BorderThickness="1"
+            BorderBrush="{DynamicResource Capsa.Border}"
+            ClipToBounds="True">
+        <Panel>
+
+            <!-- 背景轨道 -->
+            <Border Background="{DynamicResource Capsa.Surface}" />
+
+            <!-- 测试进度填充：写入紫 / 读取绿 / 结果色 -->
+            <Border Background="{Binding FillBrush}" ClipToBounds="True">
+                <Border.RenderTransformOrigin>0%,50%</Border.RenderTransformOrigin>
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="{Binding Ratio}" ScaleY="1" />
+                </Border.RenderTransform>
+            </Border>
+
+            <!-- 内容 -->
+            <Grid ColumnDefinitions="*,Auto" Margin="13,9,12,9">
+
+                <!-- 左：大字号地址 -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{Binding AddressText}"
+                               FontSize="26"
+                               FontWeight="Bold"
+                               FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                               Foreground="{DynamicResource Capsa.Text}" />
+                    <TextBlock Text="I2C slot"
+                               FontSize="9"
+                               Foreground="{DynamicResource Capsa.TextMuted}" />
+                </StackPanel>
+
+                <!-- 右：相位徽标 + 容量 + 检测进度 -->
+                <StackPanel Grid.Column="1"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Right"
+                            Spacing="4">
+
+                    <Border Background="{Binding BadgeSoftBrush}"
+                            CornerRadius="2"
+                            Padding="6,2"
+                            HorizontalAlignment="Right">
+                        <TextBlock Text="{Binding PhaseText}"
+                                   FontSize="8.5"
+                                   FontWeight="Bold"
+                                   FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                                   Foreground="{Binding BadgeBrush}" />
+                    </Border>
+
+                    <TextBlock Text="{Binding CapacityText}"
+                               FontSize="10"
+                               HorizontalAlignment="Right"
+                               Foreground="{DynamicResource Capsa.TextMuted}" />
+
+                    <TextBlock Text="{Binding ProgressText}"
+                               FontSize="11.5"
+                               FontWeight="SemiBold"
+                               FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                               HorizontalAlignment="Right"
+                               Foreground="{DynamicResource Capsa.Text}" />
+                </StackPanel>
+            </Grid>
+
+            <!-- 进度刻度线 -->
+            <Border VerticalAlignment="Bottom"
+                    Height="2"
+                    Background="{Binding AccentBrush}"
+                    HorizontalAlignment="Stretch">
+                <Border.RenderTransformOrigin>0%,50%</Border.RenderTransformOrigin>
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="{Binding Ratio}" ScaleY="1" />
+                </Border.RenderTransform>
+            </Border>
+        </Panel>
+    </Border>
+</UserControl>

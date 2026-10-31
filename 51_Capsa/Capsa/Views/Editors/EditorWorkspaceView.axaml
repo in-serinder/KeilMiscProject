@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Capsa.ViewModels.Editors"
+             xmlns:editors="using:Capsa.Views.Editors"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="360"
+             x:Class="Capsa.Views.Editors.EditorWorkspaceView"
+             x:DataType="vm:EditorSessionViewModel">
+
+    <Panel>
+        <Grid>
+            <!-- HEX 编辑器 -->
+            <Panel IsVisible="{Binding IsHexMode}">
+                <editors:HexEditorView />
+            </Panel>
+
+            <!-- 纯文本 -->
+            <Panel IsVisible="{Binding IsTextMode}">
+                <editors:TextEditorView />
+            </Panel>
+
+            <!-- 双显：左 HEX / 右文本，共享同一缓冲区 -->
+            <Panel IsVisible="{Binding IsDualMode}">
+                <Grid ColumnDefinitions="*,1,*">
+                    <editors:HexEditorView Grid.Column="0" />
+
+                    <Border Grid.Column="1" Background="{DynamicResource Capsa.Border}" />
+
+                    <editors:TextEditorView Grid.Column="2" />
+                </Grid>
+            </Panel>
+        </Grid>
+
+        <!-- 空状态提示（不拦截鼠标，可直接点击编辑区） -->
+        <StackPanel IsVisible="{Binding IsEmpty}"
+                    IsHitTestVisible="False"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="6">
+            <TextBlock Text="Buffer is empty"
+                       FontSize="12"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource Capsa.TextMuted}" />
+            <TextBlock Text="{Binding EmptyHint}"
+                       FontSize="10.5"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource Capsa.TextFaint}" />
+        </StackPanel>
+    </Panel>
+</UserControl>
