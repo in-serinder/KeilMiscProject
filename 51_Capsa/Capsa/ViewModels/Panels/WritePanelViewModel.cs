@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -33,6 +34,9 @@ namespace Capsa.ViewModels.Panels
         private const double WriteShare = 0.85;
 
         // 快照必须是“整体替换”：直接共享结构体会出现撕裂读（进度 41% 但卡片 1%）。
+        // 实际写入卡里的文件名（≤40 B，超长已退回 dump.<ext>）：附在数据末尾供导出还原
+        private string _payloadFileName = string.Empty;
+
         private ProgressSnapshot? _latest;
         private int _hasPending;
 
@@ -53,7 +57,7 @@ namespace Capsa.ViewModels.Panels
 
             Session = new EditorSessionViewModel
             {
-                EmptyHint = "Click \"Import file\" to load a payload, or switch to Read mode to read from the chip",
+                EmptyHint = "Import any file — its extension is stored at the end of the payload",
             };
             Session.BytesReplaced += OnSessionBytesReplaced;
             _device.PropertyChanged += OnDevicePropertyChanged;
@@ -216,8 +220,21 @@ namespace Capsa.ViewModels.Panels
             }
 
             var (name, data) = picked.Value;
+            ApplyImportedFile(name, data);
+        }
+
+        /// <summary>
+        /// 装载一个导入文件：记住扩展名（写入时附在数据末尾），并把内容放进缓冲区。
+        /// 独立出来便于走查 / 测试直接调用，无需打开文件对话框。
+        /// </summary>
+        internal void ApplyImportedFile(string name, byte[] data)
+        {
+            _payloadFileName = FilePayloadCodec.BuildStoredName(name);
             Session.LoadBytes(data, EditorChangeSource.Import, name);
-            StatusText = $"Imported {name} ({ByteSize.Format(data.Length)})";
+
+            StatusText = _payloadFileName.Length > 0
+                ? $"Imported {name} ({ByteSize.Format(data.Length)}) · stored name \"{_payloadFileName}\""
+                : $"Imported {name} ({ByteSize.Format(data.Length)})";
         }
 
         [RelayCommand]
@@ -228,10 +245,22 @@ namespace Capsa.ViewModels.Panels
                 return;
             }
 
-            var payload = Session.Snapshot();
-            if (payload.Length == 0)
+            var content = Session.Snapshot();
+            if (content.Length == 0)
             {
                 StatusText = "Buffer is empty — nothing to write";
+                return;
+            }
+
+            // 把原文件扩展名附在数据末尾：读取时据此还原文件格式
+            var payload = FilePayloadCodec.Wrap(content, _payloadFileName);
+
+            var capacity = _device.ArrayCapacityBytes;
+            if (capacity > 0 && payload.Length > capacity)
+            {
+                StatusText =
+                    $"File too large · {ByteSize.Format(content.Length)} + trailer exceeds " +
+                    $"{ByteSize.Format(capacity)} array capacity";
                 return;
             }
 
@@ -239,6 +268,9 @@ namespace Capsa.ViewModels.Panels
             ProgressValue = 0;
             ProgressText = "0%";
             StatusText = "Preparing to write…";
+
+            // 整卡进度归零：上一轮写过的卡片不能带着旧填充进场
+            _board.BeginWrite();
 
             StartProgressPump();
 
@@ -248,6 +280,9 @@ namespace Capsa.ViewModels.Panels
                 if (!result.Success)
                 {
                     StatusText = result.Message;
+
+                    // 半途失败：用设备真实状态还原卡片，避免停在半格
+                    await _refreshDeviceAsync().ConfigureAwait(true);
                     return;
                 }
 
@@ -257,6 +292,7 @@ namespace Capsa.ViewModels.Panels
                 if (!verify.Success)
                 {
                     StatusText = verify.Message;
+                    await _refreshDeviceAsync().ConfigureAwait(true);
                     return;
                 }
 
@@ -269,8 +305,9 @@ namespace Capsa.ViewModels.Panels
                 await _refreshDeviceAsync().ConfigureAwait(true);
 
                 StatusText = recorded
-                    ? $"Verify & write complete · {ByteSize.Format(payload.Length)} · used space recorded"
-                    : "Verify & write complete · used space not recorded (UG failed)";
+                    ? $"Write & verify OK · {ByteSize.Format(content.Length)} + {payload.Length - content.Length} B trailer · " +
+                      $"{ByteSize.Format(payload.Length)} used space recorded"
+                    : $"Write & verify OK · used space not recorded (UG failed)";
             }
             catch (Exception ex)
             {
@@ -281,8 +318,10 @@ namespace Capsa.ViewModels.Panels
             }
             finally
             {
-                FlushProgress();
+                // 收尾时丢弃排队中的进度快照，避免“Verifying…”覆盖最终结论
                 StopProgressPump();
+                Interlocked.Exchange(ref _hasPending, 0);
+                Volatile.Write(ref _latest, null);
                 IsBusy = false;
             }
         }

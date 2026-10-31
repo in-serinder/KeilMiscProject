@@ -12,7 +12,7 @@ namespace Capsa.Services
     /// </summary>
     public interface IDeviceService
     {
-        /// <summary>设备信息（未初始化时返回 null）。</summary>
+        /// <summary>设备信息（未初始化时返回 null）。实现方保证在 UI 线程触发。</summary>
         event EventHandler<DeviceInfo?>? DeviceChanged;
 
         Task<DeviceInfo?> ReadDeviceInfoAsync(CancellationToken cancellationToken = default);

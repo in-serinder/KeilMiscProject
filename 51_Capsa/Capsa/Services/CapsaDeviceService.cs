@@ -36,14 +36,14 @@ namespace Capsa.Services
                 if (info is null)
                 {
                     // 未初始化（GET 返回 [SET_ERR]）
-                    DeviceChanged?.Invoke(this, null);
+                    UiThread.Post(() => DeviceChanged?.Invoke(this, null));
                     return null;
                 }
 
                 // 已使用空间由 UGS 单独读取；读不到（老固件）按 0 处理。
                 var used = protocol.ReadUsedBytes() ?? 0;
                 var device = ToDeviceInfo(info, used);
-                DeviceChanged?.Invoke(this, device);
+                UiThread.Post(() => DeviceChanged?.Invoke(this, device));
                 return device;
             }, cancellationToken);
         }

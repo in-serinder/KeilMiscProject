@@ -45,8 +45,7 @@
                               Width="152"
                               ItemsSource="{Binding EncodingOptions}"
                               SelectedItem="{Binding SelectedEncoding}"
-                              IsEnabled="{Binding !IsReadOnly}"
-                              ToolTip.Tip="Text encoding">
+                              ToolTip.Tip="Text encoding — in read mode it only affects how bytes are decoded">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="models:EncodingOption">
                                 <TextBlock Text="{Binding DisplayName}" FontSize="10.5" />

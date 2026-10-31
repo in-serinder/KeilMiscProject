@@ -101,7 +101,7 @@ namespace Capsa.Services
         public System.Threading.Tasks.Task<(string Name, byte[] Data)?> PickBinaryFileAsync()
             => System.Threading.Tasks.Task.FromResult<(string Name, byte[] Data)?>(null);
 
-        public System.Threading.Tasks.Task SaveBinaryFileAsync(string suggestedName, byte[] data)
+        public System.Threading.Tasks.Task SaveBinaryFileAsync(string suggestedName, byte[] data, string? extension = null)
             => System.Threading.Tasks.Task.CompletedTask;
     }
 }

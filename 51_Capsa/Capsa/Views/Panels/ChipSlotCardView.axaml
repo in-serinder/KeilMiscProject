@@ -25,6 +25,17 @@
                 </Border.RenderTransform>
             </Border>
 
+            <!-- 读取覆盖层：绿色进度覆盖在蓝色占用之上，退出读取模式后隐藏 -->
+            <Border Background="{DynamicResource Capsa.Read}"
+                    Opacity="0.85"
+                    IsVisible="{Binding IsReadActive}"
+                    ClipToBounds="True">
+                <Border.RenderTransformOrigin>0%,50%</Border.RenderTransformOrigin>
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="{Binding ReadRatio}" ScaleY="1" />
+                </Border.RenderTransform>
+            </Border>
+
             <!-- 卡片内容 -->
             <Grid ColumnDefinitions="*,Auto,1,Auto" Margin="13,9,9,9">
 

@@ -74,6 +74,9 @@ namespace Capsa.ViewModels.Panels
         /// <summary>阵列总容量（8 片合计，字节），供读取流程与占用百分比使用。</summary>
         public int ArrayCapacityBytes => _info?.ArrayTotalBytes ?? 0;
 
+        /// <summary>已使用空间（字节，来自 UGS）。读取流程据此只读上次写入的范围。</summary>
+        public int UsedBytes => _info?.UsedBytes ?? 0;
+
         public void Apply(DeviceInfo? info)
         {
             _info = info;
@@ -110,6 +113,7 @@ namespace Capsa.ViewModels.Panels
             OnPropertyChanged(nameof(StateText));
             OnPropertyChanged(nameof(CapacityBytes));
             OnPropertyChanged(nameof(ArrayCapacityBytes));
+            OnPropertyChanged(nameof(UsedBytes));
         }
 
         /// <summary>Unix 秒缺失（0）时显示占位符。</summary>
@@ -140,6 +144,7 @@ namespace Capsa.ViewModels.Panels
             OnPropertyChanged(nameof(StateText));
             OnPropertyChanged(nameof(CapacityBytes));
             OnPropertyChanged(nameof(ArrayCapacityBytes));
+            OnPropertyChanged(nameof(UsedBytes));
         }
     }
 }

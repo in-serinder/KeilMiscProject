@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Capsa.Services;
 using Capsa.ViewModels.Panels;
 using Capsa.ViewModels.Shell;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Capsa.ViewModels
@@ -31,6 +32,7 @@ namespace Capsa.ViewModels
 
             Read = new ReadPanelViewModel(
                 DeviceInfo,
+                Board,
                 AppServices.Transfer,
                 () => AppServices.Files);
 
@@ -50,6 +52,10 @@ namespace Capsa.ViewModels
 
         public ReadPanelViewModel Read { get; }
 
+        /// <summary>当前标签页：0 = 写入模式，1 = 读取模式。</summary>
+        [ObservableProperty]
+        private int _selectedTabIndex;
+
         public string ProjectUrl => "https://github.com/in-serinder/KeilMiscProject/blob/master/51_Capsa";
 
         /// <summary>与 Capsa.csproj 中的 &lt;Version&gt; 保持一致。</summary>
@@ -67,6 +73,15 @@ namespace Capsa.ViewModels
             catch
             {
                 // 忽略浏览器打开失败。
+            }
+        }
+
+        partial void OnSelectedTabIndexChanged(int value)
+        {
+            // 离开读取模式：卡片恢复为只显示蓝色占用
+            if (value == 0)
+            {
+                Board.ClearReadOverlay();
             }
         }
 

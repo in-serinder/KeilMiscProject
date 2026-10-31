@@ -139,6 +139,26 @@ namespace Capsa.Diagnostics
                 Log($"UG-OVERFLOW {(protocol.SetUsedBytes(65_537) ? "FAIL (accepted)" : "OK (rejected)")}");
                 Log($"UG-RESTORE {(protocol.SetUsedBytes(usedBytes) ? "OK" : "FAIL")}");
 
+                // ---- 文件载荷端到端：写入带 .png 后缀的数据，按 UGS 长度读回并还原 ----
+                var fileBytes = new byte[1234];
+                for (var i = 0; i < fileBytes.Length; i++)
+                {
+                    fileBytes[i] = (byte)(i * 7 & 0xFF);
+                }
+
+                var wrapped = FilePayloadCodec.Wrap(fileBytes, "smoke-test.png");
+                var wrote = transfer.WriteAsync(wrapped).GetAwaiter().GetResult();
+                var recorded = protocol.SetUsedBytes(wrapped.Length) ? protocol.ReadUsedBytes() : null;
+
+                byte[]? fileBack = null;
+                transfer.ReadCompleted += (_, bytes) => fileBack = bytes;
+                var readResult = transfer.ReadAsync((int)(recorded ?? wrapped.Length)).GetAwaiter().GetResult();
+
+                var restored = fileBack is null ? default : FilePayloadCodec.Unwrap(fileBack);
+                Log($"FILE-ROUNDTRIP write={wrote.Success} ug={recorded} read={readResult.Success} " +
+                    $"name={restored.FileName ?? "<none>"} " +
+                    $"match={(fileBack is not null && restored.Data.SequenceEqual(fileBytes) ? "PASS" : "FAIL")}");
+
                 // ---- 整片覆写测试（独立窗口用的模式）：只跑 0xFF，8 片全片 ----
                 var sw = System.Diagnostics.Stopwatch.StartNew();
                 var full = chipTest.RunAsync(new ChipTestOptions { TestPattern00 = false, TestLengthBytes = 0 })

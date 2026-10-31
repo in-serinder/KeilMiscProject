@@ -454,6 +454,7 @@ namespace Capsa.Services.Protocol
 
         /// <summary>
         /// 写入一段数据到指定芯片（自动 ROUTER / ADDR / INT_W / W_* / TX-OVER）。
+        /// <paramref name="progress"/> 参数为（本片百分比 0-100, 本片总字节数）。
         /// </summary>
         public bool WriteMemory(
             int chipAddress,
@@ -500,6 +501,7 @@ namespace Capsa.Services.Protocol
 
         /// <summary>
         /// 从指定芯片读出 <paramref name="length"/> 字节（自动 INT_R / 逐包应答 / TX-OVER）。
+        /// <paramref name="progress"/> 参数为（本片百分比 0-100, 本片总字节数），与写入一致。
         /// </summary>
         public byte[]? ReadMemory(
             int chipAddress,
@@ -554,7 +556,10 @@ namespace Capsa.Services.Protocol
                     offset += copy;
 
                     WriteAck("RX-OK");
-                    progress?.Invoke(Math.Min(offset, length), length);
+                    // 与 WriteMemory 保持同一约定：百分比（0-100）+ 总字节数
+                    progress?.Invoke(
+                        Math.Min(offset, length) * 100 / Math.Max(1, length),
+                        length);
                     continue;
                 }
 

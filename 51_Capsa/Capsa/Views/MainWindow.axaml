@@ -65,7 +65,8 @@
 
                 <!-- 写入 / 读取 标签页 -->
                 <Border Grid.Row="2" Classes="card" Padding="0" Margin="0,12,0,0">
-                    <TabControl x:Name="MainTabs">
+                    <TabControl x:Name="MainTabs"
+                                SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
                         <TabItem Header="Write mode">
                             <panels:WritePanelView Margin="16,10,16,16" DataContext="{Binding Write}" />
                         </TabItem>

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
+using Avalonia.VisualTree;
 using Avalonia.Threading;
 using Capsa.Models;
 using Capsa.ViewModels;
@@ -117,7 +118,78 @@ namespace Capsa.Diagnostics
             At(18800, () => Capture(window.OwnedWindows.FirstOrDefault(), Path.Combine(dir, "12-health-read.png")));
             At(26500, () => Capture(window.OwnedWindows.FirstOrDefault(), Path.Combine(dir, "13-health-done.png")));
             At(27100, () => window.OwnedWindows.FirstOrDefault()?.Close());
-            At(27700, () => Environment.Exit(0));
+
+            // ===== 读取模式：确认 ReadCompleted → 编辑器装载不炸线程 =====
+            At(27300, () =>
+            {
+                var tabs = window.FindControl<TabControl>("MainTabs");
+                if (tabs is not null)
+                {
+                    tabs.SelectedIndex = 1;
+                }
+
+                vm.Read.ReadVerifyCommand.Execute(null);
+            });
+
+            At(28600, () => Capture(window, Path.Combine(dir, "14-read-loaded.png")));
+
+            // 读取模式的纯文本视图：编码下拉框应可切换（只影响显示解码）
+            At(28700, () => vm.Read.Session.Mode = Models.EditorDisplayMode.Text);
+            At(28900, () => Capture(window, Path.Combine(dir, "15-read-text.png")));
+
+            At(29000, () =>
+            {
+                var combos = window.GetVisualDescendants()
+                    .OfType<ComboBox>()
+                    .Where(c => ReferenceEquals(c.DataContext, vm.Read.Session))
+                    .Select(c => $"enabled={c.IsEnabled}")
+                    .ToList();
+
+                // 读取模式切编码：只应影响解码显示，缓冲区字节数必须不变
+                var beforeLength = vm.Read.Session.ByteLength;
+                var gb = vm.Read.Session.EncodingOptions.FirstOrDefault(o => o.Encoding.CodePage == 54936)
+                         ?? vm.Read.Session.EncodingOptions[0];
+                vm.Read.Session.SelectedEncoding = gb;
+                var afterLength = vm.Read.Session.ByteLength;
+
+                File.WriteAllText(Path.Combine(dir, "read-encoding-check.txt"),
+                    $"combos=[{string.Join(",", combos)}] " +
+                    $"bytes={beforeLength}->{afterLength} " +
+                    $"{(beforeLength == afterLength ? "PASS" : "FAIL")}");
+            });
+
+            // ===== 写入模式：输入文本后切换编码应保持可读（真转码，不是重新解释字节）=====
+            At(29100, () =>
+            {
+                var tabs = window.FindControl<TabControl>("MainTabs");
+                if (tabs is not null)
+                {
+                    tabs.SelectedIndex = 0;
+                }
+
+                var session = vm.Write.Session;
+                session.LoadBytes(Encoding.UTF8.GetBytes("中文测试 abc"), EditorChangeSource.Import, "note.txt");
+                session.Mode = EditorDisplayMode.Text;
+                session.SelectedEncoding = session.EncodingOptions.First(o => o.DisplayName == "UTF-8");
+            });
+
+            At(29300, () =>
+            {
+                var session = vm.Write.Session;
+                var gbk = session.EncodingOptions.First(o => o.DisplayName == "GBK");
+                var expected = Convert.ToHexString(gbk.Encoding.GetBytes("中文测试 abc"));
+
+                session.SelectedEncoding = gbk;
+
+                File.WriteAllText(Path.Combine(dir, "encoding-transcode.txt"),
+                    $"text='{session.Text}'{Environment.NewLine}" +
+                    $"bytes   ={Convert.ToHexString(session.Snapshot())}{Environment.NewLine}" +
+                    $"expected={expected}{Environment.NewLine}" +
+                    $"{(Convert.ToHexString(session.Snapshot()) == expected ? "PASS" : "FAIL")}");
+            });
+
+            At(29500, () => Capture(window, Path.Combine(dir, "16-encoding-transcoded.png")));
+            At(29900, () => Environment.Exit(0));
         }
 
         /// <summary>真机联调：扫描串口 → 自动选择并连接 → 抓图。</summary>
@@ -194,8 +266,57 @@ namespace Capsa.Diagnostics
             }
             else
             {
-                At(73000, () => Environment.Exit(0));
+                // ===== 文件往返：导入 photo.bmp → 写入（末尾附文件名）→ 读取页按已用空间读回 =====
+                At(73500, () =>
+                {
+                    vm.Write.ApplyImportedFile("photo.bmp", BuildFilePayload(19_968));
+                    vm.Write.WriteVerifyCommand.Execute(null);
+                });
+
+                // 第二次写入刚起步：所有卡片应已清空（不再残留上一轮 156 kbit 的填充）
+                At(74300, () => Capture(window, Path.Combine(dir, "w4b-write-cleared.png")));
+                At(82000, () => Capture(window, Path.Combine(dir, "w5-import-name.png")));
+                At(97000, () => Capture(window, Path.Combine(dir, "w6-write-ok.png")));
+
+                At(100000, () =>
+                {
+                    var tabs = window.FindControl<TabControl>("MainTabs");
+                    if (tabs is not null)
+                    {
+                        tabs.SelectedIndex = 1;
+                    }
+
+                    vm.Read.ReadVerifyCommand.Execute(null);
+                });
+
+                At(102500, () => Capture(window, Path.Combine(dir, "r7-read-progress.png")));
+                At(108000, () => Capture(window, Path.Combine(dir, "r8-read-restored.png")));
+
+                // 切回写入模式：绿色覆盖层应消失，只剩蓝色占用
+                At(108500, () =>
+                {
+                    var tabs = window.FindControl<TabControl>("MainTabs");
+                    if (tabs is not null)
+                    {
+                        tabs.SelectedIndex = 0;
+                    }
+                });
+
+                At(109500, () => Capture(window, Path.Combine(dir, "r9-overlay-cleared.png")));
+                At(111000, () => Environment.Exit(0));
             }
+        }
+
+        /// <summary>生成一段任意格式的文件内容（用于验证扩展名 trailer 往返）。</summary>
+        private static byte[] BuildFilePayload(int size)
+        {
+            var data = new byte[size];
+            for (var i = 0; i < size; i++)
+            {
+                data[i] = (byte)((i * 31 + 7) & 0xFF);
+            }
+
+            return data;
         }
 
         /// <summary>生成指定字节数的测试载荷（156 kbit = 19968 B）。</summary>

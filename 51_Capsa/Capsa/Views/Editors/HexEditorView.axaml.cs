@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Capsa.Models;
@@ -26,6 +27,9 @@ namespace Capsa.Views.Editors
 
         private HexViewControl? _hex;
         private EditorSessionViewModel? _session;
+
+        /// <summary>当前 LineReader 装载的字节快照：用来判断编码切换是否真的改动了数据。</summary>
+        private byte[]? _loadedBytes;
 
         public HexEditorView()
         {
@@ -86,7 +90,16 @@ namespace Capsa.Views.Editors
             hex.SetValue(TextElement.FontSizeProperty, 12d);
 
             _hex = hex;
-            _host.Content = hex;
+
+            // HexViewControl 实现 ILogicalScrollable：必须放在 ScrollViewer 里才会出现滚动条。
+            // AllowAutoHide=False 让条形常驻，滚动位置一眼可见（与记事本感觉一致）。
+            _host.Content = new ScrollViewer
+            {
+                Content = hex,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                AllowAutoHide = false,
+            };
 
             ApplyData();
         }
@@ -98,7 +111,8 @@ namespace Capsa.Views.Editors
                 return;
             }
 
-            _hex.LineReader = new MemoryLineReader(_session.Snapshot());
+            _loadedBytes = _session.Snapshot();
+            _hex.LineReader = new MemoryLineReader(_loadedBytes);
             ApplyFormatter();
         }
 
@@ -147,7 +161,18 @@ namespace Capsa.Views.Editors
                     // 由本控件产生，无需重建。
                     return;
                 case EditorChangeSource.Encoding:
-                    ApplyFormatter();
+                    // 写入模式切编码会真的转码（字节变了）→ 必须重建 LineReader；
+                    // 读取模式 / 二进制只换显示编码（字节没变）→ 仅更新格式化器，保留滚动位置。
+                    if (_session is null || _loadedBytes is null
+                        || !_loadedBytes.AsSpan().SequenceEqual(_session.Snapshot()))
+                    {
+                        Rebuild();
+                    }
+                    else
+                    {
+                        ApplyFormatter();
+                    }
+
                     return;
                 default:
                     // 文本 / 导入 / 设备变更：重建控件以清空编辑日志。

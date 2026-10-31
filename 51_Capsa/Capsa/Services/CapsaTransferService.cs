@@ -163,7 +163,9 @@ namespace Capsa.Services
                 }
 
                 progress?.Report(new TransferProgress(100, "Read complete"));
-                ReadCompleted?.Invoke(this, buffer);
+
+                // 订阅方会重建 HEX 控件，必须在 UI 线程触发
+                UiThread.Post(() => ReadCompleted?.Invoke(this, buffer));
                 return TransferResult.Ok($"Read complete · {offset:N0} bytes");
             }, cancellationToken);
         }
@@ -184,6 +186,7 @@ namespace Capsa.Services
                 var chipBytes = protocol.ReadInfo()?.ChipBytes ?? 8192;
                 var total = payload.Length;
                 var mismatches = 0;
+                var firstMismatch = -1L;
                 var offset = 0;
 
                 for (var chip = 0x50; chip <= 0x57 && offset < total; chip++)
@@ -201,6 +204,11 @@ namespace Capsa.Services
                     {
                         if (payload[offset + i] != data[i])
                         {
+                            if (firstMismatch < 0)
+                            {
+                                firstMismatch = offset + i;
+                            }
+
                             mismatches++;
                         }
                     }
@@ -212,7 +220,8 @@ namespace Capsa.Services
 
                 return mismatches == 0
                     ? TransferResult.Ok($"Verify complete · {total:N0} bytes matched")
-                    : TransferResult.Fail($"Verify failed · {mismatches:N0} mismatched bytes");
+                    : TransferResult.Fail(
+                        $"Verify failed · {mismatches:N0} mismatched byte(s), first at 0x{firstMismatch:X}");
             }, cancellationToken);
         }
 

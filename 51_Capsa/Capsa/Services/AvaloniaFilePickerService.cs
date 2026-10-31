@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using Capsa.Models;
 
 namespace Capsa.Services
 {
@@ -21,15 +22,16 @@ namespace Capsa.Services
         {
             var files = await _topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = "Import payload",
+                Title = "Import a file (any format)",
                 AllowMultiple = false,
                 FileTypeFilter = new[]
                 {
-                    new FilePickerFileType("Binary / text files")
-                    {
-                        Patterns = new[] { "*.bin", "*.hex", "*.dat", "*.txt", "*.eep" },
-                    },
+                    // 任意格式都可以导入，扩展名会随数据写进存储卡
                     new FilePickerFileType("All files") { Patterns = new[] { "*.*" } },
+                    new FilePickerFileType("EEPROM images")
+                    {
+                        Patterns = new[] { "*.bin", "*.hex", "*.dat", "*.eep" },
+                    },
                 },
             });
 
@@ -46,17 +48,27 @@ namespace Capsa.Services
             return (file.Name, memory.ToArray());
         }
 
-        public async Task SaveBinaryFileAsync(string suggestedName, byte[] data)
+        public async Task SaveBinaryFileAsync(string suggestedName, byte[] data, string? extension = null)
         {
+            var ext = FilePayloadCodec.NormalizeExtension(extension);
+            if (ext.Length == 0)
+            {
+                ext = "bin";
+            }
+
             var file = await _topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                Title = "Export as .bin",
+                Title = $"Export as .{ext}",
                 SuggestedFileName = suggestedName,
-                DefaultExtension = "bin",
+                DefaultExtension = ext,
                 ShowOverwritePrompt = true,
                 FileTypeChoices = new[]
                 {
-                    new FilePickerFileType("Binary file") { Patterns = new[] { "*.bin" } },
+                    new FilePickerFileType($"{ext.ToUpperInvariant()} file")
+                    {
+                        Patterns = new[] { $"*.{ext}" },
+                    },
+                    new FilePickerFileType("All files") { Patterns = new[] { "*.*" } },
                 },
             });
 

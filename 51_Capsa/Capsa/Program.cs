@@ -11,6 +11,13 @@ namespace Capsa
         [STAThread]
         public static void Main(string[] args)
         {
+            // 纯逻辑自检（不碰串口）：Capsa.exe --self-test [log.txt]
+            if (args.Length >= 1 && string.Equals(args[0], "--self-test", StringComparison.OrdinalIgnoreCase))
+            {
+                Environment.Exit(Diagnostics.SelfTest.Run(args.Length >= 2 ? args[1] : null));
+                return;
+            }
+
             // 串口协议自检：Capsa.exe --sim-test COM1 [log.txt]
             if (args.Length >= 2 && string.Equals(args[0], "--sim-test", StringComparison.OrdinalIgnoreCase))
             {

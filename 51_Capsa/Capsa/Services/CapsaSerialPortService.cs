@@ -112,7 +112,8 @@ namespace Capsa.Services
                     _protocol = protocol;
                 }
 
-                ConnectionChanged?.Invoke(this, new SerialConnectionChangedEventArgs(true, portName));
+                UiThread.Post(() => ConnectionChanged?.Invoke(
+                    this, new SerialConnectionChangedEventArgs(true, portName)));
             }, cancellationToken);
         }
 
@@ -129,7 +130,8 @@ namespace Capsa.Services
                     _protocol = null;
                 }
 
-                ConnectionChanged?.Invoke(this, new SerialConnectionChangedEventArgs(false, previous));
+                UiThread.Post(() => ConnectionChanged?.Invoke(
+                    this, new SerialConnectionChangedEventArgs(false, previous)));
             }, cancellationToken);
         }
     }

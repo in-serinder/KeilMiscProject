@@ -53,6 +53,26 @@ namespace Capsa.ViewModels.Panels
         /// <summary>0 - 1 的占用比例，用于卡片整块填充的横向缩放。</summary>
         public double OccupancyRatio => Math.Clamp(OccupancyPercent / 100d, 0d, 1d);
 
+        // ---- 读取可视化：绿色覆盖层 ----
+
+        /// <summary>读取模式下显示绿色覆盖层；退出读取模式后隐藏。</summary>
+        [ObservableProperty]
+        private bool _isReadActive;
+
+        /// <summary>该片已读出的百分比（0-100）。</summary>
+        [ObservableProperty]
+        private double _readPercent;
+
+        /// <summary>0 - 1 的读取进度，用于绿色覆盖层的横向缩放。</summary>
+        public double ReadRatio => Math.Clamp(ReadPercent / 100d, 0d, 1d);
+
+        /// <summary>读取到该片时按字节数刷新绿色覆盖层。</summary>
+        public void SetReadBytes(int readBytes)
+        {
+            var bytes = Math.Clamp(readBytes, 0, Math.Max(0, CapacityBytes));
+            ReadPercent = CapacityBytes > 0 ? Math.Round(bytes * 100d / CapacityBytes, 1) : 0;
+        }
+
         public string CapacityText => IsPresent
             ? $"{ByteSize.Format(UsedBytes)} / {ByteSize.Format(CapacityBytes)}"
             : "No chip";
@@ -128,6 +148,8 @@ namespace Capsa.ViewModels.Panels
         partial void OnCapacityBytesChanged(int value) => RaiseDerived();
 
         partial void OnUsedBytesChanged(int value) => RaiseDerived();
+
+        partial void OnReadPercentChanged(double value) => OnPropertyChanged(nameof(ReadRatio));
 
         partial void OnWriteProtectedChanged(bool value) => RaiseRaiseWriteFlags();
 
