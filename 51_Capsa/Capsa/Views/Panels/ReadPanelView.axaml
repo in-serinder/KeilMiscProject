@@ -57,7 +57,7 @@
         <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,10,0,0">
 
             <StackPanel Grid.Column="0" Spacing="6" VerticalAlignment="Center">
-                <Grid ColumnDefinitions="*,Auto">
+                <Grid ColumnDefinitions="*,Auto,Auto">
                     <ProgressBar Grid.Column="0"
                                  Classes="thin"
                                  Minimum="0"
@@ -71,6 +71,17 @@
                                TextAlignment="Right"
                                FontSize="10.5"
                                FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
+
+                    <!-- 传输速率：写入 / 读取时实时显示 -->
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding SpeedText}"
+                               MinWidth="78"
+                               Margin="10,0,0,0"
+                               TextAlignment="Right"
+                               FontSize="10.5"
+                               FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                               Foreground="{DynamicResource Capsa.TextMuted}"
                                VerticalAlignment="Center" />
                 </Grid>
 

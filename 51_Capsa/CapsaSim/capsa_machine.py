@@ -28,6 +28,7 @@ from capsa_devices import (
     MODEL_BYTES,
     PCF8574,
     USED_MAX,
+    WRITE_COUNT_MAX,
     model_bytes,
     random_uid,
     unpack_uid,
@@ -174,6 +175,12 @@ class CapsaMachine:
 
             if upper.startswith("UG_"):
                 return self._handle_ug(command)
+
+            if upper == "DIG":
+                return self._handle_dig()
+
+            if upper.startswith("DI_"):
+                return self._handle_di(command)
 
             if upper.startswith("ROUTER_"):
                 return self._handle_router(command)
@@ -497,6 +504,69 @@ class CapsaMachine:
         value = self.meta.used_bytes
         LOG.info("UGS -> %d B", value)
         return self._reply(f"UG-{value}")
+
+    # ------------------------------------------------------------------ #
+    # DI / DIG（数据哈希 + 累计写入次数）
+    # ------------------------------------------------------------------ #
+
+    def _handle_di(self, command: str) -> None:
+        """DI_<16位十六进制哈希>_<十进制次数>：两个字段都可以用 ! 表示不修改。
+
+        哈希由上位机计算，下位机只存储；累计写入次数也由上位机递增，下位机不自动 +1。
+        """
+        if not self.meta.initialized:
+            LOG.info("DI rejected · 24C02 not initialized -> SET_ERR")
+            return self._reply("SET_ERR")
+
+        payload = command[3:]
+        parts = payload.split("_")
+        if len(parts) != 2:
+            LOG.warning("DI rejected: expected hash_count, got %r", payload)
+            return self._reply("RX-ERR")
+
+        hash_text, count_text = parts
+
+        # ---- 哈希 ----
+        hash_bytes: bytes | None = None
+        if hash_text != "!":
+            if len(hash_text) != 16:
+                LOG.warning("DI rejected: hash must be 16 hex chars, got %r", hash_text)
+                return self._reply("RX-ERR")
+            try:
+                hash_bytes = bytes.fromhex(hash_text)
+            except ValueError:
+                LOG.warning("DI rejected: hash %r is not hexadecimal", hash_text)
+                return self._reply("RX-ERR")
+
+        # ---- 写入次数 ----
+        write_count: int | None = None
+        if count_text != "!":
+            if not 1 <= len(count_text) <= 10 or not count_text.isascii() or not count_text.isdigit():
+                LOG.warning("DI rejected: count %r is not a decimal uint32", count_text)
+                return self._reply("RX-ERR")
+            write_count = int(count_text)
+            if write_count > WRITE_COUNT_MAX:
+                LOG.warning("DI rejected: count %d exceeds uint32", write_count)
+                return self._reply("RX-ERR")
+
+        self.meta.set_data_info(hash_bytes, write_count)
+        self._sleep(I2C_PAGE_WRITE_DELAY)  # 24C02 写周期 5ms
+
+        LOG.info(
+            "DI -> hash=%s count=%s (24C02 0x32-0x39 / 0x3A-0x3D)",
+            self.meta.data_hash_hex,
+            self.meta.write_count,
+        )
+        return self._reply("DI-OK")
+
+    def _handle_dig(self) -> None:
+        """DIG：返回 [DIG-<16位十六进制哈希>-<十进制次数>]。"""
+        if not self.meta.initialized:
+            LOG.info("DIG on blank card -> SET_ERR")
+            return self._reply("SET_ERR")
+
+        LOG.info("DIG -> %s / %d", self.meta.data_hash_hex, self.meta.write_count)
+        return self._reply(f"DIG-{self.meta.data_hash_hex}-{self.meta.write_count}")
 
     # ------------------------------------------------------------------ #
     # ROUTER / ADDR

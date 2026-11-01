@@ -4,19 +4,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:Capsa.ViewModels.Dialogs"
         xmlns:dialogs="using:Capsa.Views.Dialogs"
-        mc:Ignorable="d" d:DesignWidth="1120" d:DesignHeight="520"
+        mc:Ignorable="d" d:DesignWidth="1120" d:DesignHeight="560"
         x:Class="Capsa.Views.Dialogs.ChipHealthWindow"
         x:DataType="vm:ChipHealthViewModel"
         Title="Chip Health Check"
         Icon="/Assets/avalonia-logo.ico"
-        Width="1120" Height="434"
-        MinWidth="1000" MinHeight="420"
+        Width="1120" Height="474"
+        MinWidth="1000" MinHeight="460"
         CanResize="False"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource Capsa.Bg}">
 
-    <Grid RowDefinitions="Auto,*,Auto" Margin="22,18,22,18">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="22,18,22,18">
 
         <!-- ================= 顶部：当前串口 ================= -->
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="2,0,2,16">
@@ -46,8 +46,34 @@
             </Border>
         </Grid>
 
+        <!-- ================= 破坏性提示 ================= -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource Capsa.Warn.Soft}"
+                BorderBrush="{DynamicResource Capsa.Warn}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="12,8"
+                Margin="2,0,2,14">
+            <StackPanel Orientation="Horizontal" Spacing="9">
+                <TextBlock Text="!"
+                           FontSize="12"
+                           FontWeight="Bold"
+                           Width="16"
+                           Height="16"
+                           TextAlignment="Center"
+                           Foreground="{DynamicResource Capsa.OnAccent}"
+                           Background="{DynamicResource Capsa.Warn}"
+                           VerticalAlignment="Center" />
+                <TextBlock Text="Destructive test: every populated chip is fully overwritten with 0x00 / 0xFF before it is read back. Existing data on all 8 chips will be erased — back it up first."
+                           FontSize="11"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource Capsa.Text}" />
+            </StackPanel>
+        </Border>
+
         <!-- ================= 测试阵列（卡片直接贴在页面底色上，与主界面一致） ================= -->
-        <Grid Grid.Row="1" RowDefinitions="Auto,Auto">
+        <Grid Grid.Row="2" RowDefinitions="Auto,Auto">
 
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
                     <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
@@ -106,7 +132,7 @@
         </Grid>
 
         <!-- ================= 底部：当前动作 / 取消 / 选项 / 开始 ================= -->
-        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" Margin="2,16,2,0">
+        <Grid Grid.Row="3" ColumnDefinitions="*,Auto,Auto" Margin="2,16,2,0">
 
             <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -116,6 +142,14 @@
                     <TextBlock Text="{Binding ActionText}"
                                FontSize="11"
                                FontWeight="Medium"
+                               VerticalAlignment="Center" />
+
+                    <!-- 传输速率：测试中显示实时值，结束后显示平均速率 -->
+                    <TextBlock Text="{Binding SpeedText}"
+                               Margin="4,0,0,0"
+                               FontSize="10.5"
+                               FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                               Foreground="{DynamicResource Capsa.TextMuted}"
                                VerticalAlignment="Center" />
                 </StackPanel>
                 <TextBlock Text="{Binding SummaryText}"

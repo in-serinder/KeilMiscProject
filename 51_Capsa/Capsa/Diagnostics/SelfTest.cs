@@ -154,6 +154,49 @@ namespace Capsa.Diagnostics
             Check("unrepresentable chars are not transcoded",
                 emojiSession.Snapshot().SequenceEqual(Encoding.UTF8.GetBytes("emoji 😀")));
 
+            // 13) 传输速率计
+            var speed = new Models.TransferSpeedometer();
+            speed.Start(64_000);
+            var idle = speed.Sample(0);
+            System.Threading.Thread.Sleep(150);
+            var moving = speed.Sample(50);
+            speed.Finish();
+
+            Check("speedometer idle shows dash", idle == "—", idle);
+            Check("speedometer reports a rate", moving.EndsWith("/s", StringComparison.Ordinal), moving);
+            Check("speedometer stopped shows dash", speed.Sample(100) == "—");
+            Check("speedometer average after finish",
+                speed.AverageText.StartsWith("avg ", StringComparison.Ordinal), speed.AverageText);
+
+            // 14) 数据哈希：FNV-1a 64（与模拟器 / 文档使用同一算法）
+            Check("fnv1a empty",
+                DataIntegrity.ComputeHashHex(Array.Empty<byte>()) == "CBF29CE484222325",
+                DataIntegrity.ComputeHashHex(Array.Empty<byte>()));
+            Check("fnv1a hello",
+                DataIntegrity.ComputeHashHex(Encoding.ASCII.GetBytes("hello")) == "A430D84680AABD0B",
+                DataIntegrity.ComputeHashHex(Encoding.ASCII.GetBytes("hello")));
+            Check("hash compare ignores case",
+                DataIntegrity.Matches("a430d84680aabd0b", "A430D84680AABD0B"));
+
+            // 15) 读取校验的四种结论
+            var payload = Encoding.ASCII.GetBytes("capsa-payload");
+            var goodHash = DataIntegrity.ComputeHashHex(payload);
+
+            Check("verify ok",
+                DataIntegrity.Verify(payload, goodHash, payload.Length, out _) == DataIntegrity.Verdict.Ok);
+
+            var corrupted = (byte[])payload.Clone();
+            corrupted[3] ^= 0xFF;
+            Check("verify detects corrupted byte",
+                DataIntegrity.Verify(corrupted, goodHash, corrupted.Length, out var badHash)
+                    == DataIntegrity.Verdict.Mismatch && badHash != goodHash);
+
+            Check("verify without stored hash",
+                DataIntegrity.Verify(payload, null, payload.Length, out _) == DataIntegrity.Verdict.NoRecord);
+
+            Check("verify skipped when length differs",
+                DataIntegrity.Verify(payload, goodHash, payload.Length + 100, out _) == DataIntegrity.Verdict.Skipped);
+
             lines.Add(failed == 0 ? "SELF-TEST OK" : $"SELF-TEST FAILED ({failed})");
 
             var text = string.Join(Environment.NewLine, lines);

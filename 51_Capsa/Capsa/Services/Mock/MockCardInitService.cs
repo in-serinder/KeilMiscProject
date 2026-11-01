@@ -12,6 +12,8 @@ namespace Capsa.Services.Mock
     /// </summary>
     public sealed class MockCardInitService : ICardInitService
     {
+        private readonly Func<IDeviceService> _deviceAccessor;
+
         private static readonly (CardInitStage Stage, double From, double To, string Message)[] Stages =
         {
             (CardInitStage.WritingInfo, 0d, 30d, "Writing initialization info"),
@@ -20,6 +22,11 @@ namespace Capsa.Services.Mock
             (CardInitStage.ChipsPassed, 85d, 96d, "Chip test passed"),
             (CardInitStage.Completed, 96d, 100d, "Initialization complete"),
         };
+
+        public MockCardInitService(Func<IDeviceService> deviceAccessor)
+        {
+            _deviceAccessor = deviceAccessor;
+        }
 
         public async Task<CardInitResult> InitializeAsync(
             CardInitRequest request,
@@ -43,6 +50,19 @@ namespace Capsa.Services.Mock
 
             var healthy = Random.Shared.Next(5, 8); // 5 - 7 块芯片通过健康检查
             var uid = BuildUid();
+
+            // 与真实固件一致：初始化后数据区被测试图案覆写 → 占用归零、旧哈希清空。
+            // 累计写入次数必须原样保留（寿命指标，任何初始化都不清零）。
+            var device = _deviceAccessor();
+            if (device is not null)
+            {
+                var current = await device.ReadDeviceInfoAsync(cancellationToken).ConfigureAwait(true);
+                var writeCount = current?.WriteCount ?? 0;
+
+                await device.SetUsedSpaceAsync(0, cancellationToken).ConfigureAwait(true);
+                await device.SetDataInfoAsync(new string('0', 16), writeCount, cancellationToken)
+                    .ConfigureAwait(true);
+            }
 
             return new CardInitResult
             {

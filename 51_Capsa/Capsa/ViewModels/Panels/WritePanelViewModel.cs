@@ -33,6 +33,16 @@ namespace Capsa.ViewModels.Panels
         /// <summary>写入阶段占进度条的比例，其余留给回读校验。</summary>
         private const double WriteShare = 0.85;
 
+        /// <summary>当前传输速率（写入 / 校验各自重算）。</summary>
+        private readonly TransferSpeedometer _speed = new();
+
+        /// <summary>本轮写入的总字节数，用于把整卡百分比换算成“已占用的字节数”。</summary>
+        private long _liveWriteTotal;
+
+        /// <summary>显示在进度条右侧的速率文本，如 12.4 KB/s。</summary>
+        [ObservableProperty]
+        private string _speedText = "—";
+
         // 快照必须是“整体替换”：直接共享结构体会出现撕裂读（进度 41% 但卡片 1%）。
         // 实际写入卡里的文件名（≤40 B，超长已退回 dump.<ext>）：附在数据末尾供导出还原
         private string _payloadFileName = string.Empty;
@@ -272,6 +282,14 @@ namespace Capsa.ViewModels.Panels
             // 整卡进度归零：上一轮写过的卡片不能带着旧填充进场
             _board.BeginWrite();
 
+            // 左侧占用同步归零：整卡覆写意味着旧数据先被清掉，再随写入增长
+            _liveWriteTotal = payload.Length;
+            _device.SetLiveUsedBytes(0);
+
+            _speed.Reset();
+            _speed.Start(payload.Length);
+            SpeedText = "—";
+
             StartProgressPump();
 
             try
@@ -286,8 +304,9 @@ namespace Capsa.ViewModels.Panels
                     return;
                 }
 
-                // 写完立即回读校验，确保与缓冲区一致
+                // 写完立即回读校验，确保与缓冲区一致（速率按本阶段重新计时）
                 StatusText = "Verifying written data…";
+                _speed.Start(payload.Length);
                 var verify = await _transfer.VerifyAsync(payload, _verifyProgress).ConfigureAwait(true);
                 if (!verify.Success)
                 {
@@ -297,17 +316,27 @@ namespace Capsa.ViewModels.Panels
                 }
 
                 // 校验通过：把实际占用上报到 24C02（UG），再用 UGS 回填界面
-                StatusText = "Recording used space…";
+                StatusText = "Recording used space & data hash…";
                 var recorded = await _deviceService.SetUsedSpaceAsync(payload.Length).ConfigureAwait(true);
+
+                // 整卡哈希由上位机计算、写入次数由上位机 +1，一起通过 DI 存进 24C02
+                var hash = DataIntegrity.ComputeHashHex(payload);
+                var writeCount = _device.WriteCount + 1;
+                var integrityOk = await _deviceService
+                    .SetDataInfoAsync(hash, writeCount)
+                    .ConfigureAwait(true);
 
                 ProgressValue = 100;
                 ProgressText = "100%";
                 await _refreshDeviceAsync().ConfigureAwait(true);
 
-                StatusText = recorded
-                    ? $"Write & verify OK · {ByteSize.Format(content.Length)} + {payload.Length - content.Length} B trailer · " +
-                      $"{ByteSize.Format(payload.Length)} used space recorded"
-                    : $"Write & verify OK · used space not recorded (UG failed)";
+                var trailer = payload.Length - content.Length;
+                StatusText =
+                    $"Write & verify OK · {ByteSize.Format(content.Length)} + {trailer} B trailer · " +
+                    (integrityOk
+                        ? $"hash {hash[..8]}… · write #{writeCount}"
+                        : "hash not recorded (DI failed)") +
+                    (recorded ? string.Empty : " · used space not recorded");
             }
             catch (Exception ex)
             {
@@ -320,6 +349,8 @@ namespace Capsa.ViewModels.Panels
             {
                 // 收尾时丢弃排队中的进度快照，避免“Verifying…”覆盖最终结论
                 StopProgressPump();
+                _speed.Finish();
+                SpeedText = _speed.AverageText;   // 完成后显示平均速率
                 Interlocked.Exchange(ref _hasPending, 0);
                 Volatile.Write(ref _latest, null);
                 IsBusy = false;
@@ -352,6 +383,8 @@ namespace Capsa.ViewModels.Panels
 
             var p = snapshot.Value;
 
+            SpeedText = _speed.Sample(p.Percent);
+
             if (snapshot.Phase == 0)
             {
                 ProgressValue = p.Percent * WriteShare;
@@ -369,12 +402,18 @@ namespace Capsa.ViewModels.Panels
 
                     _board.ReportProgress(p.ChipAddress, p.ChipBytes);
                 }
+
+                // 左侧占用跟着整卡百分比一起长（整卡覆写，已写多少就占多少）
+                _device.SetLiveUsedBytes((long)(_liveWriteTotal * p.Percent / 100d));
             }
             else
             {
                 ProgressValue = (WriteShare + p.Percent / 100d * (1 - WriteShare)) * 100;
                 ProgressText = $"{ProgressValue:0}%";
                 StatusText = p.Message;
+
+                // 进入回读校验时数据已经写满，占用保持在最大值
+                _device.SetLiveUsedBytes(_liveWriteTotal);
             }
         }
 
@@ -415,17 +454,27 @@ namespace Capsa.ViewModels.Panels
         }
 
         /// <summary>把初始化结果转换为左侧面板使用的设备信息。</summary>
-        private static DeviceInfo BuildDeviceInfo(CardInitResult result) => new()
+        private DeviceInfo BuildDeviceInfo(CardInitResult result) => new()
         {
             DeviceName = result.DeviceName,
             Uid = result.Uid,
             ChipModel = result.Chip.Name,
             ChipType = result.Medium.DisplayName,
-            CapacityBytes = (int)Math.Min(int.MaxValue, result.ArrayCapacityBytes),
+
+            // ChipCapacity = 单片容量；阵列容量单独给，占用百分比靠它计算
+            CapacityBytes = (int)Math.Min(int.MaxValue, result.Chip.Bytes),
+            ArrayCapacityBytes = (int)Math.Min(int.MaxValue, result.ArrayCapacityBytes),
+
             UsedBytes = 0,
             LastWriteTime = result.InitializedAt,
             LastAccessTime = result.InitializedAt,
             HealthScore = (int)Math.Round(result.HealthyChips * 100d / 8d),
+
+            // 哈希与累计写入次数沿用刚刷新到的真实值：
+            // 初始化会让旧哈希失效（已由刷新读到全 0 → 无记录），
+            // 但写入次数是寿命指标，绝不能被初始化结果覆盖成 0。
+            DataHash = _device.DataHash,
+            WriteCount = _device.WriteCount,
         };
 
         private void OnDevicePropertyChanged(object? sender, PropertyChangedEventArgs e)

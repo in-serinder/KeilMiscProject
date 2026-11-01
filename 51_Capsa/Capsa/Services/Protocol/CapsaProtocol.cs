@@ -415,6 +415,47 @@ namespace Capsa.Services.Protocol
                 : null;
         }
 
+        /// <summary>
+        /// DI_&lt;哈希&gt;_&lt;次数&gt; → [DI-OK]。两个字段都可以传 null 表示不修改（协议里的 !）。
+        /// 哈希为 16 位十六进制（8 字节），由上位机计算，下位机只存储。
+        /// </summary>
+        public bool SetDataInfo(string? hashHex, long? writeCount, int timeoutMs = -1)
+        {
+            var hash = string.IsNullOrWhiteSpace(hashHex) ? "!" : hashHex!.Trim().ToUpperInvariant();
+            var count = writeCount is { } value ? Math.Clamp(value, 0, uint.MaxValue).ToString(CultureInfo.InvariantCulture) : "!";
+
+            return TryCommand($"DI_{hash}_{count}", timeoutMs, "DI-OK");
+        }
+
+        /// <summary>DIG → (哈希 16 位十六进制, 累计写入次数)；未初始化 / 超时返回 null。</summary>
+        public (string Hash, long WriteCount)? ReadDataInfo(int timeoutMs = -1)
+        {
+            var frame = Exchange("DIG", timeoutMs);
+            if (frame is not { Kind: FrameKind.Response } f)
+            {
+                return null;
+            }
+
+            const string prefix = "DIG-";
+            if (!f.Payload.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            var parts = f.Payload[prefix.Length..].Split('-');
+            if (parts.Length != 2)
+            {
+                return null;
+            }
+
+            if (!long.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var count))
+            {
+                return null;
+            }
+
+            return (parts[0].ToUpperInvariant(), count);
+        }
+
         /// <summary>ROUTER → [RX-OK]。</summary>
         public bool SelectChip(int chipAddress, int timeoutMs = -1)
             => TryCommand($"ROUTER_0x{chipAddress:X2}", timeoutMs, "RX-OK");

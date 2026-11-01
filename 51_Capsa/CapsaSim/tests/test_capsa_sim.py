@@ -468,13 +468,12 @@ class SimulatorTest(unittest.TestCase):
     # ------------------------------------------------------------------ #
 
     def test_23_used_space_layout_bounds(self) -> None:
-        from capsa_devices import META_DETECT, META_RESERVED, META_USED
+        # 0x2C 之后被 DI 的哈希 / 次数占用，完整分段校验见 test_33
+        from capsa_devices import META_HASH, META_USED
 
         self.assertEqual(META_USED, (0x2C, 6))
-        self.assertEqual(META_RESERVED, (0x32, 196))
-        self.assertEqual(META_DETECT, (0xF6, 10))
-        self.assertEqual(META_USED[0] + META_USED[1], 0x32)
-        self.assertEqual(META_RESERVED[0] + META_RESERVED[1], 0xF6)
+        self.assertEqual(META_HASH, (0x32, 8))
+        self.assertEqual(META_USED[0] + META_USED[1], META_HASH[0])
 
     # ------------------------------------------------------------------ #
     # 24. 型号变更后 UG 上界随之改变
@@ -488,6 +487,118 @@ class SimulatorTest(unittest.TestCase):
         self.assertEqual(self.machine.total_capacity_bytes, 262144)
         self.assertEqual(self.run_cmd("UG_262144"), "[UG-OK]")
         self.assertEqual(self.run_cmd("UG_262145"), "[RX-ERR]")
+
+    # ------------------------------------------------------------------ #
+    # 27 ~ 33. DI / DIG（数据哈希 + 累计写入次数）
+    # ------------------------------------------------------------------ #
+
+    def test_27_dig_after_first_set_is_zero(self) -> None:
+        self.init_card()
+
+        self.assertEqual(self.run_cmd("DIG"), "[DIG-0000000000000000-0]")
+        self.assertEqual(self.machine.meta.data[0x32:0x3E], b"\x00" * 12)
+
+    def test_28_di_sets_hash_and_count(self) -> None:
+        self.init_card()
+
+        self.assertEqual(self.run_cmd("DI_A1B2C3D4E5F60708_1"), "[DI-OK]")
+        self.assertEqual(self.run_cmd("DIG"), "[DIG-A1B2C3D4E5F60708-1]")
+
+        # bin 里的 0x32 ~ 0x3D 必须一致
+        raw = (self.data_dir / "meta_24c02.bin").read_bytes()
+        self.assertEqual(raw[0x32:0x3A].hex().upper(), "A1B2C3D4E5F60708")
+        self.assertEqual(int.from_bytes(raw[0x3A:0x3E], "little"), 1)
+
+    def test_29_di_partial_fields(self) -> None:
+        self.init_card()
+        self.assertEqual(self.run_cmd("DI_A1B2C3D4E5F60708_1"), "[DI-OK]")
+
+        # 只改次数
+        self.assertEqual(self.run_cmd("DI_!_2"), "[DI-OK]")
+        self.assertEqual(self.run_cmd("DIG"), "[DIG-A1B2C3D4E5F60708-2]")
+
+        # 只改哈希
+        self.assertEqual(self.run_cmd("DI_1122334455667788_!"), "[DI-OK]")
+        self.assertEqual(self.run_cmd("DIG"), "[DIG-1122334455667788-2]")
+
+        # 都不改
+        self.assertEqual(self.run_cmd("DI_!_!"), "[DI-OK]")
+        self.assertEqual(self.run_cmd("DIG"), "[DIG-1122334455667788-2]")
+
+    def test_30_di_on_blank_card(self) -> None:
+        self.assertFalse(self.machine.meta.initialized)
+        self.assertEqual(self.run_cmd("DI_A1B2C3D4E5F60708_1"), "[SET_ERR]")
+        self.assertEqual(self.run_cmd("DIG"), "[SET_ERR]")
+
+    def test_31_di_validation(self) -> None:
+        self.init_card()
+
+        for bad in ("DI_A1B2C3D4E5F6070_1",       # 15 位
+                    "DI_A1B2C3D4E5F6070809_1",    # 17 位
+                    "DI_ZZB2C3D4E5F60708_1",      # 非十六进制
+                    "DI_A1B2C3D4E5F60708_4294967296",  # 超出 uint32
+                    "DI_A1B2C3D4E5F60708_-1",
+                    "DI_A1B2C3D4E5F60708",
+                    "DI_A1B2C3D4E5F60708_1_2"):
+            self.assertEqual(self.run_cmd(bad), "[RX-ERR]", bad)
+
+    def test_32_di_keeps_other_metadata(self) -> None:
+        self.init_card()
+        before = self.run_cmd("GET_!")
+        before_meta = bytes(self.machine.meta.data[:0x2C])
+
+        self.assertEqual(self.run_cmd("DI_1122334455667788_7"), "[DI-OK]")
+
+        self.assertEqual(self.run_cmd("GET_!"), before)
+        self.assertEqual(bytes(self.machine.meta.data[:0x2C]), before_meta)
+        # 检测区不受影响
+        self.assertEqual(self.machine.meta.data[0xF6:0x100], b"\x00" * 10)
+
+    def test_33_new_layout_bounds(self) -> None:
+        from capsa_devices import META_DETECT, META_HASH, META_RESERVED, META_USED, META_WRITE_COUNT
+
+        self.assertEqual(META_USED, (0x2C, 6))
+        self.assertEqual(META_HASH, (0x32, 8))
+        self.assertEqual(META_WRITE_COUNT, (0x3A, 4))
+        self.assertEqual(META_RESERVED, (0x3E, 184))
+        self.assertEqual(META_DETECT, (0xF6, 10))
+
+        # 段落必须首尾相接、无空洞
+        self.assertEqual(META_USED[0] + META_USED[1], META_HASH[0])
+        self.assertEqual(META_HASH[0] + META_HASH[1], META_WRITE_COUNT[0])
+        self.assertEqual(META_WRITE_COUNT[0] + META_WRITE_COUNT[1], META_RESERVED[0])
+        self.assertEqual(META_RESERVED[0] + META_RESERVED[1], META_DETECT[0])
+
+    # ------------------------------------------------------------------ #
+    # 34 ~ 35. 初始化不得清除累计写入次数（EEPROM 寿命指标）
+    # ------------------------------------------------------------------ #
+
+    def test_34_reinit_preserves_write_count(self) -> None:
+        # 首次初始化 → 记录写入
+        self.init_card()
+        self.assertEqual(self.run_cmd("DI_A1B2C3D4E5F60708_7"), "[DI-OK]")
+        self.assertEqual(self.run_cmd("DIG"), "[DIG-A1B2C3D4E5F60708-7]")
+
+        # 对已初始化卡重新初始化（后续 SET 走 update 路径）
+        self.init_card("DEV2_00_FF_64_64_1700000200_1700000300_0_A1B2C3D4E5F6")
+        self.assertEqual(self.run_cmd("DIG"), "[DIG-A1B2C3D4E5F60708-7]")
+
+        # 即使检测区回到“未初始化”态（0xF6~0xFF 全 0xFF），first_set 也不能
+        # 把已有的寿命计数抹掉
+        self.machine.meta.data[0xF6:0x100] = b"\xFF" * 10
+        self.assertFalse(self.machine.meta.initialized)
+        self.init_card()
+        self.assertEqual(self.run_cmd("DIG"), "[DIG-A1B2C3D4E5F60708-7]")
+
+        # 已使用空间仍按初始化语义归零
+        self.assertEqual(self.machine.meta.used_bytes, 0)
+
+    def test_35_blank_card_di_is_zeroed(self) -> None:
+        # 全新 EEPROM 是 0xFF：首次初始化必须把 DI 区规范成 0，否则
+        # DIG 会读出 hash=FFFFFFFFFFFFFFFF / count=4294967295 这种垃圾值
+        self.init_card()
+        self.assertEqual(self.run_cmd("DIG"), "[DIG-0000000000000000-0]")
+
 
 
 if __name__ == "__main__":

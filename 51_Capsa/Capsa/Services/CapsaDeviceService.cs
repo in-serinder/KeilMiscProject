@@ -42,7 +42,11 @@ namespace Capsa.Services
 
                 // 已使用空间由 UGS 单独读取；读不到（老固件）按 0 处理。
                 var used = protocol.ReadUsedBytes() ?? 0;
-                var device = ToDeviceInfo(info, used);
+
+                // 数据哈希 / 写入次数由 DIG 单独读取（老固件不支持时留空）。
+                var dataInfo = protocol.ReadDataInfo();
+
+                var device = ToDeviceInfo(info, used, dataInfo);
                 UiThread.Post(() => DeviceChanged?.Invoke(this, device));
                 return device;
             }, cancellationToken);
@@ -77,6 +81,10 @@ namespace Capsa.Services
 
                 // 全部擦成 0xFF 后，已使用空间归零。
                 protocol.SetUsedBytes(0);
+
+                // 数据已擦除，旧哈希失效：哈希清成 8 个 0，但累计写入次数保留
+                // （次数是存储卡寿命指标，格式化 / 重新初始化都不能把它抹掉）。
+                protocol.SetDataInfo(new string('0', 16), null);
             }, cancellationToken);
         }
 
@@ -113,6 +121,15 @@ namespace Capsa.Services
             }, cancellationToken);
         }
 
+        public Task<bool> SetDataInfoAsync(string hashHex, long writeCount, CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() =>
+            {
+                var protocol = _link();
+                return protocol is { IsOpen: true } && protocol.SetDataInfo(hashHex, writeCount);
+            }, cancellationToken);
+        }
+
         public Task<bool> SetUsedSpaceAsync(long usedBytes, CancellationToken cancellationToken = default)
         {
             return Task.Run(() =>
@@ -137,7 +154,10 @@ namespace Capsa.Services
             return (int)Math.Clamp(remaining, 0, chipBytes);
         }
 
-        private static DeviceInfo ToDeviceInfo(CapsaInfo info, long usedBytes)
+        private static DeviceInfo ToDeviceInfo(
+            CapsaInfo info,
+            long usedBytes,
+            (string Hash, long WriteCount)? dataInfo = null)
         {
             var chipBytes = info.ChipBytes;
             var arrayCapacity = info.CapacityKb > 0 ? info.CapacityKb * 1024 : chipBytes * 8;
@@ -154,6 +174,9 @@ namespace Capsa.Services
                 LastWriteTime = ToTime(info.ModifiedAt),
                 LastAccessTime = ToTime(info.ReadAt),
                 HealthScore = info.HealthyChips * 100 / 8,
+                // 全 0 哈希是格式化 / 重新初始化后的占位值，视为“无记录”
+                DataHash = DataIntegrity.IsNoRecordHash(dataInfo?.Hash) ? string.Empty : dataInfo!.Value.Hash,
+                WriteCount = dataInfo?.WriteCount ?? 0,
             };
         }
 

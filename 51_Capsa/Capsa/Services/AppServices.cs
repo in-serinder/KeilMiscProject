@@ -20,7 +20,7 @@ namespace Capsa.Services
         public static ITransferService Transfer { get; set; } = new MockTransferService();
 
         /// <summary>存储卡初始化流程（写入初始化信息 → 校准 → 芯片测试）。</summary>
-        public static ICardInitService CardInit { get; set; } = new MockCardInitService();
+        public static ICardInitService CardInit { get; set; } = new MockCardInitService(() => Device);
 
         /// <summary>芯片健康检查（写入 0xFF / 0x00 并读回校验）。</summary>
         public static IChipTestService ChipTest { get; set; } = new MockChipTestService(() => Device);
@@ -65,7 +65,7 @@ namespace Capsa.Services
             Serial = new MockSerialPortService();
             Device = new MockDeviceService();
             Transfer = new MockTransferService();
-            CardInit = new MockCardInitService();
+            CardInit = new MockCardInitService(() => Device);
             ChipTest = new MockChipTestService(() => Device);
             Link = () => null;
 

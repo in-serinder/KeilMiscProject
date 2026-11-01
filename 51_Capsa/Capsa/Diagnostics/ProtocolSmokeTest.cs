@@ -137,6 +137,21 @@ namespace Capsa.Diagnostics
 
                 // UG 越界应被拒绝
                 Log($"UG-OVERFLOW {(protocol.SetUsedBytes(65_537) ? "FAIL (accepted)" : "OK (rejected)")}");
+                // ---- 对已初始化的卡重新初始化：已使用空间与各片占用都必须归零 ----
+                var reinitService = new CapsaCardInitService(() => protocol, chipTest);
+                reinitService.InitializeAsync(new CardInitRequest
+                {
+                    PortName = portName,
+                    DeviceName = "SIMCARD",
+                    Chip = chip,
+                    Medium = medium,
+                }).GetAwaiter().GetResult();
+
+                var usedAfterReinit = protocol.ReadUsedBytes();
+                var slotsAfterReinit = device.ReadSlotsAsync().GetAwaiter().GetResult();
+                var reinitOk = usedAfterReinit == 0 && slotsAfterReinit.All(x => x.UsedBytes == 0);
+                Log($"REINIT used={usedAfterReinit} chips=[{string.Join(",", slotsAfterReinit.Select(x => x.UsedBytes))}] " +
+                    $"{(reinitOk ? "PASS" : "FAIL")}");
                 Log($"UG-RESTORE {(protocol.SetUsedBytes(usedBytes) ? "OK" : "FAIL")}");
 
                 // ---- 文件载荷端到端：写入带 .png 后缀的数据，按 UGS 长度读回并还原 ----
@@ -158,6 +173,28 @@ namespace Capsa.Diagnostics
                 Log($"FILE-ROUNDTRIP write={wrote.Success} ug={recorded} read={readResult.Success} " +
                     $"name={restored.FileName ?? "<none>"} " +
                     $"match={(fileBack is not null && restored.Data.SequenceEqual(fileBytes) ? "PASS" : "FAIL")}");
+
+                // ---- 取消：必须返回部分报告，而不是把 OCE 抛到 UI ----
+                using (var cts = new System.Threading.CancellationTokenSource(400))
+                {
+                    var partial = chipTest
+                        .RunAsync(new ChipTestOptions { TestPattern00 = true, TestLengthBytes = 0 }, null, cts.Token)
+                        .GetAwaiter().GetResult();
+
+                    Log($"CHIPTEST-CANCEL canceled={partial.Canceled} outcomes={partial.Outcomes.Count} " +
+                        $"{(partial.Canceled ? "PASS" : "FAIL")}");
+                }
+
+                // ---- DI / DIG ----
+                var diSet = protocol.SetDataInfo("A1B2C3D4E5F60708", 7);
+                var dig = protocol.ReadDataInfo();
+                Log($"DI {(diSet && dig?.Hash == "A1B2C3D4E5F60708" && dig?.WriteCount == 7 ? "PASS" : "FAIL")} " +
+                    $"-> {dig?.Hash}-{dig?.WriteCount}");
+
+                var diPartial = protocol.SetDataInfo(null, 9);
+                var dig2 = protocol.ReadDataInfo();
+                Log($"DI-PARTIAL {(diPartial && dig2?.Hash == "A1B2C3D4E5F60708" && dig2?.WriteCount == 9 ? "PASS" : "FAIL")} " +
+                    $"-> {dig2?.Hash}-{dig2?.WriteCount}");
 
                 // ---- 整片覆写测试（独立窗口用的模式）：只跑 0xFF，8 片全片 ----
                 var sw = System.Diagnostics.Stopwatch.StartNew();

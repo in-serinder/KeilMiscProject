@@ -30,6 +30,15 @@ namespace Capsa.ViewModels.Dialogs
         private readonly DispatcherTimer _pumpTimer;
         private string _pendingAction = string.Empty;
 
+        // 传输速率：8 片整片测试的字节量已知，按“已完成片 + 当前片百分比”折算总进度。
+        private readonly TransferSpeedometer _speed = new();
+        private readonly System.Collections.Generic.Dictionary<int, long> _chipOffsets = new();
+        private long _testTotalBytes;
+
+        /// <summary>显示在底部的传输速率；跑完变成平均速率。</summary>
+        [ObservableProperty]
+        private string _speedText = "—";
+
         public ChipHealthViewModel(string portName)
             : this(portName, AppServices.Device, AppServices.ChipTest)
         {
@@ -128,6 +137,7 @@ namespace Capsa.ViewModels.Dialogs
             _pending.Clear();
             _pendingAction = string.Empty;
             SummaryText = $"{Slots.Count(s => s.IsPresent)} of 8 slots · full-chip overwrite running";
+            PrepareSpeedometer();
             _pumpTimer.Start();
 
             _cancellation = new CancellationTokenSource();
@@ -144,6 +154,14 @@ namespace Capsa.ViewModels.Dialogs
                     .ConfigureAwait(true);
 
                 ApplyReport(report);
+
+                if (report.Canceled)
+                {
+                    // 取消：只保留已完成芯片的结论，不覆盖为“失败”
+                    ActionText = "Test canceled";
+                    SummaryText = "Test canceled · results are partial";
+                    return;
+                }
 
                 // 整片已被图案覆盖，实际占用归零，避免主界面继续显示旧的使用量。
                 await _device.SetUsedSpaceAsync(0).ConfigureAwait(true);
@@ -163,6 +181,8 @@ namespace Capsa.ViewModels.Dialogs
             {
                 Pump();
                 _pumpTimer.Stop();
+                _speed.Finish();
+                SpeedText = _speed.AverageText;   // 结束后显示平均速率
                 IsRunning = false;
                 _cancellation?.Dispose();
                 _cancellation = null;
@@ -199,6 +219,55 @@ namespace Capsa.ViewModels.Dialogs
             }
         }
 
+        /// <summary>按 8 片实际容量建立“已完成字节”偏移表，并重置速率计。</summary>
+        private void PrepareSpeedometer()
+        {
+            _chipOffsets.Clear();
+
+            long offset = 0;
+            foreach (var slot in Slots)
+            {
+                if (!slot.IsPresent || slot.CapacityBytes <= 0)
+                {
+                    continue;
+                }
+
+                _chipOffsets[slot.Address] = offset;
+                offset += slot.CapacityBytes;
+            }
+
+            _testTotalBytes = offset;
+
+            _speed.Reset();
+            SpeedText = "—";
+
+            if (_testTotalBytes > 0)
+            {
+                _speed.Start(_testTotalBytes);
+            }
+        }
+
+        /// <summary>把单片进度折算成整卡总进度后采样速率。</summary>
+        private void SampleSpeed(ChipTestProgress progress, SlotTestViewModel slot)
+        {
+            if (_testTotalBytes <= 0 || slot.CapacityBytes <= 0)
+            {
+                return;
+            }
+
+            if (!_chipOffsets.TryGetValue(progress.Address, out var before))
+            {
+                return;
+            }
+
+            var chipPercent = progress.Phase == ChipTestPhase.Completed
+                ? 100d
+                : Math.Clamp(progress.Percent, 0d, 100d);
+
+            var done = before + slot.CapacityBytes * chipPercent / 100d;
+            SpeedText = _speed.Sample(done * 100d / _testTotalBytes);
+        }
+
         private void ApplyProgress(ChipTestProgress progress)
         {
             if (!IsRunning)
@@ -212,6 +281,8 @@ namespace Capsa.ViewModels.Dialogs
             {
                 return;
             }
+
+            SampleSpeed(progress, slot);
 
             switch (progress.Phase)
             {

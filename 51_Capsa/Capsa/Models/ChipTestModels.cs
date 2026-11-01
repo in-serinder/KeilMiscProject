@@ -97,6 +97,9 @@ namespace Capsa.Models
     {
         public required IReadOnlyList<ChipTestOutcome> Outcomes { get; init; }
 
+        /// <summary>是否被用户取消（此时 Outcomes 只包含已完成的芯片）。</summary>
+        public bool Canceled { get; init; }
+
         public int HealthyCount { get; init; }
 
         public int WarningCount { get; init; }

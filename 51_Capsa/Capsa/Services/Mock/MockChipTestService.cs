@@ -35,74 +35,84 @@ namespace Capsa.Services.Mock
             var medium = 0;
             var error = 0;
 
-            foreach (var slot in slots)
+            var canceled = false;
+
+            try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (!slot.Present)
+                foreach (var slot in slots)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (!slot.Present)
+                    {
+                        progress?.Report(new ChipTestProgress(
+                            slot.Address, ChipTestPhase.Completed, 0, $"0x{slot.Address:X2} · no chip detected"));
+
+                        outcomes.Add(new ChipTestOutcome { Address = slot.Address, Present = false });
+                        continue;
+                    }
+
+                    var patterns = options.TestPattern00
+                        ? new byte[] { 0x00, 0xFF }
+                        : new byte[] { 0xFF };
+
+                    foreach (var pattern in patterns)
+                    {
+                        await RunPhaseAsync(slot.Address, pattern, true, progress, cancellationToken).ConfigureAwait(true);
+                        await RunPhaseAsync(slot.Address, pattern, false, progress, cancellationToken).ConfigureAwait(true);
+                    }
+
+                    // 按健康分映射到四档错字节数，方便走查四种卡片状态：
+                    //   >=90 健康 / 75-89 1-9 / 60-74 10-20 / <60 21+
+                    var errorBytes = slot.HealthScore switch
+                    {
+                        >= 90 => 0,
+                        >= 75 => Random.Shared.Next(1, 10),
+                        >= 60 => Random.Shared.Next(10, 21),
+                        _ => Random.Shared.Next(21, 41),
+                    };
+                    var grade = ChipTestOutcome.Classify(errorBytes);
+
+                    switch (grade)
+                    {
+                        case ChipHealthGrade.Healthy:
+                            healthy++;
+                            break;
+                        case ChipHealthGrade.Warning:
+                            warning++;
+                            break;
+                        case ChipHealthGrade.Medium:
+                            medium++;
+                            break;
+                        default:
+                            error++;
+                            break;
+                    }
+
                     progress?.Report(new ChipTestProgress(
-                        slot.Address, ChipTestPhase.Completed, 0, $"0x{slot.Address:X2} · no chip detected"));
+                        slot.Address,
+                        ChipTestPhase.Completed,
+                        100,
+                        $"0x{slot.Address:X2} · {GradeText(grade)} ({errorBytes} bad bytes)",
+                        grade));
 
-                    outcomes.Add(new ChipTestOutcome { Address = slot.Address, Present = false });
-                    continue;
+                    outcomes.Add(new ChipTestOutcome
+                    {
+                        Address = slot.Address,
+                        Present = true,
+                        ErrorBytes = errorBytes,
+                        Grade = grade,
+                    });
                 }
-
-                var patterns = options.TestPattern00
-                    ? new byte[] { 0x00, 0xFF }
-                    : new byte[] { 0xFF };
-
-                foreach (var pattern in patterns)
-                {
-                    await RunPhaseAsync(slot.Address, pattern, true, progress, cancellationToken).ConfigureAwait(true);
-                    await RunPhaseAsync(slot.Address, pattern, false, progress, cancellationToken).ConfigureAwait(true);
-                }
-
-                // 按健康分映射到四档错字节数，方便走查四种卡片状态：
-                //   >=90 健康 / 75-89 1-9 / 60-74 10-20 / <60 21+
-                var errorBytes = slot.HealthScore switch
-                {
-                    >= 90 => 0,
-                    >= 75 => Random.Shared.Next(1, 10),
-                    >= 60 => Random.Shared.Next(10, 21),
-                    _ => Random.Shared.Next(21, 41),
-                };
-                var grade = ChipTestOutcome.Classify(errorBytes);
-
-                switch (grade)
-                {
-                    case ChipHealthGrade.Healthy:
-                        healthy++;
-                        break;
-                    case ChipHealthGrade.Warning:
-                        warning++;
-                        break;
-                    case ChipHealthGrade.Medium:
-                        medium++;
-                        break;
-                    default:
-                        error++;
-                        break;
-                }
-
-                progress?.Report(new ChipTestProgress(
-                    slot.Address,
-                    ChipTestPhase.Completed,
-                    100,
-                    $"0x{slot.Address:X2} · {GradeText(grade)} ({errorBytes} bad bytes)",
-                    grade));
-
-                outcomes.Add(new ChipTestOutcome
-                {
-                    Address = slot.Address,
-                    Present = true,
-                    ErrorBytes = errorBytes,
-                    Grade = grade,
-                });
+            }
+            catch (OperationCanceledException)
+            {
+                canceled = true;
             }
 
             return new ChipTestReport
             {
+                Canceled = canceled,
                 Outcomes = outcomes,
                 HealthyCount = healthy,
                 WarningCount = warning,

@@ -186,3 +186,8 @@ F:\SYSFILE\DeskTop\Misc.Git\KeilMiscProject\51_Capsa\Capsa\bin\verify\runtimes\u
 F:\SYSFILE\DeskTop\Misc.Git\KeilMiscProject\51_Capsa\Capsa\bin\verify\runtimes\win\lib\net8.0\System.IO.Ports.dll
 F:\SYSFILE\DeskTop\Misc.Git\KeilMiscProject\51_Capsa\Capsa\bin\verify\runtimes\win\lib\net8.0\System.Text.Encoding.CodePages.dll
 F:\SYSFILE\DeskTop\Misc.Git\KeilMiscProject\51_Capsa\Capsa\bin\verify\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
+D:\tmp\capsa-build\Capsa.exe
+D:\tmp\capsa-build\Capsa.deps.json
+D:\tmp\capsa-build\Capsa.runtimeconfig.json
+D:\tmp\capsa-build\Capsa.dll
+D:\tmp\capsa-build\Capsa.pdb

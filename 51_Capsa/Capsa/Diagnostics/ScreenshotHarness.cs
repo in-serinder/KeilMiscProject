@@ -26,6 +26,9 @@ namespace Capsa.Diagnostics
         /// <summary>CAPSA_SHOT_REAL=1 时只跑“扫描 → 连接 → 截图”，用于真机联调。</summary>
         private static bool RealPlan => Environment.GetEnvironmentVariable("CAPSA_SHOT_REAL") == "1";
 
+        /// <summary>CAPSA_SHOT_READ=1：只做“连接 → 读取 &amp; 校验”，用于验证哈希比对。</summary>
+        private static bool ReadOnlyPlan => Environment.GetEnvironmentVariable("CAPSA_SHOT_READ") == "1";
+
         public static void Run(Window window, MainWindowViewModel vm)
         {
             var dir = Environment.GetEnvironmentVariable("CAPSA_SHOT")!;
@@ -33,6 +36,12 @@ namespace Capsa.Diagnostics
 
             void At(double ms, Action action) =>
                 DispatcherTimer.RunOnce(action, TimeSpan.FromMilliseconds(ms));
+
+            if (ReadOnlyPlan)
+            {
+                RunReadPlan(window, vm, dir);
+                return;
+            }
 
             if (RealPlan)
             {
@@ -193,6 +202,44 @@ namespace Capsa.Diagnostics
         }
 
         /// <summary>真机联调：扫描串口 → 自动选择并连接 → 抓图。</summary>
+        /// <summary>连接 → 切到读取页 → 读一次，并把状态栏写入文件，专用于哈希校验排障。</summary>
+        private static void RunReadPlan(Window window, MainWindowViewModel vm, string dir)
+        {
+            void At(double ms, Action action) =>
+                DispatcherTimer.RunOnce(action, TimeSpan.FromMilliseconds(ms));
+
+            At(1200, () => vm.TopBar.RefreshPortsCommand.Execute(null));
+
+            At(4200, () => vm.TopBar.ToggleConnectionCommand.Execute(null));
+
+            At(9000, () =>
+            {
+                var tabs = window.FindControl<TabControl>("MainTabs");
+                if (tabs is not null)
+                {
+                    tabs.SelectedIndex = 1;
+                }
+
+                File.WriteAllText(
+                    Path.Combine(dir, "read-state.txt"),
+                    $"used={vm.DeviceInfo.UsedBytes} hash='{vm.DeviceInfo.DataHash}' count={vm.DeviceInfo.WriteCount}"
+                    + Environment.NewLine);
+
+                vm.Read.ReadVerifyCommand.Execute(null);
+            });
+
+            At(14000, () =>
+            {
+                File.AppendAllText(
+                    Path.Combine(dir, "read-state.txt"),
+                    $"status='{vm.Read.StatusText}'" + Environment.NewLine);
+
+                Capture(window, Path.Combine(dir, "read-result.png"));
+            });
+
+            At(15000, () => Environment.Exit(0));
+        }
+
         private static void RunRealPlan(Window window, MainWindowViewModel vm, string dir)
         {
             void At(double ms, Action action) =>
@@ -231,6 +278,8 @@ namespace Capsa.Diagnostics
                 vm.Write.Session.LoadBytes(BuildArrayPayload(19_968), EditorChangeSource.Import, "payload-156kbit.bin");
                 vm.Write.WriteVerifyCommand.Execute(null);
             });
+            At(36500, () => Capture(window, Path.Combine(dir, "w0-writing-early.png")));
+            At(36900, () => Capture(window, Path.Combine(dir, "w0b-writing-mid.png")));
             At(43000, () => Capture(window, Path.Combine(dir, "w1-writing-0x50.png")));
             At(51000, () => Capture(window, Path.Combine(dir, "w2-writing-0x51.png")));
             At(64000, () => Capture(window, Path.Combine(dir, "w3-write-done.png")));
@@ -303,7 +352,22 @@ namespace Capsa.Diagnostics
                 });
 
                 At(109500, () => Capture(window, Path.Combine(dir, "r9-overlay-cleared.png")));
-                At(111000, () => Environment.Exit(0));
+
+                // ===== 对已初始化的卡再来一次初始化：占用 / 卡片必须归零 =====
+                At(110000, () => vm.Write.ReinitializeCommand.Execute(null));
+
+                At(112000, () =>
+                {
+                    if (window.OwnedWindows.FirstOrDefault()?.DataContext is InitializeCardViewModel initVm)
+                    {
+                        initVm.InitializeCommand.Execute(null);
+                    }
+                });
+
+                At(132000, () => Capture(window.OwnedWindows.FirstOrDefault(), Path.Combine(dir, "i1-reinit-done.png")));
+                At(133000, () => window.OwnedWindows.FirstOrDefault()?.Close());
+                At(135500, () => Capture(window, Path.Combine(dir, "i2-after-reinit.png")));
+                At(137500, () => Environment.Exit(0));
             }
         }
 

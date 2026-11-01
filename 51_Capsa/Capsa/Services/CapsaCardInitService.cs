@@ -103,6 +103,16 @@ namespace Capsa.Services
                 throw new InvalidOperationException("SET (health mask) rejected by device");
             }
 
+            // 4) 已使用空间归零。
+            // 首次 SET 会写 0x2C~0x31，但“对已初始化卡重新初始化”走的是后续 SET，
+            // 协议规定它不碰该字段，所以必须显式发 UG_0，否则界面会继续显示旧占用。
+            protocol.SetUsedBytes(0);
+
+            // 5) 数据区已被读写测试覆写：旧哈希失效，清成 8 个 0。
+            //    注意只清哈希——0x3A~0x3D 的累计写入次数是存储卡的寿命指标，
+            //    重新初始化绝不清零（协议 SET / first_set 都不碰该区域）。
+            protocol.SetDataInfo(new string('0', 16), null);
+
             progress?.Report(new CardInitProgress(CardInitStage.Completed, 100, "Initialization complete"));
 
             return new CardInitResult

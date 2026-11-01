@@ -34,5 +34,11 @@ namespace Capsa.Services
         /// 由上位机在写入完成后计算并上报，下位机只存储、不统计。
         /// </summary>
         Task<bool> SetUsedSpaceAsync(long usedBytes, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 通过 DI 命令写入整卡数据哈希（16 位十六进制）与累计写入次数。
+        /// 哈希由上位机计算、次数由上位机 +1，下位机只存储。
+        /// </summary>
+        Task<bool> SetDataInfoAsync(string hashHex, long writeCount, CancellationToken cancellationToken = default);
     }
 }

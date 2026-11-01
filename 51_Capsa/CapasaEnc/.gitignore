@@ -1,0 +1,10 @@
+# build output
+build/
+
+# generated blobs (build.bat / make regenerate them)
+src/stub_blob.h
+src/src_blob.h
+
+# python caches
+__pycache__/
+*.pyc

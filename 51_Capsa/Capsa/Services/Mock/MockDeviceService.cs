@@ -23,6 +23,8 @@ namespace Capsa.Services.Mock
         private DeviceInfo? _current;
         private bool _formatted;
         private long? _usedOverride;
+        private string _dataHash = "A1B2C3D4E5F60708";
+        private long _writeCount = 12;
 
         public event EventHandler<DeviceInfo?>? DeviceChanged;
 
@@ -48,7 +50,12 @@ namespace Capsa.Services.Mock
         {
             await Task.Delay(900, cancellationToken).ConfigureAwait(true);
             _formatted = false;
-            Publish(BuildInfo());
+
+            // 重新初始化：数据被清掉，已用空间归零、旧哈希失效（真实固件由 UG_0 完成）。
+            // 累计写入次数不清——它是存储卡的寿命指标，任何初始化都不应篡改。
+            _usedOverride = 0;
+            _dataHash = string.Empty;
+            Publish(BuildInfo(usedBytes: 0));
         }
 
         public async Task FormatAsync(CancellationToken cancellationToken = default)
@@ -56,6 +63,9 @@ namespace Capsa.Services.Mock
             await Task.Delay(1100, cancellationToken).ConfigureAwait(true);
             _formatted = true;
             _usedOverride = 0;
+
+            // 格式化只擦数据区：哈希随数据一起失效，累计写入次数保留。
+            _dataHash = string.Empty;
             Publish(BuildInfo(usedBytes: 0));
         }
 
@@ -63,6 +73,23 @@ namespace Capsa.Services.Mock
         {
             await Task.Delay(120, cancellationToken).ConfigureAwait(true);
             return BuildSlots();
+        }
+
+        public Task<bool> SetDataInfoAsync(string hashHex, long writeCount, CancellationToken cancellationToken = default)
+        {
+            var raw = (hashHex ?? string.Empty).Trim().ToUpperInvariant();
+            // 全 0 哈希是“已清空”的占位值，统一按空处理
+            _dataHash = DataIntegrity.IsNoRecordHash(raw) ? string.Empty : raw;
+            _writeCount = Math.Max(0, writeCount);
+
+            // 有数据重新落盘后，格式化标记失效，哈希应恢复显示
+            if (!string.IsNullOrWhiteSpace(_dataHash))
+            {
+                _formatted = false;
+            }
+
+            Publish(BuildInfo());
+            return Task.FromResult(true);
         }
 
         public Task<bool> SetUsedSpaceAsync(long usedBytes, CancellationToken cancellationToken = default)
@@ -89,6 +116,9 @@ namespace Capsa.Services.Mock
                 LastWriteTime = now.AddMinutes(-42),
                 LastAccessTime = now.AddMinutes(-3),
                 HealthScore = healthScore ?? 92,
+                DataHash = _formatted ? string.Empty : _dataHash,
+                // 写入次数是寿命指标：格式化 / 重新初始化都不归零
+                WriteCount = _writeCount,
             };
         }
 

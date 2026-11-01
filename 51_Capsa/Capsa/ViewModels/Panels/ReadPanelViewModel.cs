@@ -24,6 +24,16 @@ namespace Capsa.ViewModels.Panels
         /// <summary>从数据末尾还原出的原文件名，导出时作为默认文件名。</summary>
         private string _restoredFileName = string.Empty;
 
+        /// <summary>读取结束后的哈希校验结论（拼到状态栏尾部）。</summary>
+        private string _integrityNote = string.Empty;
+
+        /// <summary>当前读取速率。</summary>
+        private readonly TransferSpeedometer _speed = new();
+
+        /// <summary>显示在进度条右侧的速率文本，如 12.4 KB/s。</summary>
+        [ObservableProperty]
+        private string _speedText = "—";
+
         public ReadPanelViewModel(
             DeviceInfoViewModel device,
             ChipBoardViewModel board,
@@ -54,6 +64,32 @@ namespace Capsa.ViewModels.Panels
         /// </summary>
         private void OnReadCompleted(object? sender, byte[] raw)
         {
+            // 数据完整性：把读回的字节重新算一遍哈希，与 DIG 里的记录比对。
+            // 结论无论是什么都要写进状态栏 —— 绝不允许“悄悄跳过”。
+            var storedHash = _device.DataHash;
+            var verdict = DataIntegrity.Verify(raw, storedHash, _device.UsedBytes, out var actualHash);
+
+            _integrityNote = verdict switch
+            {
+                DataIntegrity.Verdict.Ok => " · hash OK",
+                DataIntegrity.Verdict.Mismatch => $" · HASH MISMATCH (stored {storedHash}, computed {actualHash})",
+                DataIntegrity.Verdict.NoRecord => " · no hash record on card",
+                _ => $" · hash not checked (read {raw.Length:N0} B, used {_device.UsedBytes:N0} B)",
+            };
+
+            if (verdict == DataIntegrity.Verdict.Mismatch)
+            {
+                // 只提示，不中断、不丢弃已读取的数据
+                _ = AppServices.Messages.ShowErrorAsync(
+                    "Data may be corrupted",
+                    "The hash stored on the card does not match the data that was read back." + Environment.NewLine +
+                    Environment.NewLine +
+                    $"stored   {storedHash}" + Environment.NewLine +
+                    $"computed {actualHash}" + Environment.NewLine +
+                    Environment.NewLine +
+                    "The data was still loaded - review it before using it, or write the file again.");
+            }
+
             // 数据末尾可能带着写入时附上的文件名，先还原原始文件内容
             var payload = FilePayloadCodec.Unwrap(raw);
             var name = string.IsNullOrEmpty(payload.FileName)
@@ -183,6 +219,7 @@ namespace Capsa.ViewModels.Panels
                 ProgressValue = p.Percent;
                 ProgressText = $"{p.Percent:0}%";
                 StatusText = p.Message;
+                SpeedText = _speed.Sample(p.Percent);
 
                 if (p.ChipAddress != 0)
                 {
@@ -202,6 +239,21 @@ namespace Capsa.ViewModels.Panels
 
             try
             {
+                // 读取前先刷新一次元信息：UGS / DIG 可能是很久以前读的，
+                // 若卡被别处改过，用旧值会让“读多少字节 / 和谁比对哈希”都错位。
+                try
+                {
+                    var fresh = await AppServices.Device.ReadDeviceInfoAsync().ConfigureAwait(true);
+                    if (fresh is not null)
+                    {
+                        _device.Apply(fresh);
+                    }
+                }
+                catch (Exception)
+                {
+                    // 刷新失败不阻塞读取，沿用界面现有值
+                }
+
                 // 只读到上次写入的位置：优先用 24C02 里的“已使用空间”（UGS）
                 var capacity = _device.ArrayCapacityBytes > 0
                     ? _device.ArrayCapacityBytes
@@ -209,6 +261,10 @@ namespace Capsa.ViewModels.Panels
 
                 var used = _device.UsedBytes;
                 var length = used > 0 ? Math.Min(used, capacity) : capacity;
+
+                _speed.Reset();
+                _speed.Start(length);
+                SpeedText = "—";
 
                 var result = await _transfer.ReadAsync(length, progress).ConfigureAwait(true);
 
@@ -218,7 +274,7 @@ namespace Capsa.ViewModels.Panels
                 }
 
                 StatusText = used > 0
-                    ? $"{result.Message} · used space {ByteSize.Format(length)}"
+                    ? $"{result.Message} · used space {ByteSize.Format(length)}{_integrityNote}"
                     : $"{result.Message} · used space is 0, read the whole array";
                 ProgressValue = 100;
                 ProgressText = "100%";
@@ -229,6 +285,8 @@ namespace Capsa.ViewModels.Panels
             }
             finally
             {
+                _speed.Finish();
+                SpeedText = _speed.AverageText;   // 完成后显示平均速率
                 IsBusy = false;
             }
         }

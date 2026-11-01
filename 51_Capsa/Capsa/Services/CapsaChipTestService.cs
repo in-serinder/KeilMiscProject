@@ -25,7 +25,8 @@ namespace Capsa.Services
             IProgress<ChipTestProgress>? progress = null,
             CancellationToken cancellationToken = default)
         {
-            return Task.Run(() => RunCore(options, progress, cancellationToken), cancellationToken);
+            // 取消由 RunCore 内部捕获并转成 Canceled 报告，绝不让 OCE 逃到 UI 线程
+            return Task.Run(() => RunCore(options, progress, cancellationToken));
         }
 
         private ChipTestReport RunCore(
@@ -60,126 +61,137 @@ namespace Capsa.Services
             var medium = 0;
             var error = 0;
 
-            for (var chip = 0x50; chip <= 0x57; chip++)
+            var canceled = false;
+
+            try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var bit = chip - 0x50;
-                var writeProtected = info is not null && (info.WriteProtectMask & (1 << bit)) != 0;
-
-                if (writeProtected)
+                for (var chip = 0x50; chip <= 0x57; chip++)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var bit = chip - 0x50;
+                    var writeProtected = info is not null && (info.WriteProtectMask & (1 << bit)) != 0;
+
+                    if (writeProtected)
+                    {
+                        progress?.Report(new ChipTestProgress(
+                            chip, ChipTestPhase.Completed, 100, $"0x{chip:X2} · write protected (WP=1)"));
+
+                        outcomes.Add(new ChipTestOutcome
+                        {
+                            Address = chip,
+                            Present = true,
+                            ErrorBytes = length,
+                            Grade = ChipHealthGrade.Error,
+                        });
+
+                        error++;
+                        continue;
+                    }
+
+                    var errors = 0;
+
+                    // 进度在整片内连续：每个图案占 1/N，其中写入 / 读回各占一半，
+                    // 避免多图案时进度条反复归零。
+                    var patternCount = patterns.Count;
+                    var sliceSpan = 100d / patternCount / 2;
+
+                    for (var pIndex = 0; pIndex < patternCount; pIndex++)
+                    {
+                        var pattern = patterns[pIndex];
+                        var sliceBase = 100d * pIndex / patternCount;
+
+                        var buffer = new byte[length];
+                        Array.Fill(buffer, pattern);
+
+                        var writeOk = protocol.WriteMemory(
+                            chip,
+                            buffer,
+                            (current, max) =>
+                            {
+                                var written = (int)(length * Math.Clamp(current, 0, 100) / 100d);
+                                progress?.Report(new ChipTestProgress(
+                                    chip,
+                                    ChipTestPhase.Writing,
+                                    sliceBase + sliceSpan * Math.Clamp(current, 0, 100) / 100d,
+                                    $"0x{chip:X2} · writing 0x{pattern:X2} · {written:N0}/{length:N0} B"));
+                            },
+                            cancellationToken);
+
+                        var readBack = writeOk
+                            ? protocol.ReadMemory(
+                                chip,
+                                length,
+                                (current, max) =>
+                                {
+                                    var read = (int)(length * Math.Clamp(current, 0, 100) / 100d);
+                                    progress?.Report(new ChipTestProgress(
+                                        chip,
+                                        ChipTestPhase.Reading,
+                                        sliceBase + sliceSpan + sliceSpan * Math.Clamp(current, 0, 100) / 100d,
+                                        $"0x{chip:X2} · verifying 0x{pattern:X2} · {read:N0}/{length:N0} B"));
+                                },
+                                cancellationToken)
+                            : null;
+
+                        if (readBack is null)
+                        {
+                            errors += length;
+                            continue;
+                        }
+
+                        for (var i = 0; i < length; i++)
+                        {
+                            if (readBack[i] != buffer[i])
+                            {
+                                errors++;
+                            }
+                        }
+                    }
+
+                    var grade = ChipTestOutcome.Classify(errors);
+
+                    switch (grade)
+                    {
+                        case ChipHealthGrade.Healthy:
+                            healthy++;
+                            break;
+                        case ChipHealthGrade.Warning:
+                            warning++;
+                            break;
+                        case ChipHealthGrade.Medium:
+                            medium++;
+                            break;
+                        default:
+                            error++;
+                            break;
+                    }
+
                     progress?.Report(new ChipTestProgress(
-                        chip, ChipTestPhase.Completed, 100, $"0x{chip:X2} · write protected (WP=1)"));
+                        chip,
+                        ChipTestPhase.Completed,
+                        100,
+                        $"0x{chip:X2} · {GradeText(grade)} ({errors} bad bytes)",
+                        grade));
 
                     outcomes.Add(new ChipTestOutcome
                     {
                         Address = chip,
                         Present = true,
-                        ErrorBytes = length,
-                        Grade = ChipHealthGrade.Error,
+                        ErrorBytes = errors,
+                        Grade = grade,
                     });
-
-                    error++;
-                    continue;
                 }
-
-                var errors = 0;
-
-                // 进度在整片内连续：每个图案占 1/N，其中写入 / 读回各占一半，
-                // 避免多图案时进度条反复归零。
-                var patternCount = patterns.Count;
-                var sliceSpan = 100d / patternCount / 2;
-
-                for (var pIndex = 0; pIndex < patternCount; pIndex++)
-                {
-                    var pattern = patterns[pIndex];
-                    var sliceBase = 100d * pIndex / patternCount;
-
-                    var buffer = new byte[length];
-                    Array.Fill(buffer, pattern);
-
-                    var writeOk = protocol.WriteMemory(
-                        chip,
-                        buffer,
-                        (current, max) =>
-                        {
-                            var written = (int)(length * Math.Clamp(current, 0, 100) / 100d);
-                            progress?.Report(new ChipTestProgress(
-                                chip,
-                                ChipTestPhase.Writing,
-                                sliceBase + sliceSpan * Math.Clamp(current, 0, 100) / 100d,
-                                $"0x{chip:X2} · writing 0x{pattern:X2} · {written:N0}/{length:N0} B"));
-                        },
-                        cancellationToken);
-
-                    var readBack = writeOk
-                        ? protocol.ReadMemory(
-                            chip,
-                            length,
-                            (current, max) =>
-                            {
-                                var read = (int)(length * Math.Clamp(current, 0, 100) / 100d);
-                                progress?.Report(new ChipTestProgress(
-                                    chip,
-                                    ChipTestPhase.Reading,
-                                    sliceBase + sliceSpan + sliceSpan * Math.Clamp(current, 0, 100) / 100d,
-                                    $"0x{chip:X2} · verifying 0x{pattern:X2} · {read:N0}/{length:N0} B"));
-                            },
-                            cancellationToken)
-                        : null;
-
-                    if (readBack is null)
-                    {
-                        errors += length;
-                        continue;
-                    }
-
-                    for (var i = 0; i < length; i++)
-                    {
-                        if (readBack[i] != buffer[i])
-                        {
-                            errors++;
-                        }
-                    }
-                }
-
-                var grade = ChipTestOutcome.Classify(errors);
-
-                switch (grade)
-                {
-                    case ChipHealthGrade.Healthy:
-                        healthy++;
-                        break;
-                    case ChipHealthGrade.Warning:
-                        warning++;
-                        break;
-                    case ChipHealthGrade.Medium:
-                        medium++;
-                        break;
-                    default:
-                        error++;
-                        break;
-                }
-
-                progress?.Report(new ChipTestProgress(
-                    chip,
-                    ChipTestPhase.Completed,
-                    100,
-                    $"0x{chip:X2} · {GradeText(grade)} ({errors} bad bytes)",
-                    grade));
-
-                outcomes.Add(new ChipTestOutcome
-                {
-                    Address = chip,
-                    Present = true,
-                    ErrorBytes = errors,
-                    Grade = grade,
-                });
+            }
+            catch (OperationCanceledException)
+            {
+                // 用户取消：保留已完成芯片的结论，返回部分报告而不是把异常抛给 UI
+                canceled = true;
             }
 
             return new ChipTestReport
             {
+                Canceled = canceled,
                 Outcomes = outcomes,
                 HealthyCount = healthy,
                 WarningCount = warning,

@@ -49,8 +49,15 @@ META_MODEL = (0x22, 4)
 META_UID = (0x26, 6)
 #: 当前已使用空间：uint48（6B 小端），单位 B，仅由 UG 更新
 META_USED = (0x2C, 6)
-META_RESERVED = (0x32, 196)
+#: 数据哈希：8B，上位机计算并下发，下位机只存储
+META_HASH = (0x32, 8)
+#: 累计写入次数：uint32 小端，由上位机 DI 下发，下位机不自动递增
+META_WRITE_COUNT = (0x3A, 4)
+META_RESERVED = (0x3E, 184)
 META_DETECT = (0xF6, 10)
+
+#: 累计写入次数上限（uint32）
+WRITE_COUNT_MAX = 0xFFFFFFFF
 
 #: UG 可写入的最大值（uint48）
 USED_MAX = (1 << 48) - 1
@@ -307,6 +314,30 @@ class Meta24C02:
         self._write_uint(META_USED, max(0, min(int(value), USED_MAX)))
         self.persist()
 
+    @property
+    def data_hash(self) -> bytes:
+        """数据哈希（8B）。DI 写入，下位机不参与计算或校验。"""
+        return self._read(META_HASH)
+
+    @property
+    def data_hash_hex(self) -> str:
+        return self.data_hash.hex().upper()
+
+    @property
+    def write_count(self) -> int:
+        """累计写入次数（uint32）。由上位机 DI 下发，下位机不自动 +1。"""
+        return self._read_uint(META_WRITE_COUNT)
+
+    def set_data_info(self, hash_bytes: bytes | None, write_count: int | None) -> None:
+        """DI：更新 0x32 ~ 0x39（哈希）与 0x3A ~ 0x3D（次数），None 表示该字段不改。"""
+        if hash_bytes is not None:
+            self._write(META_HASH, bytes(hash_bytes)[: META_HASH[1]].ljust(META_HASH[1], b"\x00"))
+
+        if write_count is not None:
+            self._write_uint(META_WRITE_COUNT, max(0, min(int(write_count), WRITE_COUNT_MAX)))
+
+        self.persist()
+
     # -- 写入 -------------------------------------------------------------- #
 
     def first_set(
@@ -322,13 +353,27 @@ class Meta24C02:
         medium: int,
         uid: bytes,
     ) -> None:
-        """首次初始化：0x00~0xF5 清零后写入字段，检测区写 0x00。
+        """首次初始化：清空元数据区后写入字段，检测区写 0x00。
 
-        0x00 ~ 0xF5 的清零同时把 0x2C ~ 0x31（已使用空间）写成
-        6 字节 0x00，符合“首次 SET 该字段默认 0”的要求。
+        0x00 ~ 0x2B 与 0x3E ~ 0xF5 清零（含 0x2C ~ 0x31 已使用空间 = 0，
+        符合“首次 SET 该字段默认 0”的要求）。
+
+        0x32 ~ 0x3D（数据哈希 + 累计写入次数）只在**出厂空白态**（整段 0xFF 或
+        整段 0x00）时才规范成 0：写入次数是 EEPROM 的寿命指标，任何形式的
+        初始化（首次 / 重新初始化）都不允许把已有计数抹掉，否则“重新初始化”
+        就等于伪造了一块新卡。
         """
-        self.data[0x00:0xF6] = b"\x00" * 0xF6
-        self._write(META_USED, b"\x00" * META_USED[1])
+        self.data[0x00:0x2C] = b"\x00" * 0x2C
+        self.data[META_USED[0]:META_USED[0] + META_USED[1]] = b"\x00" * META_USED[1]
+        self.data[META_RESERVED[0]:META_DETECT[0]] = b"\x00" * META_RESERVED[1]
+
+        di_start = META_HASH[0]
+        di_end = META_WRITE_COUNT[0] + META_WRITE_COUNT[1]
+        region = self.data[di_start:di_end]
+        if all(b == 0xFF for b in region) or all(b == 0x00 for b in region):
+            # 全新 EEPROM（0xFF）或已清零的空白区：写成“无记录”
+            self.data[di_start:di_end] = b"\x00" * (di_end - di_start)
+        # 已有记录：原样保留哈希与累计写入次数
 
         self._apply(
             name=name,
@@ -442,7 +487,7 @@ class Meta24C02:
         return (
             f"24C02 meta 256B [initialized] name={self.name!r} "
             f"model=24C{self.model or DEFAULT_MODEL} cap={self.capacity_kb}KB "
-            f"used={self.used_bytes}B "
+            f"used={self.used_bytes}B hash={self.data_hash_hex} writes={self.write_count} "
             f"medium={MEDIUM_NAMES.get(self.medium, self.medium)} "
             f"wp=0b{self.wp_mask:08b} health=0b{self.health_mask:08b} uid={self.uid_hex}"
         )

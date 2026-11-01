@@ -10,6 +10,9 @@ namespace Capsa.ViewModels.Panels
     {
         private DeviceInfo? _info;
 
+        /// <summary>写入过程中的实时占用（字节）；-1 表示没有进行中的实时值。</summary>
+        private long _liveUsed = -1;
+
         [ObservableProperty]
         private bool _isInitialized;
 
@@ -75,11 +78,25 @@ namespace Capsa.ViewModels.Panels
         public int ArrayCapacityBytes => _info?.ArrayTotalBytes ?? 0;
 
         /// <summary>已使用空间（字节，来自 UGS）。读取流程据此只读上次写入的范围。</summary>
-        public int UsedBytes => _info?.UsedBytes ?? 0;
+        public int UsedBytes => _liveUsed >= 0 ? (int)_liveUsed : (_info?.UsedBytes ?? 0);
+
+        /// <summary>整卡数据哈希（16 位十六进制），来自 DI / DIG。</summary>
+        public string DataHash => _info?.DataHash ?? string.Empty;
+
+        /// <summary>累计写入次数，来自 DI / DIG。</summary>
+        public long WriteCount => _info?.WriteCount ?? 0;
+
+        /// <summary>属性面板里显示的“哈希 + 次数”紧凑文本。</summary>
+        [ObservableProperty]
+        private string _integrityText = "—";
+
+        [ObservableProperty]
+        private string _integrityTooltip = "Hash / write count not available";
 
         public void Apply(DeviceInfo? info)
         {
             _info = info;
+            _liveUsed = -1;   // 真实状态覆盖实时估算值
 
             if (info is null)
             {
@@ -98,6 +115,16 @@ namespace Capsa.ViewModels.Panels
                 $"({info.UsagePercent:0.#}%)  ·  {info.UsedBytes:N0} B / {info.ArrayTotalBytes:N0} B";
             LastWriteText = FormatTime(info.LastWriteTime);
             LastAccessText = FormatTime(info.LastAccessTime);
+            // 哈希缺失时仍然显示累计写入次数：它是寿命指标，
+            // 初始化 / 格式化都不会把它清零，必须让用户看得到。
+            IntegrityText = string.IsNullOrWhiteSpace(info.DataHash)
+                ? (info.WriteCount > 0 ? $"No record  #{info.WriteCount}" : "No record")
+                : $"{info.DataHash}  #{info.WriteCount}";
+            IntegrityTooltip = string.IsNullOrWhiteSpace(info.DataHash)
+                ? (info.WriteCount > 0
+                    ? $"No data hash recorded · write count #{info.WriteCount} (card lifetime)"
+                    : "Hash / write count not recorded on this card yet")
+                : $"Data hash {info.DataHash} · write #{info.WriteCount}";
 
             var level = HealthScale.FromScore(info.HealthScore);
             HealthScoreText = info.HealthScore.ToString();
@@ -114,6 +141,42 @@ namespace Capsa.ViewModels.Panels
             OnPropertyChanged(nameof(CapacityBytes));
             OnPropertyChanged(nameof(ArrayCapacityBytes));
             OnPropertyChanged(nameof(UsedBytes));
+            OnPropertyChanged(nameof(DataHash));
+            OnPropertyChanged(nameof(WriteCount));
+        }
+
+        /// <summary>
+        /// 写入过程中按已写入字节数实时刷新占用进度条与文字。
+        /// 不修改缓存的设备信息；写入结束后由 <see cref="Apply"/> 用真实 UGS 值覆盖。
+        /// </summary>
+        public void SetLiveUsedBytes(long usedBytes)
+        {
+            var total = _info?.ArrayTotalBytes ?? 0;
+            if (total <= 0)
+            {
+                return;
+            }
+
+            if (usedBytes < 0)
+            {
+                usedBytes = 0;
+            }
+            if (usedBytes > total)
+            {
+                usedBytes = total;
+            }
+            if (_liveUsed == usedBytes)
+            {
+                return;   // 进度没变就别刷 UI
+            }
+
+            _liveUsed = usedBytes;
+            var percent = usedBytes * 100d / total;
+            UsagePercent = Math.Clamp(percent, 0d, 100d);
+            UsageText =
+                $"Used {ByteSize.Format(usedBytes)} of {ByteSize.Format(total)}  " +
+                $"({percent:0.#}%)  ·  {usedBytes:N0} B / {total:N0} B  ·  writing…";
+            OnPropertyChanged(nameof(UsedBytes));
         }
 
         /// <summary>Unix 秒缺失（0）时显示占位符。</summary>
@@ -123,6 +186,7 @@ namespace Capsa.ViewModels.Panels
         public void Reset()
         {
             _info = null;
+            _liveUsed = -1;
             DeviceName = "—";
             Uid = "—";
             ChipModel = "—";
@@ -132,6 +196,8 @@ namespace Capsa.ViewModels.Panels
             UsagePercent = 0;
             LastWriteText = "—";
             LastAccessText = "—";
+            IntegrityText = "—";
+            IntegrityTooltip = "Hash / write count not available";
             HealthScoreText = "—";
             HealthScoreValue = 0;
             HealthLevelText = "Not detected";
@@ -145,6 +211,8 @@ namespace Capsa.ViewModels.Panels
             OnPropertyChanged(nameof(CapacityBytes));
             OnPropertyChanged(nameof(ArrayCapacityBytes));
             OnPropertyChanged(nameof(UsedBytes));
+            OnPropertyChanged(nameof(DataHash));
+            OnPropertyChanged(nameof(WriteCount));
         }
     }
 }

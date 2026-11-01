@@ -30,6 +30,15 @@ namespace Capsa.Models
         /// <summary>已写入容量（字节），来自 24C02 的已使用空间字段（UG / UGS）。</summary>
         public int UsedBytes { get; init; }
 
+        /// <summary>整卡数据哈希（16 位十六进制，8 字节），来自 DI / DIG。空串表示卡上还没有记录。</summary>
+        public string DataHash { get; init; } = string.Empty;
+
+        /// <summary>累计写入次数，来自 DI / DIG；由上位机递增。</summary>
+        public long WriteCount { get; init; }
+
+        /// <summary>哈希的前 8 位，用于界面紧凑显示。</summary>
+        public string DataHashShort => DataHash.Length >= 8 ? DataHash[..8] : DataHash;
+
         public DateTimeOffset LastWriteTime { get; init; }
 
         public DateTimeOffset LastAccessTime { get; init; }
