@@ -40,6 +40,9 @@ public partial class OpearationPanel : Window
             Encoding = System.Text.Encoding.ASCII,
             BytesPerLine = 16,
             IsEditable = false,
+            SuggestedFileName = request.SuggestedFileName,
+            TrimLength = request.TrimLength,
+            ExportNote = request.ExportNote,
         };
 
         new HexViewWindow(hexVm)

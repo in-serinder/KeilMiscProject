@@ -120,6 +120,8 @@ public partial class OpearationPanelViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsTextMode))]
     [NotifyPropertyChangedFor(nameof(IsBinaryFileMode))]
+    [NotifyPropertyChangedFor(nameof(IsFileWithMetaMode))]
+    [NotifyPropertyChangedFor(nameof(IsAnyFileMode))]
     [NotifyPropertyChangedFor(nameof(IsFill0XffMode))]
     [NotifyPropertyChangedFor(nameof(IsFill0X00Mode))]
     [NotifyPropertyChangedFor(nameof(IsFillCustomMode))]
@@ -128,6 +130,16 @@ public partial class OpearationPanelViewModel : ViewModelBase
 
     public bool IsTextMode => WritingMode == WritingMode.Text;
     public bool IsBinaryFileMode => WritingMode == WritingMode.BinaryFile;
+
+    /// <summary>
+    /// File write mode that also records the source file's name / extension /
+    /// length, so a read-back can be exported as the original file type.
+    /// </summary>
+    public bool IsFileWithMetaMode => WritingMode == WritingMode.FileWithMeta;
+
+    /// <summary>True for both file-based modes (they share the file picker).</summary>
+    public bool IsAnyFileMode => IsBinaryFileMode || IsFileWithMetaMode;
+
     public bool IsFill0XffMode => WritingMode == WritingMode.Fill0xFF;
     public bool IsFill0X00Mode => WritingMode == WritingMode.Fill0x00;
     public bool IsFillCustomMode => WritingMode == WritingMode.FillCustom;
@@ -137,9 +149,46 @@ public partial class OpearationPanelViewModel : ViewModelBase
 
     // ---- Mode payloads ----
 
-    /// <summary>Path of the file used in binary-file write mode.</summary>
+    /// <summary>Path of the file used in the file-based write modes.</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FileMetaHint))]
     private string _targetFilePath = string.Empty;
+
+    /// <summary>
+    /// One-line hint under the file picker for "File write mode (keep file type)".
+    /// Explains that the name/extension/length are remembered locally, and shows
+    /// what would be restored on export.
+    /// </summary>
+    public string FileMetaHint
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(TargetFilePath))
+            {
+                return "File name, extension and length are recorded on the PC; a later read-back is exported with the original name and type.";
+            }
+
+            var name = System.IO.Path.GetFileName(TargetFilePath);
+            var ext = System.IO.Path.GetExtension(name).TrimStart('.');
+            var extText = string.IsNullOrEmpty(ext) ? "no extension" : "." + ext;
+
+            string sizeText;
+            try
+            {
+                sizeText = new System.IO.FileInfo(TargetFilePath).Length + " B";
+            }
+            catch
+            {
+                sizeText = "?";
+            }
+
+            var restore = string.IsNullOrEmpty(ext)
+                ? $"reading the slot back suggests \"{name}\""
+                : $"reading the slot back suggests \"{name}\" as {extText}";
+
+            return $"Will remember \"{name}\" ({extText}, {sizeText}) — {restore}";
+        }
+    }
 
     /// <summary>Text payload used in text write mode.</summary>
     [ObservableProperty]

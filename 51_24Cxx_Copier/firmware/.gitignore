@@ -1,0 +1,10 @@
+# Keil uVision 构建产物
+Objects/
+Listings/
+*.OBJ
+*.LST
+*.ABS
+*.M51
+
+# uVision 的窗口布局（每台机器/每个用户不同）
+*.uvgui.*

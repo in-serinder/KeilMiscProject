@@ -41,6 +41,9 @@ public static class WritePayloadBuilder
                 return BuildText(text);
 
             case WritingMode.BinaryFile:
+            case WritingMode.FileWithMeta:
+                // Both stream the raw file bytes; FileWithMeta additionally records
+                // name/extension/length in FileMetaStore after the write succeeds.
                 return BuildFromFile(filePath);
 
             case WritingMode.Fill0xFF:

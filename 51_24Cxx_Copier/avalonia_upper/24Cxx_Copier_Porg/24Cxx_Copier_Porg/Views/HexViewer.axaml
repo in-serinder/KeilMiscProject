@@ -9,7 +9,7 @@
              x:Class="_24Cxx_Copier_Porg.Views.HexViewer"
              x:DataType="vm:HexViewViewModel">
 
-    <Grid RowDefinitions="*,Auto">
+    <Grid RowDefinitions="*,Auto,Auto">
 
         <!-- Hex content -->
         <Border Grid.Row="0"
@@ -26,8 +26,17 @@
             </ScrollViewer>
         </Border>
 
+        <!-- Restored file type hint (file write mode only) -->
+        <TextBlock Grid.Row="1"
+                   Text="{Binding ExportNote}"
+                   IsVisible="{Binding HasExportNote}"
+                   FontSize="10"
+                   Opacity="0.8"
+                   Margin="2,6,2,0"
+                   TextWrapping="Wrap"/>
+
         <!-- Footer: size / length / encoding info (left) + decoder drop-down (right) -->
-        <Grid Grid.Row="1"
+        <Grid Grid.Row="2"
               ColumnDefinitions="*,Auto"
               Margin="2,6,2,0">
 
@@ -45,6 +54,13 @@
                         Spacing="4"
                         VerticalAlignment="Center"
                         Margin="8,0,0,0">
+
+                <CheckBox Content="{Binding TrimCaption}"
+                          IsChecked="{Binding TrimOnExport}"
+                          IsVisible="{Binding HasTrimLength}"
+                          FontSize="10"
+                          VerticalAlignment="Center"
+                          ToolTip.Tip="Export only the bytes that belonged to the original file"/>
 
                 <ComboBox Classes="borderless"
                           ItemsSource="{Binding EncodingOptions}"
@@ -72,12 +88,12 @@
                               Width="13" Height="13"/>
                 </Button>
 
-                <!-- Download as .bin -->
+                <!-- Download: .bin, or the original name/extension when known -->
                 <Button x:Name="DownloadButton"
                         Classes="toolbar"
                         Padding="4"
                         VerticalAlignment="Center"
-                        ToolTip.Tip="Download as .bin">
+                        ToolTip.Tip="{Binding ExportToolTip}">
                     <PathIcon Data="M12 16l-5-5h3V4h4v7h3l-5 5zM5 18h14v2H5z"
                               Width="13" Height="13"/>
                 </Button>

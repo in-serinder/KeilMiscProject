@@ -191,13 +191,26 @@ public sealed class CopierProtocolSession : IDisposable
     /// </summary>
     public async Task<SerialResponse> WritePacketAsync(byte[] packet,
         int timeoutMs = DefaultTimeoutMs, CancellationToken ct = default)
+        => (await WritePacketExAsync(packet, timeoutMs, ct).ConfigureAwait(false)).Ack;
+
+    /// <summary>Result of one <c>W_</c> packet: the trailing ack plus whether the
+    /// device's <c>RX-OK</c> was seen at all.</summary>
+    /// <param name="Ack">Trailing <c>R-S</c> / <c>R-ERR</c> (or the <c>RX-OK</c> stage
+    /// failure when <paramref name="RxOkSeen"/> is <c>false</c>).</param>
+    /// <param name="RxOkSeen"><c>true</c> when the MCU acknowledged the packet frame;
+    /// a later <c>R-ERR</c> then means the <b>EEPROM write</b> failed, not the frame.</param>
+    public readonly record struct PacketResult(SerialResponse Ack, bool RxOkSeen);
+
+    /// <inheritdoc cref="WritePacketAsync"/>
+    public async Task<PacketResult> WritePacketExAsync(byte[] packet,
+        int timeoutMs = DefaultTimeoutMs, CancellationToken ct = default)
     {
         var rxOk = await SendAndAwaitAsync(ParserTXModel.WritePacket(packet),
             SerialResponseKind.RxOk, timeoutMs, ct).ConfigureAwait(false);
 
         if (rxOk.Kind != SerialResponseKind.RxOk)
         {
-            return rxOk;
+            return new PacketResult(rxOk, false);
         }
 
         // Consume the trailing R-S / R-ERR so it does not leak into the next
@@ -205,7 +218,7 @@ public sealed class CopierProtocolSession : IDisposable
         var ack = await AwaitAsync(SerialResponseKind.Success, timeoutMs, ct)
             .ConfigureAwait(false);
 
-        return ack;
+        return new PacketResult(ack, true);
     }
 
     /// <summary>

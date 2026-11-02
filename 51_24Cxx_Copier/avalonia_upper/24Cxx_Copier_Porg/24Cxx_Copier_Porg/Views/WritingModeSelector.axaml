@@ -32,6 +32,9 @@
                 <RadioButton GroupName="WritingMode" Content="Binary file write mode"
                              FontSize="10"
                              IsChecked="{Binding WritingMode, Converter={StaticResource EnumToBool}, ConverterParameter=BinaryFile}"/>
+                <RadioButton GroupName="WritingMode" Content="File write mode (keep file type)"
+                             FontSize="10"
+                             IsChecked="{Binding WritingMode, Converter={StaticResource EnumToBool}, ConverterParameter=FileWithMeta}"/>
                 <RadioButton GroupName="WritingMode" Content="Fill 0xFF mode"
                              FontSize="10"
                              IsChecked="{Binding WritingMode, Converter={StaticResource EnumToBool}, ConverterParameter=Fill0xFF}"/>
@@ -60,8 +63,8 @@
                              CornerRadius="4"/>
                 </StackPanel>
 
-                <!-- Binary file write mode -->
-                <StackPanel Spacing="3" IsVisible="{Binding IsBinaryFileMode}">
+                <!-- File write modes (binary / keep-type) share the picker -->
+                <StackPanel Spacing="3" IsVisible="{Binding IsAnyFileMode}">
                     <TextBlock Text="Target file" FontSize="9" Opacity="0.8"/>
                     <Grid ColumnDefinitions="*,Auto">
                         <TextBox Grid.Column="0"
@@ -77,6 +80,11 @@
                                 Padding="8,3"
                                 Click="OnBrowseClick"/>
                     </Grid>
+                    <TextBlock Text="{Binding FileMetaHint}"
+                               IsVisible="{Binding IsFileWithMetaMode}"
+                               FontSize="9"
+                               Opacity="0.7"
+                               TextWrapping="Wrap"/>
                 </StackPanel>
 
                 <!-- 0xFF fill mode (read-only constant) -->

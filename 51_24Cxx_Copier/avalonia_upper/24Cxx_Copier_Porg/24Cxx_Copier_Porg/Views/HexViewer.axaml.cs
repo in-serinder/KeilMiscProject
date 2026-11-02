@@ -133,7 +133,7 @@ public partial class HexViewer : UserControl
         _hexView.InvalidateScrollable();
     }
 
-    // ---- Download (.bin) ----
+    // ---- Download (.bin, or the original file type when recorded) ----
 
     private async void OnDownloadClick(object? sender, RoutedEventArgs e)
     {
@@ -150,15 +150,28 @@ public partial class HexViewer : UserControl
                 return;
             }
 
+            var suggestedName = string.IsNullOrWhiteSpace(_viewModel.SuggestedFileName)
+                ? "dump.bin"
+                : _viewModel.SuggestedFileName!;
+            var extension = Path.GetExtension(suggestedName).TrimStart('.');
+            if (string.IsNullOrEmpty(extension))
+            {
+                extension = "bin";
+            }
+
             var file = await topLevel.StorageProvider.SaveFilePickerAsync(
                 new FilePickerSaveOptions
                 {
-                    Title = "Download as .bin",
-                    SuggestedFileName = "dump.bin",
-                    DefaultExtension = "bin",
+                    Title = $"Download as {extension}",
+                    SuggestedFileName = suggestedName,
+                    DefaultExtension = extension,
                     ShowOverwritePrompt = true,
                     FileTypeChoices = new[]
                     {
+                        new FilePickerFileType($"Original file type (.{extension})")
+                        {
+                            Patterns = new[] { "*." + extension },
+                        },
                         new FilePickerFileType("Binary file")
                         {
                             Patterns = new[] { "*.bin" },
@@ -178,6 +191,16 @@ public partial class HexViewer : UserControl
 
             var bytes = BuildExportBytes();
 
+            // File write mode recorded the real file length: cut off the unused
+            // tail of the chip so the exported file is byte-identical to the
+            // original (important for formats with a length field, e.g. ICO).
+            if (_viewModel.TrimOnExport && _viewModel.HasTrimLength && bytes.Length > _viewModel.TrimLength)
+            {
+                var trimmed = new byte[_viewModel.TrimLength];
+                Array.Copy(bytes, trimmed, trimmed.Length);
+                bytes = trimmed;
+            }
+        
             await using var stream = await file.OpenWriteAsync();
             stream.SetLength(0);
             await stream.WriteAsync(bytes, 0, bytes.Length);

@@ -129,8 +129,8 @@ public static class ChipCatalog
             AddressStart = 0x00000,
             AddressEnd = 0x1FFFF,
             PageSize = 256,
-            AddressBytes = 3,
-            Note = "3-byte storage address; only A1/A2 available for I2C address",
+            AddressBytes = 2,
+            Note = "17-bit address: 2-byte word address + A16 carried as device-address bit P0 (bit 1)",
         },
     };
 }

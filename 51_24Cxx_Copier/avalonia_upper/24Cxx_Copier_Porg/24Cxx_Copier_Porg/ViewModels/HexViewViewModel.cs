@@ -147,6 +147,51 @@ public partial class HexViewViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isEditable = true;
 
+    // ---- Restored file type (file write mode) ----
+
+    /// <summary>
+    /// Original file name suggested by the save dialog, e.g. <c>"logo.ico"</c>.
+    /// <c>null</c> when the buffer has no recorded file (plain .bin export).
+    /// </summary>
+    [ObservableProperty]
+    private string? _suggestedFileName;
+
+    /// <summary>Original file length the export can be trimmed to (0 = no trim).</summary>
+    [ObservableProperty]
+    private int _trimLength;
+
+    /// <summary>Trim the exported bytes down to <see cref="TrimLength"/>.</summary>
+    [ObservableProperty]
+    private bool _trimOnExport = true;
+
+    /// <summary>Note shown in the footer when a recorded file was matched.</summary>
+    [ObservableProperty]
+    private string? _exportNote;
+
+    /// <summary>True when a trim is possible (a recorded length is known).</summary>
+    public bool HasTrimLength => TrimLength > 0 && TrimLength <= _data.Length;
+
+    /// <summary>Checkbox caption for the trim option, e.g. "Trim to 1,234 B".</summary>
+    public string TrimCaption => $"Trim to {TrimLength} B";
+
+    /// <summary>True when there is anything to say about the restored file type.</summary>
+    public bool HasExportNote => !string.IsNullOrWhiteSpace(ExportNote);
+
+    /// <summary>Tooltip for the download button.</summary>
+    public string ExportToolTip => string.IsNullOrWhiteSpace(SuggestedFileName)
+        ? "Download as .bin"
+        : $"Download as {SuggestedFileName}";
+
+    partial void OnTrimLengthChanged(int value)
+    {
+        OnPropertyChanged(nameof(HasTrimLength));
+        OnPropertyChanged(nameof(TrimCaption));
+    }
+
+    partial void OnSuggestedFileNameChanged(string? value) => OnPropertyChanged(nameof(ExportToolTip));
+
+    partial void OnExportNoteChanged(string? value) => OnPropertyChanged(nameof(HasExportNote));
+
     // ---- Footer info (read-only, derived) ----
 
     /// <summary>Total number of bytes.</summary>

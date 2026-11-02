@@ -92,11 +92,18 @@ public sealed class CopierTransferService
             var packet = new byte[remaining];
             Array.Copy(payload, offset, packet, 0, remaining);
 
-            var ack = await _session.WritePacketAsync(packet, ct: ct).ConfigureAwait(false);
-            if (ack.Kind != SerialResponseKind.Success)
+            var result = await _session.WritePacketExAsync(packet, ct: ct).ConfigureAwait(false);
+            if (result.Ack.Kind != SerialResponseKind.Success)
             {
+                // Two very different failures share the same "got Error" reply, so
+                // say which one it is: the frame was acknowledged (RX-OK) and the
+                // EEPROM write failed, or the MCU never acknowledged the frame.
+                var why = result.RxOkSeen
+                    ? $"EEPROM write failed at 0x{offset:X} — no chip at 0x{chipAddress:X2}, "
+                      + "wrong slot address, or WP held high"
+                    : $"no RX-OK for packet @0x{offset:X} — frame lost or MCU busy";
                 throw new CopierProtocolException(
-                    $"Packet @0x{offset:X} not acknowledged (got {ack.Kind}).");
+                    $"{why} (got {result.Ack.Kind}).");
             }
 
             done += remaining;

@@ -31,10 +31,20 @@ public sealed class ChipModel
     /// <summary>Free-form remarks (I2C address wiring, etc.).</summary>
     public string Note { get; init; } = string.Empty;
 
-    /// <summary>Human readable capacity in bits, e.g. "2 Kbit".</summary>
-    public string BitsText => Bits >= 1024
-        ? $"{Bits / 1024} Mbit ({Bits} Kbit)"
-        : $"{Bits} Kbit";
+    /// <summary>
+    /// Human readable capacity in bits, e.g. "2 Kbit" or "1 Mbit".
+    ///
+    /// The unit is picked in powers of 1024: below 1 Mbit we print Kbit,
+    /// from 1 Mbit upwards we print Mbit. Every 24Cxx part stores a power of
+    /// two of bits, so the integer division is always exact.
+    ///
+    /// (The previous version divided by 1024 for *every* value >= 1024 and
+    /// appended a raw bit count as "Kbit", so a 1 Kbit 24C01 was shown as
+    /// "1 Mbit (1024 Kbit)" and a 64 Kbit 24C64 as "64 Mbit (65536 Kbit)".)
+    /// </summary>
+    public string BitsText => Bits >= 1024 * 1024
+        ? $"{Bits / (1024 * 1024)} Mbit"
+        : $"{Bits / 1024} Kbit";
 
     /// <summary>Human readable capacity in bytes, e.g. "256 Byte".</summary>
     public string BytesText => $"{Bytes} Byte";

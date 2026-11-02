@@ -121,6 +121,11 @@ public partial class OpearationPanelViewModel
         _transferCts = new CancellationTokenSource();
         var ct = _transferCts.Token;
 
+        // Snapshot the mode / source file: they decide whether a successful
+        // write also records the file name + extension for later export.
+        var mode = WritingMode;
+        var sourceFile = TargetFilePath;
+
         IsBusy = true;
         TotalProgress = 0;
         TotalMaximum = Math.Max(1, targets.Count * payload.Length);
@@ -163,6 +168,19 @@ public partial class OpearationPanelViewModel
                     TotalProgress = completedBytes;
                     slot.Description = $"Written 0x{slot.Address:X2}";
                     Log(LogKind.Operation, $"Address 0x{slot.Address:X2} done.");
+
+                    // File write mode: remember which file landed in this slot so a
+                    // read-back can restore its name/extension (the chip can't).
+                    if (mode == WritingMode.FileWithMeta && !string.IsNullOrWhiteSpace(sourceFile))
+                    {
+                        FileMetaStore.Instance.Remember(slot.Address, sourceFile, payload);
+                        var rec = FileMetaStore.Instance.Latest(slot.Address);
+                        if (rec is not null)
+                        {
+                            Log(LogKind.Operation,
+                                $"File info stored for 0x{slot.Address:X2}: {rec.Summary} → {FileMetaStore.Instance.StorePath}");
+                        }
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -244,9 +262,41 @@ public partial class OpearationPanelViewModel
             Log(LogKind.Operation,
                 $"Address 0x{slot.Address:X2} downloaded ({data.Length} bytes).");
 
+            // Restore the original file type: look for a recorded file whose
+            // payload matches the beginning of what we just read.
+            var meta = FileMetaStore.Instance.Match(slot.Address, data);
+            string? suggestedName = null;
+            var trimLength = 0;
+            string? exportNote = null;
+
+            if (meta is not null)
+            {
+                suggestedName = meta.FileName;
+                trimLength = (int)Math.Min(meta.Length, data.Length);
+                exportNote =
+                    $"Matches recorded file \"{meta.FileName}\" ({meta.ExtensionText}, {meta.Length} B) — "
+                    + $"export suggests that name and trims to {trimLength} B";
+                Log(LogKind.Operation,
+                    $"0x{slot.Address:X2} content matches \"{meta.FileName}\" ({meta.ExtensionText}, {meta.Length} B); "
+                    + "the export dialog will suggest this name and file type.");
+            }
+            else
+            {
+                var latest = FileMetaStore.Instance.Latest(slot.Address);
+                if (latest is not null)
+                {
+                    exportNote =
+                        $"Last file recorded for this slot was \"{latest.FileName}\", "
+                        + "but the read-back does not match it (content changed)";
+                }
+            }
+
             HexDumpRequested?.Invoke(this,
                 new HexDumpRequest(data,
-                    $"Read from 0x{slot.Address:X2} — {chip.Name} ({data.Length} bytes)"));
+                    $"Read from 0x{slot.Address:X2} — {chip.Name} ({data.Length} bytes)",
+                    suggestedName,
+                    trimLength,
+                    exportNote));
         }
         catch (OperationCanceledException)
         {
@@ -304,13 +354,29 @@ public partial class OpearationPanelViewModel
 /// <summary>Request to display a byte buffer in the hex viewer.</summary>
 public sealed class HexDumpRequest
 {
-    public HexDumpRequest(byte[] data, string title)
+    public HexDumpRequest(byte[] data, string title, string? suggestedFileName = null,
+        int trimLength = 0, string? exportNote = null)
     {
         Data = data;
         Title = title;
+        SuggestedFileName = suggestedFileName;
+        TrimLength = trimLength;
+        ExportNote = exportNote;
     }
 
     public byte[] Data { get; }
 
     public string Title { get; }
+
+    /// <summary>
+    /// Original file name to suggest in the export dialog (file write mode);
+    /// <c>null</c> when the slot has no recorded file.
+    /// </summary>
+    public string? SuggestedFileName { get; }
+
+    /// <summary>Original file length — the export can be trimmed to it. 0 = no trim.</summary>
+    public int TrimLength { get; }
+
+    /// <summary>Human readable note about the restored file type, shown in the hex window.</summary>
+    public string? ExportNote { get; }
 }

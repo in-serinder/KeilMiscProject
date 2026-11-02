@@ -11,6 +11,13 @@ public enum WritingMode
     /// <summary>Write raw binary bytes taken from a file.</summary>
     BinaryFile,
 
+    /// <summary>
+    /// Same bytes as <see cref="BinaryFile"/>, but the file name / extension /
+    /// length are remembered on the PC (see <see cref="FileMetaStore"/>), so a
+    /// later read-back can be exported as the original file type again.
+    /// </summary>
+    FileWithMeta,
+
     /// <summary>Fill the whole device with 0xFF.</summary>
     Fill0xFF,
 

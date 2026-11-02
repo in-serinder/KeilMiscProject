@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>24Cxx 烧录器 · 数码管状态卡</title>
+<style>
+  @page { size: A6 portrait; margin: 8mm; }
+
+  :root {
+    --ink: #1b1d21;
+    --muted: #6b7280;
+    --line: #d7dbe0;
+    --write: #1d5fd0;
+    --read: #0b7d4f;
+    --setup: #8a5a00;
+    --idle: #6b7280;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+    color: var(--ink);
+    background: #fff;
+    font-size: 10pt;
+    line-height: 1.45;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 105mm;
+    margin: 0 auto;
+    padding: 2mm 0;
+  }
+
+  h1 {
+    font-size: 13pt;
+    margin: 0 0 1mm;
+    letter-spacing: .3px;
+  }
+
+  .sub {
+    font-size: 8pt;
+    color: var(--muted);
+    margin: 0 0 3mm;
+  }
+
+  .rule {
+    height: 2px;
+    background: linear-gradient(90deg, var(--write), var(--read) 60%, transparent);
+    border-radius: 2px;
+    margin: 0 0 3mm;
+  }
+
+  table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 9pt;
+  }
+
+  th, td {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  th {
+    text-align: left;
+    font-weight: 600;
+    font-size: 7.5pt;
+    letter-spacing: .5px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--line);
+    padding: 1mm 1.5mm;
+    text-transform: uppercase;
+  }
+
+  td {
+    padding: 1.4mm 1.5mm;
+    border-bottom: 1px solid #eef0f2;
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  .code {
+    font-family: Consolas, "Cascadia Mono", Menlo, monospace;
+    font-size: 12pt;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
+  }
+
+  .code .addr { color: var(--muted); font-weight: 400; }
+
+  .tag {
+    display: inline-block;
+    width: 2.2mm; height: 2.2mm;
+    border-radius: 50%;
+    margin-right: 1.5mm;
+    vertical-align: 0.2mm;
+  }
+
+  .w .code { color: var(--write); }
+  .w .tag  { background: var(--write); }
+  .r .code { color: var(--read); }
+  .r .tag  { background: var(--read); }
+  .s .code { color: var(--setup); }
+  .s .tag  { background: var(--setup); }
+  .i .code { color: var(--idle); }
+  .i .tag  { background: var(--idle); }
+
+  .note {
+    margin-top: 3mm;
+    padding: 2mm 2.5mm;
+    border-left: 2px solid var(--line);
+    font-size: 7.8pt;
+    color: #43474e;
+  }
+
+  .note b { color: var(--ink); }
+
+  .note ul {
+    margin: 1mm 0 0;
+    padding-left: 4mm;
+  }
+
+  .note li { margin: 0.6mm 0; }
+
+  .kbd {
+    font-family: Consolas, Menlo, monospace;
+    font-size: 7.8pt;
+    background: #f3f4f6;
+    border: 1px solid #e3e5e9;
+    border-radius: 2px;
+    padding: 0 1mm;
+  }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card { max-width: none; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <h1>24Cxx 烧录器 · 数码管状态卡</h1>
+  <p class="sub">前两位 = 状态码　　后两位 = 当前 ROUTER 地址（0x50 → 50）</p>
+  <div class="rule"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:32%">显示</th>
+        <th style="width:30%">状态</th>
+        <th>含义</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="i">
+        <td class="code">IdLE</td>
+        <td><span class="tag"></span>空闲</td>
+        <td>上电初始，还没发 ROUTER</td>
+      </tr>
+      <tr class="i">
+        <td class="code">Id<span class="addr">50</span></td>
+        <td><span class="tag"></span>空闲（已选片）</td>
+        <td>流程结束回 IDLE，地址保留</td>
+      </tr>
+      <tr class="s">
+        <td class="code">SE<span class="addr">50</span></td>
+        <td><span class="tag"></span>已设 ROUTER</td>
+        <td>等 EDGE</td>
+      </tr>
+      <tr class="s">
+        <td class="code">Ed<span class="addr">50</span></td>
+        <td><span class="tag"></span>已设 EDGE</td>
+        <td>等 INT_R / INT_W</td>
+      </tr>
+      <tr class="w">
+        <td class="code">UC<span class="addr">50</span></td>
+        <td><span class="tag"></span>写流程进行中</td>
+        <td>U = write，C = busy</td>
+      </tr>
+      <tr class="r">
+        <td class="code">dC<span class="addr">50</span></td>
+        <td><span class="tag"></span>读流程进行中</td>
+        <td>d = download</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <b>为什么没有 W / R</b>
+    <ul>
+      <li>七段管画不出 <b>W</b>，只能用 <span class="kbd">0x3E</span> 拼成 <b>U</b> 形 → 写流程统一用 U</li>
+      <li><b>R</b> 只有 <span class="kbd">0x50</span> 两段，像杂点 → 改用 SE / Ed / dC</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <b>为什么流程内不切换字母</b>
+    <ul>
+      <li>每包只有几毫秒，切换 ~90~180Hz，人眼会叠加：<br>
+          <span class="kbd">C</span> ∪ <span class="kbd">o</span> = <span class="kbd">0x7D</span> = 数字 <b>6</b></li>
+      <li>所以整个流程恒定显示 <b>UC</b> / <b>dC</b>，只在开始、结束时变</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <b>自检命令</b>（串口助手直接敲，不影响正式协议）
+    <ul>
+      <li><span class="kbd">&gt;DISP_TEST&lt;</span>　YES + 全段点亮 0.2s；R-ERR = 引脚不受控</li>
+      <li><span class="kbd">&gt;I2C_TEST&lt;</span>　YES = 器件有 ACK；R-ERR = 没插好/地址不对/没上拉</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
