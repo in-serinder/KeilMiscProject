@@ -26,7 +26,7 @@ namespace Capsa.Models
 
     /// <summary>
     /// 导入 / 导出的文件载荷编解码。
-    /// 写入时把原文件名附在数据末尾（最多 40 字节 UTF-8），布局为：
+    /// 写入时把原文件名附在数据末尾（最多 64 字节 UTF-8），布局为：
     /// <code>[data…][文件名 UTF-8][长度 1B][魔数 "CSNX" 4B]</code>
     /// 读取时从尾部识别魔数，还原文件名并裁掉 trailer；数据本身一个字节都不改。
     /// 同时兼容早期只存扩展名的 "CSFX" 布局。
@@ -39,8 +39,8 @@ namespace Capsa.Models
         /// <summary>旧版魔数（v1：只存扩展名）。</summary>
         private static readonly byte[] ExtensionMagic = { (byte)'C', (byte)'S', (byte)'F', (byte)'X' };
 
-        /// <summary>文件名最长字节数，超过则退回 <c>dump.&lt;ext&gt;</c>。</summary>
-        public const int MaxNameBytes = 40;
+        /// <summary>文件名最长字节数：不超就保留原文件名，超过则退回 <c>dump.&lt;ext&gt;</c>。</summary>
+        public const int MaxNameBytes = 64;
 
         /// <summary>扩展名最长字节数。</summary>
         public const int MaxExtensionLength = 10;
@@ -81,7 +81,7 @@ namespace Capsa.Models
         }
 
         /// <summary>
-        /// 决定实际写入卡里的文件名：超长（&gt; 40 B）时用 <c>dump.&lt;ext&gt;</c>，
+        /// 决定实际写入卡里的文件名：UTF-8 不超过 64 B 就保留原文件名，超过则用 <c>dump.&lt;ext&gt;</c>，
         /// 无扩展名时用 <c>dump</c>；名字为空则返回空串（不写 trailer 内容）。
         /// </summary>
         public static string BuildStoredName(string? fileName)

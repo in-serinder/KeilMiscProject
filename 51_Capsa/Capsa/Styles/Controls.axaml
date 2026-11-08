@@ -87,7 +87,18 @@
 
     <!-- ================ Button ================ -->
 
-    <Style Selector="Button">
+        <!-- 卡片 WP 徽章按钮：无边框透明，内容即徽章 -->
+    <Style Selector="Button.wp-toggle">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.wp-toggle:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+<Style Selector="Button">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource Capsa.Text}" />
         <Setter Property="BorderBrush" Value="Transparent" />
@@ -143,6 +154,23 @@
 
     <Style Selector="Button.primary:pressed /template/ Border#PART_Root">
         <Setter Property="Background" Value="{DynamicResource Capsa.AccentPressed}" />
+    </Style>
+
+    <!-- 危险 / 中断按钮（Stop） -->
+    <Style Selector="Button.danger">
+        <Setter Property="Background" Value="{DynamicResource Capsa.Warn.Soft}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Capsa.Warn}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.Warn}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="Button.danger:pointerover /template/ Border#PART_Root">
+        <Setter Property="Background" Value="{DynamicResource Capsa.Warn}" />
+    </Style>
+
+    <Style Selector="Button.danger:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource Capsa.OnAccent}" />
     </Style>
 
     <!-- 次要按钮 -->

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Capsa.Models;
@@ -42,13 +43,38 @@ namespace Capsa.Services
                     return TransferResult.Fail("Payload is empty");
                 }
 
-                var chipBytes = protocol.ReadInfo()?.ChipBytes ?? 8192;
+                var info = protocol.ReadInfo();
+                var chipBytes = info?.ChipBytes ?? 8192;
+                var mask = info?.WriteProtectMask ?? 0;
+
+                // 写保护片剔除：payload 只路由到非保护片，均分剩余容量
+                var chips = new List<int>();
+                for (var c = 0x50; c <= 0x57; c++)
+                {
+                    if ((mask & (1 << (c - 0x50))) == 0)
+                    {
+                        chips.Add(c);
+                    }
+                }
+
+                if (chips.Count == 0)
+                {
+                    return TransferResult.Fail("All chips are write-protected");
+                }
+
                 var total = payload.Length;
+                if (total > (long)chips.Count * chipBytes)
+                {
+                    return TransferResult.Fail(
+                        $"Payload exceeds effective capacity ({chips.Count} writable × {chipBytes:N0} B)");
+                }
+
                 var sent = 0;
                 var throttle = new ProgressThrottle(ProgressInterval);
 
-                for (var chip = 0x50; chip <= 0x57 && sent < total; chip++)
+                for (var ci = 0; ci < chips.Count && sent < total; ci++)
                 {
+                    var chip = chips[ci];
                     cancellationToken.ThrowIfCancellationRequested();
 
                     var size = Math.Min(chipBytes, total - sent);
@@ -115,14 +141,29 @@ namespace Capsa.Services
                     return TransferResult.Fail("Nothing to read");
                 }
 
-                var chipBytes = protocol.ReadInfo()?.ChipBytes ?? 8192;
-                var total = Math.Min(capacity, chipBytes * 8);
+                var info = protocol.ReadInfo();
+                var chipBytes = info?.ChipBytes ?? 8192;
+                var mask = info?.WriteProtectMask ?? 0;
+
+                // 读取同样只经过非保护片（与写入路由一致）
+                var chips = new List<int>();
+                for (var c = 0x50; c <= 0x57; c++)
+                {
+                    if ((mask & (1 << (c - 0x50))) == 0)
+                    {
+                        chips.Add(c);
+                    }
+                }
+
+                var effective = chips.Count * chipBytes;
+                var total = Math.Min(capacity, effective);
                 var buffer = new byte[total];
                 var offset = 0;
                 var throttle = new ProgressThrottle(ProgressInterval);
 
-                for (var chip = 0x50; chip <= 0x57 && offset < total; chip++)
+                for (var ci = 0; ci < chips.Count && offset < total; ci++)
                 {
+                    var chip = chips[ci];
                     cancellationToken.ThrowIfCancellationRequested();
 
                     var size = Math.Min(chipBytes, total - offset);
@@ -170,6 +211,22 @@ namespace Capsa.Services
             }, cancellationToken);
         }
 
+        public void RequestAbort()
+        {
+            try
+            {
+                var protocol = _link();
+                if (protocol is { IsOpen: true })
+                {
+                    protocol.Abort(400);
+                }
+            }
+            catch (Exception)
+            {
+                // 端口已断开等情况：忽略，主机侧循环会自行退出
+            }
+        }
+
         public Task<TransferResult> VerifyAsync(
             byte[] payload,
             IProgress<TransferProgress>? progress = null,
@@ -186,7 +243,9 @@ namespace Capsa.Services
                 var chipBytes = protocol.ReadInfo()?.ChipBytes ?? 8192;
                 var total = payload.Length;
                 var mismatches = 0;
-                var firstMismatch = -1L;
+                long firstMismatch = -1;
+                var firstExpected = 0;
+                var firstActual = 0;
                 var offset = 0;
 
                 for (var chip = 0x50; chip <= 0x57 && offset < total; chip++)
@@ -197,7 +256,10 @@ namespace Capsa.Services
                     var data = protocol.ReadMemory(chip, size, null, cancellationToken);
                     if (data is null)
                     {
-                        return TransferResult.Fail($"Verify failed at 0x{chip:X2}");
+                        // ★ 与"字节不匹配"区分开：这是回读阶段根本没拿到数据
+                        //   （ROUTER/ADDR/INT_R 被拒或数据帧超时），不是内容对不上
+                        return TransferResult.Fail(
+                            $"Verify read failed at 0x{chip:X2} · no data from chip (INT_R rejected or frame timeout)");
                     }
 
                     for (var i = 0; i < size; i++)
@@ -207,6 +269,8 @@ namespace Capsa.Services
                             if (firstMismatch < 0)
                             {
                                 firstMismatch = offset + i;
+                                firstExpected = payload[offset + i];
+                                firstActual = data[i];
                             }
 
                             mismatches++;
@@ -221,7 +285,8 @@ namespace Capsa.Services
                 return mismatches == 0
                     ? TransferResult.Ok($"Verify complete · {total:N0} bytes matched")
                     : TransferResult.Fail(
-                        $"Verify failed · {mismatches:N0} mismatched byte(s), first at 0x{firstMismatch:X}");
+                        $"Verify failed · {mismatches:N0} mismatched byte(s) · " +
+                        $"first at 0x{firstMismatch:X} (expected 0x{firstExpected:X2}, read 0x{firstActual:X2})");
             }, cancellationToken);
         }
 

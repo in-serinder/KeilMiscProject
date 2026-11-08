@@ -17,8 +17,10 @@
         <Panel>
 
             <!-- 整卡进度：背景轨道 + 按占用率横向缩放的蓝色填充 -->
-            <Border Background="{DynamicResource Capsa.Surface}" />
-            <Border Background="{DynamicResource Capsa.CardFill}" ClipToBounds="True">
+            <!-- 底色层：被写保护的芯片整块淡黄 -->
+            <Border Background="{Binding CardBackgroundBrush}" />
+            <!-- 占用填充：正常 = 蓝色；被写保护 = 黄色（容量剔出有效空间）-->
+            <Border Background="{Binding CardFillBrush}" ClipToBounds="True">
                 <Border.RenderTransformOrigin>0%,50%</Border.RenderTransformOrigin>
                 <Border.RenderTransform>
                     <ScaleTransform ScaleX="{Binding OccupancyRatio}" ScaleY="1" />
@@ -87,17 +89,21 @@
                             IsVisible="{Binding IsPresent}"
                             Spacing="5">
 
-                    <Border Background="{Binding WpSoftBrush}"
-                            CornerRadius="2"
-                            Padding="6,1"
+                    <!-- WP 徽章 = 可点击按钮：切换该片写保护（SET wp_mask → PCF8574）-->
+                    <Button Classes="wp-toggle"
+                            Command="{Binding ToggleWpCommand}"
                             HorizontalAlignment="Right"
-                            ToolTip.Tip="{Binding WpTooltip}">
-                        <TextBlock Text="WP"
-                                   FontSize="8"
-                                   FontWeight="Bold"
-                                   FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
-                                   Foreground="{Binding WpBrush}" />
-                    </Border>
+                            ToolTip.Tip="{Binding WpToggleTooltip}">
+                        <Border Background="{Binding WpSoftBrush}"
+                                CornerRadius="2"
+                                Padding="6,1">
+                            <TextBlock Text="WP"
+                                       FontSize="8"
+                                       FontWeight="Bold"
+                                       FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                                       Foreground="{Binding WpBrush}" />
+                        </Border>
+                    </Button>
 
                     <Border Background="{Binding WelSoftBrush}"
                             CornerRadius="2"

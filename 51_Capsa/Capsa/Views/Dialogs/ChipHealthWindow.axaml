@@ -173,6 +173,13 @@
                           FontSize="11"
                           IsChecked="{Binding TestPattern00}"
                           IsEnabled="{Binding !IsRunning}" />
+                <Button Classes="ghost"
+                        MinWidth="118"
+                        MinHeight="36"
+                        Content="Quick check"
+                        ToolTip.Tip="Write pattern to the first 256 bytes of each chip and read back to verify — finishes in seconds"
+                        IsEnabled="{Binding CanStart}"
+                        Command="{Binding QuickCheckCommand}" />
                 <Button Classes="primary"
                         MinWidth="132"
                         MinHeight="36"

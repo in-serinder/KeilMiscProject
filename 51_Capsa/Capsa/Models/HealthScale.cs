@@ -60,6 +60,12 @@ namespace Capsa.Models
     public static class HealthPalette
     {
         public static readonly IBrush Ok = new SolidColorBrush(Color.Parse("#2F6BFF"));
+
+        /// <summary>卡片占用填充（浅蓝，与 Tokens 的 Capsa.CardFill 亮色一致）。</summary>
+        public static readonly IBrush CardFill = new SolidColorBrush(Color.Parse("#2E2F6BFF"));
+
+        /// <summary>写保护卡片的整块底色（黄，40% 不透明度，保护时一眼可辨）。</summary>
+        public static readonly IBrush CardProtectedBg = new SolidColorBrush(Color.Parse("#99E8A33D"));
         public static readonly IBrush Warn = new SolidColorBrush(Color.Parse("#E8A33D"));
         public static readonly IBrush Medium = new SolidColorBrush(Color.Parse("#F97316"));
         public static readonly IBrush Error = new SolidColorBrush(Color.Parse("#E5484D"));

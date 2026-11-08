@@ -251,6 +251,16 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <Ellipse Width="6" Height="6" Fill="{DynamicResource Capsa.Accent}" VerticalAlignment="Center" />
                     <TextBlock Text="{Binding StageText}" Classes="hint" VerticalAlignment="Center" />
+
+                    <!-- 失败后可再次打开错误详情（完整异常 + 协议交互，可复制） -->
+                    <Button Classes="ghost"
+                            MinWidth="86"
+                            Height="26"
+                            Padding="10,3"
+                            FontSize="11"
+                            Content="Details"
+                            IsVisible="{Binding HasError}"
+                            Command="{Binding ShowErrorDetailsCommand}" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">

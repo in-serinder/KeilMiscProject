@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Capsa.Models;
+using Capsa.Services.Protocol;
 
 namespace Capsa.Services.Mock
 {
@@ -17,14 +18,19 @@ namespace Capsa.Services.Mock
         private static readonly int[] SlotUsed = { 12288, 4096, 0, 20480, 8192, 0, 3072, 16384 };
         private static readonly int[] SlotHealth = { 92, 74, 0, 88, 55, 0, 81, 96 };
         private static readonly int[] SlotCapacity = { 32768, 8192, 0, 32768, 16384, 0, 4096, 32768 };
-        private static readonly bool[] SlotWriteProtected = { false, true, false, false, true, false, false, false };
-        private static readonly bool[] SlotWriteEnable = { true, false, false, true, false, false, true, true };
 
         private DeviceInfo? _current;
         private bool _formatted;
         private long? _usedOverride;
         private string _dataHash = "A1B2C3D4E5F60708";
         private long _writeCount = 12;
+        private int _wpMask = 0x12;         /* bit1/bit4 → 0x51 / 0x54 保护（示例）*/
+
+        /* SET（9 字段）可改的属性，默认值与示例卡一致 */
+        private string _name = "Capsa Storage Card";
+        private string _uid = "3F9CE1D477B2";
+        private int _modelKbit = 256;
+        private DateTimeOffset _lastWrite = DateTimeOffset.Now.AddMinutes(-42);
 
         public event EventHandler<DeviceInfo?>? DeviceChanged;
 
@@ -58,15 +64,43 @@ namespace Capsa.Services.Mock
             Publish(BuildInfo(usedBytes: 0));
         }
 
-        public async Task FormatAsync(CancellationToken cancellationToken = default)
+        public async Task FormatAsync(IProgress<TransferProgress>? progress = null, CancellationToken cancellationToken = default)
         {
-            await Task.Delay(1100, cancellationToken).ConfigureAwait(true);
+            // 模拟逐片写 0x00 的进度（真实实现见 CapsaDeviceService）
+            for (var chip = 0x50; chip <= 0x57; chip++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await Task.Delay(140, cancellationToken).ConfigureAwait(true);
+                progress?.Report(new TransferProgress(
+                    (chip - 0x50 + 1) * 92d / 8d,
+                    $"Formatting 0x{chip:X2}…",
+                    chip,
+                    CapacityBytes));
+            }
+
             _formatted = true;
             _usedOverride = 0;
 
             // 格式化只擦数据区：哈希随数据一起失效，累计写入次数保留。
             _dataHash = string.Empty;
             Publish(BuildInfo(usedBytes: 0));
+            progress?.Report(new TransferProgress(100, "Format complete"));
+        }
+
+        public Task<bool> SetWriteProtectBitAsync(int chipAddress, bool protect, CancellationToken cancellationToken = default)
+        {
+            var bit = chipAddress - 0x50;
+            if (bit < 0 || bit > 7)
+            {
+                return Task.FromResult(false);
+            }
+
+            _wpMask = protect
+                ? _wpMask | (1 << bit)
+                : _wpMask & ~(1 << bit);
+
+            Publish(BuildInfo());
+            return Task.FromResult(true);
         }
 
         public async Task<IReadOnlyList<SlotStatus>> ReadSlotsAsync(CancellationToken cancellationToken = default)
@@ -99,6 +133,29 @@ namespace Capsa.Services.Mock
             return Task.FromResult(true);
         }
 
+        public Task<bool> ConfigureCardAsync(Protocol.CapsaInfo config, CancellationToken cancellationToken = default)
+        {
+            if (!string.IsNullOrWhiteSpace(config.Name))
+            {
+                _name = config.Name;
+            }
+            if (config.ModelKbit > 0)
+            {
+                _modelKbit = config.ModelKbit;
+            }
+            if (!string.IsNullOrWhiteSpace(config.Uid))
+            {
+                _uid = config.Uid.ToUpperInvariant();
+            }
+            if (config.ModifiedAt > 0)
+            {
+                _lastWrite = DateTimeOffset.FromUnixTimeSeconds(config.ModifiedAt).ToLocalTime();
+            }
+
+            Publish(BuildInfo());
+            return Task.FromResult(true);
+        }
+
         private DeviceInfo BuildInfo(int? healthScore = null, int? usedBytes = null)
         {
             var now = DateTimeOffset.Now;
@@ -106,19 +163,20 @@ namespace Capsa.Services.Mock
 
             return new DeviceInfo
             {
-                DeviceName = "Capsa Storage Card",
-                Uid = "3F9C-E1D4-77B2-0A58",
-                ChipModel = "AT24C256",
+                DeviceName = _name,
+                Uid = _uid,
+                ChipModel = $"AT24C{_modelKbit}",
                 ChipType = "I2C EEPROM",
                 CapacityBytes = CapacityBytes,
                 ArrayCapacityBytes = ArrayCapacityBytes,
                 UsedBytes = used,
-                LastWriteTime = now.AddMinutes(-42),
+                LastWriteTime = _lastWrite,
                 LastAccessTime = now.AddMinutes(-3),
                 HealthScore = healthScore ?? 92,
                 DataHash = _formatted ? string.Empty : _dataHash,
                 // 写入次数是寿命指标：格式化 / 重新初始化都不归零
                 WriteCount = _writeCount,
+                WriteProtectMask = _wpMask,
             };
         }
 
@@ -152,6 +210,7 @@ namespace Capsa.Services.Mock
             for (var i = 0; i < slots.Length; i++)
             {
                 var present = SlotCapacity[i] > 0;
+                var protectedBit = (_wpMask & (1 << i)) != 0;
                 var used = !present
                     ? 0
                     : _usedOverride is not null
@@ -167,8 +226,8 @@ namespace Capsa.Services.Mock
                     CapacityBytes = SlotCapacity[i],
                     UsedBytes = used,
                     HealthScore = health,
-                    WriteProtected = present && !_formatted && SlotWriteProtected[i],
-                    WriteEnableLatch = present && !_formatted && SlotWriteEnable[i],
+                    WriteProtected = present && !_formatted && protectedBit,
+                    WriteEnableLatch = present && !_formatted && !protectedBit,
                 };
             }
 

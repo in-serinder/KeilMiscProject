@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media;
+using Capsa.Diagnostics;
 using Capsa.Models;
 using Capsa.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -76,6 +77,10 @@ namespace Capsa.ViewModels.Dialogs
 
         [ObservableProperty]
         private bool _isCompleted;
+
+        /// <summary>最近一次失败（非取消）。界面据此显示"Details"按钮，可再次打开错误详情。</summary>
+        [ObservableProperty]
+        private bool _hasError;
 
         private bool HasValidInput =>
             !string.IsNullOrWhiteSpace(DeviceName)
@@ -164,6 +169,7 @@ namespace Capsa.ViewModels.Dialogs
 
             IsRunning = true;
             IsCompleted = false;
+            HasError = false;
             ProgressValue = 0;
             ProgressText = "0%";
             StageText = "Writing initialization info";
@@ -197,8 +203,17 @@ namespace Capsa.ViewModels.Dialogs
             }
             catch (Exception ex)
             {
+                // ★ 报错不再是一行截断文本：完整异常 + 最近协议交互进全局日志，
+                //   弹窗里可整段复制；关掉弹窗后还能用 "Details" 按钮重新打开。
+                var context = $"port {PortName} · chip {SelectedChip.Name} · medium {SelectedMedium.DisplayName}";
+                ErrorLog.Add("Card initialization", ex.Message, ex, context);
+                HasError = true;
                 StageText = $"Initialization failed: {ex.Message}";
                 _result = null;
+
+                await AppServices.Messages
+                    .ShowErrorAsync("Card initialization failed", ex.Message)
+                    .ConfigureAwait(true);
             }
             finally
             {
@@ -221,6 +236,21 @@ namespace Capsa.ViewModels.Dialogs
             }
 
             CloseRequested?.Invoke(this, _result);
+        }
+
+        /// <summary>重新打开最近一次失败的详情（弹窗被关掉后仍可查看 / 复制）。</summary>
+        [RelayCommand]
+        private async Task ShowErrorDetailsAsync()
+        {
+            var latest = Capsa.Diagnostics.ErrorLog.Latest;
+            if (latest is null)
+            {
+                return;
+            }
+
+            await AppServices.Messages
+                .ShowErrorAsync(latest.Source, latest.Summary)
+                .ConfigureAwait(true);
         }
 
         private void OnProgress(CardInitProgress progress)

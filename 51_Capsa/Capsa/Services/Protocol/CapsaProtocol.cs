@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -228,12 +229,54 @@ namespace Capsa.Services.Protocol
         {
             lock (_gate)
             {
+                var justOpened = false;
+
                 if (!Port.IsOpen)
                 {
                     Port.Open();
+                    justOpened = true;
                 }
 
                 _buffer.Clear();
+
+                if (justOpened)
+                {
+                    // CH340 / CP2102 这类 USB 桥在端口刚打开时会清一次内部 FIFO，
+                    // 紧接着写的第一帧经常整帧丢失。给一小段稳定时间并丢弃残留字节，
+                    // 否则"探测"总在开门的瞬间失败，看起来像设备不存在。
+                    Thread.Sleep(60);
+
+                    try
+                    {
+                        Port.DiscardInBuffer();
+                        Port.DiscardOutBuffer();
+                    }
+                    catch (Exception)
+                    {
+                        // 部分驱动不支持 Discard，忽略
+                    }
+                }
+            }
+        }
+
+        /// <summary>丢弃尚未解析的接收数据（重试握手前清场）。</summary>
+        public void ClearReceiveBuffer()
+        {
+            lock (_gate)
+            {
+                _buffer.Clear();
+
+                try
+                {
+                    if (Port.IsOpen)
+                    {
+                        Port.DiscardInBuffer();
+                    }
+                }
+                catch (Exception)
+                {
+                    // 驱动不支持时忽略
+                }
             }
         }
 
@@ -258,11 +301,53 @@ namespace Capsa.Services.Protocol
         // 帧收发
         // ------------------------------------------------------------------ //
 
-        public void WriteFrame(string payload)
-            => Port.Write($">{payload}<");
+        /// <summary>最近一次发出命令的时间（TickCount64 毫秒），心跳检测据此避让忙碌期。</summary>
+        public long LastActivityMs { get; private set; }
 
+        // ------------------------------------------------------------------ //
+        // 会话占用标记
+        //
+        // ★ 心跳的判忙只看 LastActivityMs（最后一次**写**命令的时间），
+        //   但读会话中上位机可能十几秒只收不发 —— 心跳会误判"空闲"并往
+        //   正在流式回数据的总线上插 TYPE-CAPASA，两个接收者抢同一串口，
+        //   [YES] 与 R_ 帧互相污染，读帧 2 s 超时（现象：Verify read failed）。
+        //   传输会话期间必须显式抑制心跳。
+        // ------------------------------------------------------------------ //
+        private int _sessionDepth;
+
+        /// <summary>传输会话（WriteMemory / ReadMemory）进行中。心跳看到它必须让路。</summary>
+        public bool IsSessionBusy => Volatile.Read(ref _sessionDepth) > 0;
+
+        /// <summary>
+        /// 最近一次"端口级"故障（被占用 / 被移除 / 权限）的消息。
+        /// 读阶段的这类异常不会冒出协议层（<see cref="ReadFrame"/> 吞掉返回 null），
+        /// 心跳据此区分"没响应"和"端口没了"—— 后者立即断开，不给重试机会。
+        /// </summary>
+        public string? LastPortError { get; private set; }
+
+        /// <summary>每次心跳探测前清零，保证 LastPortError 反映的是本次探测的故障。</summary>
+        public void ClearPortError() => LastPortError = null;
+
+        private void EnterSession() => Interlocked.Increment(ref _sessionDepth);
+
+        private void ExitSession() => Interlocked.Decrement(ref _sessionDepth);
+
+        public void WriteFrame(string payload)
+        {
+            LastActivityMs = Environment.TickCount64;
+            Port.Write($">{payload}<");
+        }
+
+        /// <summary>
+        /// 读流程里对每一个数据包回的应答。
+        /// **必须用 >...&lt; 帧**：下位机的帧解析器（Proto_Poll）只认 > 起始、
+        /// &lt; 结束的命令帧；用 [RX-OK] 会被当作噪声丢掉，下位机每包白等 2 秒
+        /// 超时后回 [RX-ERR] 退出读会话 —— 现象就是"只读到第一包"，
+        /// 芯片测试因此全部不合格（0/8）。
+        /// 注意与 <see cref="WriteFrame"/> 的区别：那个是发命令，这里发的是应答。
+        /// </summary>
         public void WriteAck(string token = "RX-OK")
-            => Port.Write($"[{token}]");
+            => Port.Write($">{token}<");
 
         /// <summary>读取一帧；超时返回 null。</summary>
         public ProtocolFrame? ReadFrame(int timeoutMs)
@@ -289,11 +374,21 @@ namespace Capsa.Services.Protocol
                     if (value >= 0)
                     {
                         _buffer.Add((byte)value);
+                        // 收到的每个字节都算总线活动：读会话中上位机可能长时间
+                        // 只收不发，不刷新这里的话心跳会误判空闲并抢总线
+                        LastActivityMs = Environment.TickCount64;
                     }
                 }
                 catch (TimeoutException)
                 {
                     // 继续等到 deadline
+                }
+                catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
+                {
+                    // ★ 端口被别的程序占用 / 设备被移除：读阶段抛不出异常（这里吞掉
+                    //   返回 null），但不记录的话心跳只会看到"没响应"而不知道原因
+                    LastPortError = $"{ex.GetType().Name}: {ex.Message}";
+                    return null;
                 }
                 catch (Exception)
                 {
@@ -355,8 +450,11 @@ namespace Capsa.Services.Protocol
         /// <summary>发命令并取第一帧应答。</summary>
         public ProtocolFrame? Exchange(string command, int timeoutMs = -1)
         {
+            var start = Environment.TickCount64;
             WriteFrame(command);
-            return ReadFrame(timeoutMs < 0 ? CommandTimeoutMs : timeoutMs);
+            var frame = ReadFrame(timeoutMs < 0 ? CommandTimeoutMs : timeoutMs);
+            TraceExchange(command, frame, (int)(Environment.TickCount64 - start));
+            return frame;
         }
 
         /// <summary>发命令并要求应答命中给定集合。</summary>
@@ -364,6 +462,67 @@ namespace Capsa.Services.Protocol
         {
             var frame = Exchange(command, timeoutMs);
             return frame is { } f && accepted.Any(f.Matches);
+        }
+
+        // ------------------------------------------------------------------ //
+        // 命令追踪（错误详情窗口用）
+        // ------------------------------------------------------------------ //
+
+        /// <summary>一条命令交互记录：发了什么、卡回了什么、花了多久。</summary>
+        public sealed record ProtocolTraceEntry(DateTimeOffset At, string Command, string Response, int ElapsedMs);
+
+        private static readonly object TraceGate = new();
+        private static readonly List<ProtocolTraceEntry> TraceLog = new();
+
+        /// <summary>最近 40 条命令交互（全局，最新在末尾）。错误详情窗口据此还原现场。</summary>
+        public static IReadOnlyList<ProtocolTraceEntry> RecentTrace()
+        {
+            lock (TraceGate)
+            {
+                return TraceLog.ToArray();
+            }
+        }
+
+        private static void TraceExchange(string command, ProtocolFrame? frame, int elapsedMs)
+        {
+            try
+            {
+                lock (TraceGate)
+                {
+                    TraceLog.Add(new ProtocolTraceEntry(
+                        DateTimeOffset.Now,
+                        FoldTraceText(command),
+                        DescribeFrame(frame),
+                        elapsedMs));
+
+                    if (TraceLog.Count > 40)
+                    {
+                        TraceLog.RemoveRange(0, TraceLog.Count - 40);
+                    }
+                }
+            }
+            catch
+            {
+                /* 追踪绝不能影响正常收发 */
+            }
+        }
+
+        private static string DescribeFrame(ProtocolFrame? frame)
+            => frame is { } f
+                ? FoldTraceText(f.Kind == FrameKind.Data ? ">" + f.Payload + "<" : "[" + f.Payload + "]")
+                : "<no reply / timeout>";
+
+        /// <summary>W_ / R_ 数据包折叠成 "W_A1B2C3D4… (32 B)"，长应答截断 —— 追踪要能看清命令序列。</summary>
+        private static string FoldTraceText(string text)
+        {
+            if ((text.StartsWith("W_", StringComparison.Ordinal) ||
+                 text.StartsWith("R_", StringComparison.Ordinal)) &&
+                text.Length > 12)
+            {
+                return $"{text[..10]}… ({(text.Length - 2) / 2} B)";
+            }
+
+            return text.Length > 64 ? text[..64] + "…" : text;
         }
 
         // ------------------------------------------------------------------ //
@@ -389,6 +548,31 @@ namespace Capsa.Services.Protocol
         /// <summary>SET → [SET-OK]。</summary>
         public bool WriteInfo(CapsaInfo info, int timeoutMs = -1)
             => TryCommand("SET_" + info.ToSetFields(), timeoutMs, "SET-OK");
+
+        /// <summary>
+        /// 翻转某片的写保护位：读当前元数据 → 改 WP 掩码 → SET 回写。
+        /// 其余 8 个字段全部用 '!' 占位（固件只更新 WP），PCF8574 立即生效。
+        /// </summary>
+        public bool SetWriteProtectBit(int chipAddress, bool protect, int timeoutMs = -1)
+        {
+            var bit = chipAddress - 0x50;
+            if (bit < 0 || bit > 7)
+            {
+                return false;
+            }
+
+            var info = ReadInfo();
+            if (info is null)
+            {
+                return false;
+            }
+
+            var mask = protect
+                ? info.WriteProtectMask | (1 << bit)
+                : info.WriteProtectMask & ~(1 << bit);
+
+            return TryCommand($"SET_!_{mask:X2}_!_!_!_!_!_!_!", timeoutMs, "SET-OK");
+        }
 
         /// <summary>UG_&lt;字节数&gt; → [UG-OK]。</summary>
         public bool SetUsedBytes(long usedBytes, int timeoutMs = -1)
@@ -508,36 +692,44 @@ namespace Capsa.Services.Protocol
                 return true;
             }
 
-            if (!SelectChip(chipAddress) || !SetEndAddress(payload.Length - 1))
+            EnterSession();
+            try
             {
-                return false;
-            }
-
-            var start = Exchange("INT_W");
-            if (start is null)
-            {
-                return false;
-            }
-
-            if (start.Value.Matches("ERR_WP") || start.Value.Matches("RX-ERR"))
-            {
-                return false;
-            }
-
-            for (var offset = 0; offset < payload.Length; offset += 16)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var size = Math.Min(16, payload.Length - offset);
-                if (!WritePacket(payload.AsSpan(offset, size)))
+                if (!SelectChip(chipAddress) || !SetEndAddress(payload.Length - 1))
                 {
                     return false;
                 }
 
-                progress?.Invoke((offset + size) * 100 / payload.Length, payload.Length);
-            }
+                var start = Exchange("INT_W");
+                if (start is null)
+                {
+                    return false;
+                }
 
-            return EndWrite();
+                if (start.Value.Matches("ERR_WP") || start.Value.Matches("RX-ERR"))
+                {
+                    return false;
+                }
+
+                for (var offset = 0; offset < payload.Length; offset += 16)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var size = Math.Min(16, payload.Length - offset);
+                    if (!WritePacket(payload.AsSpan(offset, size)))
+                    {
+                        return false;
+                    }
+
+                    progress?.Invoke((offset + size) * 100 / payload.Length, payload.Length);
+                }
+
+                return EndWrite();
+            }
+            finally
+            {
+                ExitSession();
+            }
         }
 
         /// <summary>
@@ -555,6 +747,23 @@ namespace Capsa.Services.Protocol
                 return Array.Empty<byte>();
             }
 
+            EnterSession();
+            try
+            {
+                return ReadMemoryCore(chipAddress, length, progress, cancellationToken);
+            }
+            finally
+            {
+                ExitSession();
+            }
+        }
+
+        private byte[]? ReadMemoryCore(
+            int chipAddress,
+            int length,
+            Action<int, int>? progress,
+            CancellationToken cancellationToken)
+        {
             if (!SelectChip(chipAddress) || !SetEndAddress(length - 1))
             {
                 return null;

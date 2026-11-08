@@ -96,14 +96,22 @@
                 </Grid>
             </StackPanel>
 
-            <Button Grid.Column="1"
-                    Classes="primary"
-                    MinWidth="140"
-                    MinHeight="38"
-                    Margin="16,0,0,0"
-                    Content="Read &amp; Verify"
-                    IsEnabled="{Binding IsReady}"
-                    Command="{Binding ReadVerifyCommand}" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="16,0,0,0">
+                <!-- 中断：读取进行中可用 -->
+                <Button Classes="danger"
+                        MinWidth="86"
+                        MinHeight="38"
+                        Content="Stop"
+                        IsVisible="{Binding IsCancelable}"
+                        Command="{Binding CancelReadCommand}" />
+
+                <Button Classes="primary"
+                        MinWidth="140"
+                        MinHeight="38"
+                        Content="Read &amp; Verify"
+                        IsEnabled="{Binding IsReady}"
+                        Command="{Binding ReadVerifyCommand}" />
+            </StackPanel>
         </Grid>
     </Grid>
 </UserControl>

@@ -65,10 +65,10 @@ namespace Capsa.Diagnostics
             Check("path stripped", FilePayloadCodec.BuildStoredName(@"C:\tmp\a.bin") == "a.bin");
             Check("invalid chars replaced", FilePayloadCodec.BuildStoredName("a<b>.bin") == "a_b_.bin");
 
-            var longName = new string('x', 41) + ".png";
+            var longName = new string('x', 65) + ".png";
             Check("long name falls back to dump.ext", FilePayloadCodec.BuildStoredName(longName) == "dump.png",
                 FilePayloadCodec.BuildStoredName(longName));
-            Check("40-byte name kept", FilePayloadCodec.BuildStoredName(new string('y', 40)) == new string('y', 40));
+            Check("64-byte name kept", FilePayloadCodec.BuildStoredName(new string('y', 64)) == new string('y', 64));
             Check("empty name", FilePayloadCodec.BuildStoredName("   ") == string.Empty);
 
             // 6) 中文文件名（UTF-8 多字节）

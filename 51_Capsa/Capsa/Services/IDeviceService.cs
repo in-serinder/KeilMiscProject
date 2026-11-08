@@ -23,11 +23,28 @@ namespace Capsa.Services
         /// <summary>重新初始化存储卡（重新握手 / 重新识别容量）。</summary>
         Task ReinitializeAsync(CancellationToken cancellationToken = default);
 
-        /// <summary>格式化存储卡（所有单元占用归零）。</summary>
-        Task FormatAsync(CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 格式化存储卡：把所有可写空间写 0x00，占用归零。
+        /// <paramref name="progress"/> 上报整体百分比与当前片。
+        /// </summary>
+        Task FormatAsync(IProgress<TransferProgress>? progress = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 翻转某片的写保护位（经 SET 更新 24C02 的 WP 掩码并下发 PCF8574）。
+        /// 被保护片从有效容量中剔除，写入 / 读取会跳过它。
+        /// </summary>
+        Task<bool> SetWriteProtectBitAsync(int chipAddress, bool protect, CancellationToken cancellationToken = default);
 
         /// <summary>读取 0x50 - 0x57 共 8 个单元的状态。</summary>
         Task<IReadOnlyList<SlotStatus>> ReadSlotsAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 用 <c>SET_</c>（9 字段）把整张卡的属性写回 24C02：
+        /// 名称 / WP 掩码 / 健康掩码 / 阵列容量 / 型号 / 修改时间 / 读取时间 / 介质 / UID。
+        /// 格式化前后各用一次 —— 未初始化的卡靠它建立属性（否则固件拒绝开写入会话），
+        /// 已初始化的卡靠它刷新时间戳。健康掩码与 WP 掩码以卡上现有值为准，不被覆盖。
+        /// </summary>
+        Task<bool> ConfigureCardAsync(Protocol.CapsaInfo config, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 通过 UG 命令更新 24C02 中的“当前已使用空间”（单位 B）。

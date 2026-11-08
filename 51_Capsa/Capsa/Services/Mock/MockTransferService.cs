@@ -26,6 +26,11 @@ namespace Capsa.Services.Mock
             return SimulateAsync("Reading", data.Length, progress, cancellationToken);
         }
 
+        public void RequestAbort()
+        {
+            /* 模拟器无真实会话，仅用于打断循环（CTS 由面板负责）*/
+        }
+
         public Task<TransferResult> VerifyAsync(
             byte[] payload,
             IProgress<TransferProgress>? progress = null,
@@ -43,14 +48,27 @@ namespace Capsa.Services.Mock
                 return TransferResult.Fail($"{action} failed: payload is empty");
             }
 
-            const int steps = 24;
+            /* 按 8 片切分推进：让卡片进度条在 Mock 下也能逐片走动。
+             * ChipAddress 恒为 0 时界面只知道"总体在动"，看不到每片填充。*/
+            const int steps = 32;
+            const int chips = 8;
+            var chipBytes = Math.Max(1, bytes / chips);
+
             for (var i = 1; i <= steps; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await Task.Delay(45, cancellationToken).ConfigureAwait(true);
 
                 var percent = i * 100d / steps;
-                progress?.Report(new TransferProgress(percent, $"{action}… {percent:0}%"));
+                var written = (long)(bytes * i / (double)steps);
+                var index = (int)Math.Min(chips - 1, written / chipBytes);
+                var within = (int)Math.Clamp(written - index * (long)chipBytes, 0, chipBytes);
+
+                progress?.Report(new TransferProgress(
+                    percent,
+                    $"{action} 0x{0x50 + index:X2}… {percent:0}%",
+                    0x50 + index,
+                    within));
             }
 
             progress?.Report(new TransferProgress(100, $"{action} complete"));

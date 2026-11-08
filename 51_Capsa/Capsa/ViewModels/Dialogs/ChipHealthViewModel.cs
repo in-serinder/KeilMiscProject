@@ -34,6 +34,7 @@ namespace Capsa.ViewModels.Dialogs
         private readonly TransferSpeedometer _speed = new();
         private readonly System.Collections.Generic.Dictionary<int, long> _chipOffsets = new();
         private long _testTotalBytes;
+        private bool _testFullChip = true;
 
         /// <summary>显示在底部的传输速率；跑完变成平均速率。</summary>
         [ObservableProperty]
@@ -110,12 +111,22 @@ namespace Capsa.ViewModels.Dialogs
             }
             catch (Exception ex)
             {
+                Capsa.Diagnostics.ErrorLog.Add("Chip health · slot read", ex.Message, ex);
                 ActionText = $"Failed to read slots: {ex.Message}";
             }
         }
 
         [RelayCommand]
-        private async Task StartTestAsync()
+        private async Task StartTestAsync() => await RunTestAsync(fullChip: true).ConfigureAwait(true);
+
+        /// <summary>
+        /// 快速检查：只测每片前 256 字节（图案写入 + 读回比对），秒级完成。
+        /// 适合频繁自检 —— 它同样是破坏性的（图案会覆写所测区域），清 0 逻辑与整片一致。
+        /// </summary>
+        [RelayCommand]
+        private async Task QuickCheckAsync() => await RunTestAsync(fullChip: false).ConfigureAwait(true);
+
+        private async Task RunTestAsync(bool fullChip)
         {
             if (IsRunning)
             {
@@ -136,19 +147,39 @@ namespace Capsa.ViewModels.Dialogs
 
             _pending.Clear();
             _pendingAction = string.Empty;
-            SummaryText = $"{Slots.Count(s => s.IsPresent)} of 8 slots · full-chip overwrite running";
-            PrepareSpeedometer();
+            SummaryText = $"{Slots.Count(s => s.IsPresent)} of 8 slots · " +
+                          (fullChip ? "full-chip overwrite running" : "quick check (first 256 B) running");
+            PrepareSpeedometer(fullChip);
             _pumpTimer.Start();
 
             _cancellation = new CancellationTokenSource();
             var progress = new SnapshotProgress(this);
 
+            // ★ 芯片测试是破坏性的（覆写图案）：测试一开始就抹掉占用记录，
+            //   而不是等测试成功后再清 —— 中途取消 / 崩溃 / 断线时，卡上同样
+            //   不能残留"还有完整数据"的假象。数据完整性在第一个图案字节
+            //   写进去的那一刻就已经没了。
             try
             {
-                // 独立窗口用整片覆写：每片全写一遍图案，再全片读回逐字节比对。
+                await _device.SetUsedSpaceAsync(0).ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                Capsa.Diagnostics.ErrorLog.Add(
+                    "Chip health",
+                    "Failed to clear used space before test — card may still show stale usage",
+                    ex);
+            }
+
+            try
+            {
                 var report = await _testService
                     .RunAsync(
-                        new ChipTestOptions { TestPattern00 = TestPattern00, TestLengthBytes = 0 },
+                        new ChipTestOptions
+                        {
+                            TestPattern00 = TestPattern00,
+                            TestLengthBytes = fullChip ? 0 : 256,
+                        },
                         progress,
                         _cancellation.Token)
                     .ConfigureAwait(true);
@@ -163,7 +194,7 @@ namespace Capsa.ViewModels.Dialogs
                     return;
                 }
 
-                // 整片已被图案覆盖，实际占用归零，避免主界面继续显示旧的使用量。
+                // 已被图案覆盖，实际占用归零，避免主界面继续显示旧的使用量。
                 await _device.SetUsedSpaceAsync(0).ConfigureAwait(true);
             }
             catch (OperationCanceledException)
@@ -175,6 +206,7 @@ namespace Capsa.ViewModels.Dialogs
             }
             catch (Exception ex)
             {
+                Capsa.Diagnostics.ErrorLog.Add("Chip health · test", ex.Message, ex);
                 ActionText = $"Test failed: {ex.Message}";
             }
             finally
@@ -220,8 +252,9 @@ namespace Capsa.ViewModels.Dialogs
         }
 
         /// <summary>按 8 片实际容量建立“已完成字节”偏移表，并重置速率计。</summary>
-        private void PrepareSpeedometer()
+        private void PrepareSpeedometer(bool fullChip)
         {
+            _testFullChip = fullChip;
             _chipOffsets.Clear();
 
             long offset = 0;
@@ -233,7 +266,12 @@ namespace Capsa.ViewModels.Dialogs
                 }
 
                 _chipOffsets[slot.Address] = offset;
-                offset += slot.CapacityBytes;
+
+                // 快速检查只测每片前 256 字节，速率折算按实际参与字节数来
+                var tested = fullChip
+                    ? slot.CapacityBytes
+                    : Math.Min(256, slot.CapacityBytes);
+                offset += tested;
             }
 
             _testTotalBytes = offset;
@@ -264,7 +302,9 @@ namespace Capsa.ViewModels.Dialogs
                 ? 100d
                 : Math.Clamp(progress.Percent, 0d, 100d);
 
-            var done = before + slot.CapacityBytes * chipPercent / 100d;
+            // 快速检查只测每片前 256 字节：片内百分比按 256 折算，与 _chipOffsets 口径一致
+            var tested = _testFullChip ? slot.CapacityBytes : Math.Min(256, slot.CapacityBytes);
+            var done = before + tested * chipPercent / 100d;
             SpeedText = _speed.Sample(done * 100d / _testTotalBytes);
         }
 

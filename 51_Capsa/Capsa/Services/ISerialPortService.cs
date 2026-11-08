@@ -25,6 +25,9 @@ namespace Capsa.Services
         /// <summary>打开端口发送 TYPE-CAPASA 探测是否为 Capsa 设备（探测后立即关闭）。</summary>
         Task<bool> ProbeAsync(string portName, CancellationToken cancellationToken = default);
 
+        /// <summary>最近一次 <see cref="ProbeAsync"/> 失败的原因（成功时为 null）。</summary>
+        string? LastProbeError { get; }
+
         /// <summary>打开串口并完成设备握手。</summary>
         Task ConnectAsync(string portName, int baudRate = 115200, CancellationToken cancellationToken = default);
 
@@ -43,5 +46,8 @@ namespace Capsa.Services
         public bool IsConnected { get; }
 
         public string? PortName { get; }
+
+        /// <summary>掉线原因（主动断开时为 null）：port disappeared / no response。</summary>
+        public string? Reason { get; init; }
     }
 }

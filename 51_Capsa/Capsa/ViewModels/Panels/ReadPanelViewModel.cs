@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
@@ -19,6 +20,13 @@ namespace Capsa.ViewModels.Panels
         private readonly DeviceInfoViewModel _device;
         private readonly ChipBoardViewModel _board;
         private readonly ITransferService _transfer;
+
+        /// <summary>当前读取会话的取消源（中断按钮 / 掉线时用）。</summary>
+        private CancellationTokenSource? _cts;
+
+        /// <summary>会话是否可中断（读取进行中为 true）。</summary>
+        [ObservableProperty]
+        private bool _isCancelable;
         private readonly Func<IFilePickerService> _filesAccessor;
 
         /// <summary>从数据末尾还原出的原文件名，导出时作为默认文件名。</summary>
@@ -164,6 +172,7 @@ namespace Capsa.ViewModels.Panels
             }
             catch (Exception ex)
             {
+                Capsa.Diagnostics.ErrorLog.Add("Health check", ex.Message, ex);
                 StatusText = $"Health check failed: {ex.Message}";
             }
             finally
@@ -199,6 +208,20 @@ namespace Capsa.ViewModels.Panels
         }
 
         [RelayCommand]
+        private void CancelRead()
+        {
+            if (!IsBusy)
+            {
+                return;
+            }
+
+            // 先让下位机退出读会话（它在等每包的 RX-OK），再取消主机侧循环
+            _transfer.RequestAbort();
+            _cts?.Cancel();
+            StatusText = "Cancelling…";
+        }
+
+        [RelayCommand]
         private async Task ReadVerifyAsync()
         {
             if (!IsReady || IsBusy)
@@ -207,6 +230,10 @@ namespace Capsa.ViewModels.Panels
             }
 
             IsBusy = true;
+            IsCancelable = true;
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+
             ProgressValue = 0;
             ProgressText = "0%";
             StatusText = "Preparing to read…";
@@ -266,7 +293,7 @@ namespace Capsa.ViewModels.Panels
                 _speed.Start(length);
                 SpeedText = "—";
 
-                var result = await _transfer.ReadAsync(length, progress).ConfigureAwait(true);
+                var result = await _transfer.ReadAsync(length, progress, token).ConfigureAwait(true);
 
                 if (result.Success)
                 {
@@ -279,14 +306,23 @@ namespace Capsa.ViewModels.Panels
                 ProgressValue = 100;
                 ProgressText = "100%";
             }
+            catch (OperationCanceledException)
+            {
+                Capsa.Diagnostics.ErrorLog.Add("Read", "Cancelled by user");
+                StatusText = "Cancelled by user";
+            }
             catch (Exception ex)
             {
+                Capsa.Diagnostics.ErrorLog.Add("Read", ex.Message, ex);
                 StatusText = $"Read failed: {ex.Message}";
             }
             finally
             {
                 _speed.Finish();
                 SpeedText = _speed.AverageText;   // 完成后显示平均速率
+                IsCancelable = false;
+                _cts?.Dispose();
+                _cts = null;
                 IsBusy = false;
             }
         }

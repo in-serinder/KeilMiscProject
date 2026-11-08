@@ -1,0 +1,13 @@
+# Keil build output
+Objects/
+Listings/
+*.LST
+*.OBJ
+*.M51
+*.hex
+*.lnp
+*.build_log.htm
+build.log
+*.uvgui.*
+*.uvopt
+*.uvguix.*

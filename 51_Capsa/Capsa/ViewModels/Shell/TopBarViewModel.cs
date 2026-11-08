@@ -17,6 +17,25 @@ namespace Capsa.ViewModels.Shell
         public TopBarViewModel(ISerialPortService serial)
         {
             _serial = serial;
+
+            // 串口服务的心跳检测到掉线（USB 拔出 / 无应答）会发这个事件：
+            // 顶栏切回"未连接"，并通知主界面复位设备面板与卡片。
+            _serial.ConnectionChanged += OnSerialConnectionChanged;
+        }
+
+        private void OnSerialConnectionChanged(object? sender, SerialConnectionChangedEventArgs e)
+        {
+            if (e.IsConnected || !IsConnected)
+            {
+                return;      // 只处理"已连接 -> 掉线"这一种跳变
+            }
+
+            IsConnected = false;
+            StatusText = string.IsNullOrWhiteSpace(e.Reason)
+                ? $"Disconnected · {e.PortName}"
+                : $"Device lost ({e.Reason}) · {e.PortName}";
+
+            ConnectedChanged?.Invoke(this, false);
         }
 
         public ObservableCollection<SerialPortDescriptor> Ports { get; } = new();
@@ -37,6 +56,32 @@ namespace Capsa.ViewModels.Shell
         public event EventHandler<bool>? ConnectedChanged;
 
         public bool HasPorts => Ports.Count > 0;
+
+        /// <summary>全局错误日志条数（>0 时顶栏显示 Logs 按钮）。</summary>
+        public int ErrorCount => Capsa.Diagnostics.ErrorLog.Entries.Count;
+
+        /// <summary>随时可打开全部错误日志（可复制）。错误弹窗关闭后还能从这里找回。</summary>
+        [RelayCommand]
+        private async Task ShowLogsAsync()
+        {
+            var window = Capsa.Views.Dialogs.ErrorDetailsWindow.ForFullLog();
+            var lifetime = Avalonia.Application.Current?.ApplicationLifetime
+                as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime;
+
+            if (lifetime?.MainWindow is { } owner)
+            {
+                await window.ShowDialog(owner).ConfigureAwait(true);
+            }
+            else
+            {
+                window.Show();
+            }
+
+            OnPropertyChanged(nameof(ErrorCount));
+            OnPropertyChanged(nameof(HasErrors));
+        }
+
+        public bool HasErrors => ErrorCount > 0;
 
         // ------------------------------------------------------------------ //
         // 刷新：枚举 + 逐口探测
@@ -72,6 +117,8 @@ namespace Capsa.ViewModels.Shell
                 }
 
                 var found = 0;
+                string? firstError = null;
+
                 foreach (var port in Ports)
                 {
                     StatusText = $"Probing {port.PortName}…";
@@ -79,6 +126,7 @@ namespace Capsa.ViewModels.Shell
 
                     if (!port.IsCapsa)
                     {
+                        firstError ??= _serial.LastProbeError;
                         continue;
                     }
 
@@ -90,7 +138,7 @@ namespace Capsa.ViewModels.Shell
 
                 StatusText = found > 0
                     ? $"Found {found} Capsa device(s)"
-                    : "No Capsa device detected";
+                    : (firstError is null ? "No Capsa device detected" : $"No device: {firstError}");
             }
             catch (Exception ex)
             {
@@ -144,13 +192,16 @@ namespace Capsa.ViewModels.Shell
                     if (!verified)
                     {
                         StatusText = "Port verification failed";
+                        var reason = _serial.LastProbeError;
                         await AppServices.Messages.ShowErrorAsync(
-                            "Not a Capsa device",
-                            $"{port.PortName} did not answer TYPE-CAPASA.\r\n\r\n" +
-                            "Please check:\r\n" +
-                            "  • the USB / serial cable and the COM bridge (e.g. COM1 ↔ COM2),\r\n" +
-                            "  • the lower-machine simulator is running on the paired port,\r\n" +
-                            "  • no other application is holding the port.").ConfigureAwait(true);
+                            "No answer from device",
+                            $"{port.PortName} 没有回应 TYPE-CAPASA。\r\n\r\n" +
+                            (string.IsNullOrWhiteSpace(reason) ? string.Empty : $"原因：{reason}\r\n\r\n") +
+                            "请依次检查：\r\n" +
+                            "  • 串口助手 / PuTTY 等是否还占着这个端口（必须先关闭）；\r\n" +
+                            "  • USB-TTL 的 TX/RX 是否与板子交叉、GND 是否共地；\r\n" +
+                            "  • 固件是否已烧录且正常运行（EA 打开后才有应答）；\r\n" +
+                            "  • STC-ISP 下载时 IRC 是否为 22.1184MHz。").ConfigureAwait(true);
                         return;
                     }
 

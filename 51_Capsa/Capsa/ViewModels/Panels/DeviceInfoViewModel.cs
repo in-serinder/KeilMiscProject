@@ -13,6 +13,35 @@ namespace Capsa.ViewModels.Panels
         /// <summary>写入过程中的实时占用（字节）；-1 表示没有进行中的实时值。</summary>
         private long _liveUsed = -1;
 
+        /// <summary>
+        /// 写保护容量占总容量的比例（0-1）。左侧进度条用它画黄色“不可用段”：
+        /// 被保护的芯片被剔出有效容量，这段进度代表卡上不可写入的容量。
+        /// </summary>
+        [ObservableProperty]
+        private double _protectedRatio;
+
+        /// <summary>黄色保护段画刷。</summary>
+        public IBrush ProtectedBrush => HealthPalette.Warn;
+
+        /// <summary>已用容量比例（0-1，相对满容量 8 片），自定义进度条的蓝段。</summary>
+        public double UsageRatio => Math.Clamp(UsagePercent / 100d, 0d, 1d);
+
+        /// <summary>当前 WP 掩码（初始化结果覆盖面板时用它继承真实保护状态）。</summary>
+        public int WriteProtectMask => _info?.WriteProtectMask ?? 0;
+
+        /// <summary>有效容量（剔除写保护片）；写入 / 格式化按它分配。</summary>
+        public int ArrayEffectiveBytes => _info?.ArrayEffectiveBytes ?? 0;
+
+        /// <summary>写保护片数量。</summary>
+        public int ProtectedChips => _info?.ProtectedChips ?? 0;
+
+        /// <summary>
+        /// 阵列总容量文字：随写保护变化 —— 保护片被剔出后显示有效容量。
+        /// 有保护时附注 "(N/8 chips)"。
+        /// </summary>
+        [ObservableProperty]
+        private string _arrayCapacityText = "—";
+
         [ObservableProperty]
         private bool _isInitialized;
 
@@ -36,6 +65,8 @@ namespace Capsa.ViewModels.Panels
 
         [ObservableProperty]
         private double _usagePercent;
+
+        partial void OnUsagePercentChanged(double value) => OnPropertyChanged(nameof(UsageRatio));
 
         [ObservableProperty]
         private string _lastWriteText = "—";
@@ -111,8 +142,16 @@ namespace Capsa.ViewModels.Panels
             CapacityText = $"{ByteSize.Format(info.CapacityBytes)}  ·  {info.CapacityBytes:N0} B";
             UsagePercent = Math.Clamp(info.UsagePercent, 0d, 100d);
             UsageText =
-                $"Used {ByteSize.Format(info.UsedBytes)} of {ByteSize.Format(info.ArrayTotalBytes)}  " +
-                $"({info.UsagePercent:0.#}%)  ·  {info.UsedBytes:N0} B / {info.ArrayTotalBytes:N0} B";
+                $"Used {ByteSize.Format(info.UsedBytes)} of {ByteSize.Format(info.ArrayEffectiveBytes)}  " +
+                $"({info.UsedBytes * 100d / Math.Max(1, info.ArrayEffectiveBytes):0.#}%)  ·  " +
+                $"{info.UsedBytes:N0} B / {info.ArrayEffectiveBytes:N0} B" +
+                (info.ProtectedChips > 0
+                    ? $"  ·  {info.ProtectedChips} chip(s) write-protected"
+                    : string.Empty);
+            ProtectedRatio = Math.Clamp(info.ProtectedPercent / 100d, 0d, 1d);
+            ArrayCapacityText = info.ProtectedChips > 0
+                ? $"{ByteSize.Format(info.ArrayEffectiveBytes)}  ({8 - info.ProtectedChips}/8 chips)"
+                : $"{ByteSize.Format(info.ArrayTotalBytes)}  ·  {info.ArrayTotalBytes:N0} B";
             LastWriteText = FormatTime(info.LastWriteTime);
             LastAccessText = FormatTime(info.LastAccessTime);
             // 哈希缺失时仍然显示累计写入次数：它是寿命指标，
@@ -187,6 +226,8 @@ namespace Capsa.ViewModels.Panels
         {
             _info = null;
             _liveUsed = -1;
+            ProtectedRatio = 0;
+            ArrayCapacityText = "—";
             DeviceName = "—";
             Uid = "—";
             ChipModel = "—";

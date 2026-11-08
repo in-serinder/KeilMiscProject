@@ -10,19 +10,47 @@
 
     <Grid RowDefinitions="*,Auto">
 
-        <!-- 纯文本编辑区 -->
+        <!-- 纯文本编辑区：左侧行号栏 + 编辑器（行号与滚动同步） -->
         <Border Grid.Row="0"
                 Background="{DynamicResource Capsa.EditorBg}"
                 ClipToBounds="True">
-            <TextBox x:Name="TextHost"
-                     Classes="code"
-                     Text="{Binding Text, Mode=TwoWay}"
-                     IsReadOnly="{Binding IsReadOnly}"
-                     AcceptsReturn="True"
-                     TextWrapping="NoWrap"
-                     VerticalContentAlignment="Top"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto"
-                     ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+            <Grid ColumnDefinitions="Auto,*">
+
+                <!-- 行号栏：等宽字体与编辑器一致。
+                     ★ 必须包在 ScrollViewer 里 —— 没有滚动容器时 TextBlock 的
+                     measure 高度被限制为可视区，长内容只布局/渲染前十几行
+                     （这就是"超过 18 行没有行标"的原因）。
+                     编辑器滚动时直接把 Offset 写进这个 ScrollViewer。 -->
+                <Border Grid.Column="0"
+                        Background="{DynamicResource Capsa.SurfaceAlt}"
+                        BorderBrush="{DynamicResource Capsa.Border}"
+                        BorderThickness="0,0,1,0"
+                        ClipToBounds="True">
+                    <ScrollViewer x:Name="GutterScroll"
+                                  VerticalScrollBarVisibility="Hidden"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <TextBlock x:Name="GutterText"
+                                   Margin="10,10,8,10"
+                                   TextAlignment="Right"
+                                   FontSize="12"
+                                   FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+                                   Foreground="{DynamicResource Capsa.TextMuted}"
+                                   Opacity="0.75" />
+                    </ScrollViewer>
+                </Border>
+
+                <TextBox Grid.Column="1"
+                         x:Name="TextHost"
+                         Classes="code"
+                         Padding="8,10,12,10"
+                         Text="{Binding Text, Mode=TwoWay}"
+                         IsReadOnly="{Binding IsReadOnly}"
+                         AcceptsReturn="True"
+                         TextWrapping="NoWrap"
+                         VerticalContentAlignment="Top"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+            </Grid>
         </Border>
 
         <!-- 状态栏：总大小 / 字数 / 长度 + 编码下拉框 -->

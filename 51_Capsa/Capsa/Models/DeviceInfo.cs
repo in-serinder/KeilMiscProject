@@ -27,6 +27,9 @@ namespace Capsa.Models
         /// </summary>
         public int ArrayCapacityBytes { get; init; }
 
+        /// <summary>WP 掩码，bit0~bit7 ↔ 0x50~0x57；1 = 该片写保护（剔出有效容量）。</summary>
+        public int WriteProtectMask { get; init; }
+
         /// <summary>已写入容量（字节），来自 24C02 的已使用空间字段（UG / UGS）。</summary>
         public int UsedBytes { get; init; }
 
@@ -48,6 +51,31 @@ namespace Capsa.Models
 
         /// <summary>阵列总容量（保证不为 0）。</summary>
         public int ArrayTotalBytes => ArrayCapacityBytes > 0 ? ArrayCapacityBytes : CapacityBytes;
+
+        /// <summary>写保护片数量。</summary>
+        public int ProtectedChips
+        {
+            get
+            {
+                var n = 0;
+                for (var i = 0; i < 8; i++)
+                {
+                    if ((WriteProtectMask & (1 << i)) != 0)
+                    {
+                        n++;
+                    }
+                }
+                return n;
+            }
+        }
+
+        /// <summary>有效容量 = 总容量 - 写保护片容量。写入 / 读取只路由到非保护片。</summary>
+        public int ArrayEffectiveBytes => Math.Max(0, ArrayTotalBytes - ProtectedChips * CapacityBytes);
+
+        /// <summary>写保护容量占总容量的比例（0-100，相对满容量 8 片口径）。</summary>
+        public double ProtectedPercent => ArrayTotalBytes <= 0
+            ? 0
+            : Math.Round(ProtectedChips * (double)CapacityBytes * 100d / ArrayTotalBytes, 1);
 
         /// <summary>阵列已用百分比。已使用空间是整卡口径，不能用单片容量做分母。</summary>
         public double UsagePercent => ArrayTotalBytes <= 0

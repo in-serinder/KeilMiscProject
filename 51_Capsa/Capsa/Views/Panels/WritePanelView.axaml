@@ -50,8 +50,16 @@
                 <Button Classes="ghost"
                         FontSize="11"
                         Padding="11,7"
-                        Content="Format card"
+                        Content="Quick format"
                         IsEnabled="{Binding IsReady}"
+                        ToolTip.Tip="Erase only the used-space record (UG 0) — instant, data bytes stay on the chips"
+                        Command="{Binding QuickFormatCommand}" />
+                <Button Classes="ghost"
+                        FontSize="11"
+                        Padding="11,7"
+                        Content="Format card"
+                        IsEnabled="{Binding IsNotBusy}"
+                        ToolTip.Tip="Write 0x00 across every address of every writable chip, then reset used space"
                         Command="{Binding FormatCommand}" />
                 <Button Classes="primary"
                         FontSize="11"
@@ -109,14 +117,22 @@
                 </Grid>
             </StackPanel>
 
-            <Button Grid.Column="1"
-                    Classes="primary"
-                    MinWidth="140"
-                    MinHeight="38"
-                    Margin="16,0,0,0"
-                    Content="Verify &amp; Write"
-                    IsEnabled="{Binding IsReady}"
-                    Command="{Binding WriteVerifyCommand}" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="16,0,0,0">
+                <!-- 中断：写入 / 校验 / 格式化进行中可用 -->
+                <Button Classes="danger"
+                        MinWidth="86"
+                        MinHeight="38"
+                        Content="Stop"
+                        IsVisible="{Binding IsCancelable}"
+                        Command="{Binding CancelWriteCommand}" />
+
+                <Button Classes="primary"
+                        MinWidth="140"
+                        MinHeight="38"
+                        Content="Verify &amp; Write"
+                        IsEnabled="{Binding IsReady}"
+                        Command="{Binding WriteVerifyCommand}" />
+            </StackPanel>
         </Grid>
     </Grid>
 </UserControl>

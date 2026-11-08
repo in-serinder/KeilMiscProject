@@ -49,6 +49,8 @@ namespace Capsa.Services.Mock
         public Task<bool> ProbeAsync(string portName, CancellationToken cancellationToken = default)
             => Task.FromResult(!string.IsNullOrWhiteSpace(portName));
 
+        public string? LastProbeError => null;
+
         public async Task ConnectAsync(string portName, int baudRate = 115200, CancellationToken cancellationToken = default)
         {
             await Task.Delay(320, cancellationToken).ConfigureAwait(true);

@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Capsa.Diagnostics;
 
 namespace Capsa.Services
 {
@@ -8,10 +9,18 @@ namespace Capsa.Services
         Task ShowErrorAsync(string title, string message);
     }
 
-    /// <summary>空实现：设计时 / 未注入时只写日志。</summary>
+    /// <summary>空实现：不弹窗，但仍然记入全局错误日志（设计时 / Mock 模式）。</summary>
     public sealed class NullMessageDialogService : IMessageDialogService
     {
         public Task ShowErrorAsync(string title, string message)
-            => Task.CompletedTask;
+        {
+            var latest = Capsa.Diagnostics.ErrorLog.Latest;
+            if (latest is null || !string.Equals(latest.Summary, message, System.StringComparison.Ordinal))
+            {
+                ErrorLog.Add(title, message);
+            }
+
+            return Task.CompletedTask;
+        }
     }
 }

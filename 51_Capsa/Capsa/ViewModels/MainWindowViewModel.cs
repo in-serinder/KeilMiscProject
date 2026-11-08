@@ -130,5 +130,6 @@ namespace Capsa.ViewModels
             var slots = await _device.ReadSlotsAsync().ConfigureAwait(true);
             Board.Load(slots);
         }
+
     }
 }

@@ -93,6 +93,15 @@
                         <TextBlock Grid.Column="1" Text="{Binding CapacityText}" Classes="value" />
                     </Grid>
 
+                    <!-- 阵列总容量：随写保护变化（保护片被剔出有效空间）-->
+                    <Grid ColumnDefinitions="84,*" Height="30">
+                        <TextBlock Grid.Column="0" Text="Card capacity" Classes="label" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding ArrayCapacityText}"
+                                   Classes="value"
+                                   ToolTip.Tip="Total array capacity; chips set to WP are excluded" />
+                    </Grid>
+
                     <Border Classes="separator" Margin="0,8,0,10" />
 
                     <!-- 容量使用情况 -->
@@ -105,11 +114,28 @@
                                        FontSize="11" />
                         </Grid>
 
-                        <ProgressBar Classes="thin"
-                                     Minimum="0"
-                                     Maximum="100"
-                                     Value="{Binding UsagePercent}"
-                                     Foreground="{DynamicResource Capsa.Accent}" />
+                        <!-- 容量进度条（自定义三层）：
+                             底轨灰 → 黄色段 = 写保护片容量（从右向左，不可用区）
+                             → 蓝色段 = 已用容量（从左向右）。两段同以满容量为基准。-->
+                        <Grid Height="10" ClipToBounds="True">
+                            <Border Background="{DynamicResource Capsa.Border}"
+                                    CornerRadius="3" Opacity="0.45" />
+                            <Border Background="{Binding ProtectedBrush}"
+                                    CornerRadius="3,0,0,3">
+                                <Border.RenderTransformOrigin>100%,50%</Border.RenderTransformOrigin>
+                                <Border.RenderTransform>
+                                    <ScaleTransform ScaleX="{Binding ProtectedRatio}" ScaleY="1" />
+                                </Border.RenderTransform>
+                            </Border>
+                            <Border Background="{DynamicResource Capsa.Accent}"
+                                    CornerRadius="3,0,0,3"
+                                    ClipToBounds="True">
+                                <Border.RenderTransformOrigin>0%,50%</Border.RenderTransformOrigin>
+                                <Border.RenderTransform>
+                                    <ScaleTransform ScaleX="{Binding UsageRatio}" ScaleY="1" />
+                                </Border.RenderTransform>
+                            </Border>
+                        </Grid>
 
                         <TextBlock Text="{Binding UsageText}" Classes="hint" TextWrapping="Wrap" />
                     </StackPanel>

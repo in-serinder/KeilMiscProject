@@ -2,6 +2,7 @@ using System;
 using Avalonia.Media;
 using Capsa.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Capsa.ViewModels.Panels
 {
@@ -53,6 +54,15 @@ namespace Capsa.ViewModels.Panels
         /// <summary>0 - 1 的占用比例，用于卡片整块填充的横向缩放。</summary>
         public double OccupancyRatio => Math.Clamp(OccupancyPercent / 100d, 0d, 1d);
 
+        /// <summary>
+        /// 卡片占用填充色：被写保护的芯片整块变黄（容量被剔出有效空间），
+        /// 否则保持蓝色。
+        /// </summary>
+        public IBrush CardFillBrush => WriteProtected ? HealthPalette.Warn : HealthPalette.CardFill;
+
+        /// <summary>卡片底色层：保护时整块铺淡黄（与占用多少无关），否则透明。</summary>
+        public IBrush CardBackgroundBrush => WriteProtected ? HealthPalette.CardProtectedBg : Brushes.Transparent;
+
         // ---- 读取可视化：绿色覆盖层 ----
 
         /// <summary>读取模式下显示绿色覆盖层；退出读取模式后隐藏。</summary>
@@ -94,6 +104,24 @@ namespace Capsa.ViewModels.Panels
         public string WelTooltip => WriteEnableLatch
             ? "WEL = 1 · write enable latch set"
             : "WEL = 0 · write enable latch clear";
+
+        public string WpToggleTooltip => WriteProtected
+            ? "Click to clear write protection (WP → 0)"
+            : "Click to write-protect this chip (WP → 1)";
+
+        // ---- WP 点击切换 ----
+
+        /// <summary>WP 徽章被点击（由 ChipBoardViewModel 汇总给上层处理）。</summary>
+        public event Action<ChipSlotViewModel>? WpToggleRequested;
+
+        [RelayCommand]
+        private void ToggleWp()
+        {
+            if (IsPresent)
+            {
+                WpToggleRequested?.Invoke(this);
+            }
+        }
 
         public void Apply(SlotStatus? status)
         {
@@ -158,6 +186,8 @@ namespace Capsa.ViewModels.Panels
         private void RaiseRaiseWriteFlags()
         {
             OnPropertyChanged(nameof(WpBrush));
+            OnPropertyChanged(nameof(CardFillBrush));
+            OnPropertyChanged(nameof(WpToggleTooltip));
             OnPropertyChanged(nameof(WpSoftBrush));
             OnPropertyChanged(nameof(WelBrush));
             OnPropertyChanged(nameof(WelSoftBrush));

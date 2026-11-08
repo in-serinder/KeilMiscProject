@@ -12,11 +12,16 @@ namespace Capsa.ViewModels.Panels
         {
             for (var i = 0; i < 8; i++)
             {
-                Slots.Add(new ChipSlotViewModel(0x50 + i));
+                var slot = new ChipSlotViewModel(0x50 + i);
+                slot.WpToggleRequested += s => WpToggleRequested?.Invoke(s.Address);
+                Slots.Add(slot);
             }
         }
 
         public ObservableCollection<ChipSlotViewModel> Slots { get; } = new();
+
+        /// <summary>某片的 WP 徽章被点击（参数 = 7 位地址）。上层决定是否执行切换。</summary>
+        public event Action<int>? WpToggleRequested;
 
         public void Load(IReadOnlyList<SlotStatus> slots)
         {
