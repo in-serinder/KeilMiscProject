@@ -6,6 +6,13 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+
+    <!-- 程序版本信息（状态栏 v0.1.0 就是这里的值，改动请同步 MainWindowViewModel.ApplicationVersion）。
+         注意：ApplicationManifest 是 Windows 专用的，构建在 Linux 上会被 MSBuild 忽略，不影响跨平台。 -->
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <Product>Capsa</Product>
   </PropertyGroup>
 
   <ItemGroup>

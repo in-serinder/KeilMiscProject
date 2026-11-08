@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Capsa.Models;
 using Capsa.Services;
@@ -42,6 +43,52 @@ namespace Capsa.ViewModels.Shell
 
         [ObservableProperty]
         private SerialPortDescriptor? _selectedPort;
+
+        /// <summary>
+        /// 端口输入框的文本。既能是下拉里选中的端口，也能是用户手敲的
+        /// <c>/dev/ttyUSB0</c>、<c>/dev/serial/by-id/…</c>、<c>COM10</c>。
+        ///
+        /// 为什么需要它：枚举在两个平台上都不是"全集" ——
+        /// Linux 会给不出 socat 虚拟口、容器里的设备、自定义 udev 名；
+        /// Windows 的 COM 号也可能因为驱动问题漏掉。没有手动输入就无法兜底。
+        /// </summary>
+        [ObservableProperty]
+        private string _portText = string.Empty;
+
+        /// <summary>手动输入过的端口名：刷新列表后要能留下来，不能一刷新就消失。</summary>
+        private string? _manualPortName;
+
+        partial void OnSelectedPortChanged(SerialPortDescriptor? value)
+        {
+            if (value is not null)
+            {
+                PortText = value.PortName;
+            }
+        }
+
+        /// <summary>
+        /// 把输入框文本解析成端口条目；不在枚举结果里就新建一条（= 手动输入），
+        /// 并记进 <see cref="_manualPortName"/> 供下次刷新后恢复。
+        /// </summary>
+        private SerialPortDescriptor? ResolvePort(string? text)
+        {
+            var name = (text ?? string.Empty).Trim();
+            if (name.Length == 0)
+            {
+                return null;
+            }
+
+            var known = Ports.FirstOrDefault(p => string.Equals(p.PortName, name, StringComparison.OrdinalIgnoreCase));
+            if (known is not null)
+            {
+                return known;
+            }
+
+            var created = new SerialPortDescriptor(name, "manual entry");
+            Ports.Add(created);
+            _manualPortName = created.PortName;
+            return created;
+        }
 
         [ObservableProperty]
         private bool _isConnected;
@@ -102,17 +149,28 @@ namespace Capsa.ViewModels.Shell
             {
                 var ports = await _serial.EnumeratePortsAsync().ConfigureAwait(true);
 
+                // 刷新会清空列表：先记住当前指向谁，重新枚举后再按名字找回来
+                var previous = !string.IsNullOrWhiteSpace(PortText) ? PortText.Trim() : SelectedPort?.PortName;
+                SelectedPort = null;
+
                 Ports.Clear();
                 foreach (var port in ports)
                 {
                     Ports.Add(port);
                 }
 
+                // 手敲过的端口补回列表 —— 否则用户输一次、刷新一次就丢一次
+                if (!string.IsNullOrWhiteSpace(_manualPortName) &&
+                    !Ports.Any(p => string.Equals(p.PortName, _manualPortName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Ports.Add(new SerialPortDescriptor(_manualPortName!, "manual entry"));
+                }
+
                 OnPropertyChanged(nameof(HasPorts));
 
                 if (Ports.Count == 0)
                 {
-                    StatusText = "No serial ports found";
+                    StatusText = "No serial ports found — type a port name to connect manually";
                     return;
                 }
 
@@ -131,10 +189,26 @@ namespace Capsa.ViewModels.Shell
                     }
 
                     found++;
-                    SelectedPort ??= port;
                 }
 
-                SelectedPort ??= Ports.FirstOrDefault();
+                var restored = Ports.FirstOrDefault(p =>
+                    string.Equals(p.PortName, previous, StringComparison.OrdinalIgnoreCase));
+
+                if (restored is not null)
+                {
+                    SelectedPort = restored;
+                }
+                else
+                {
+                    // 名字枚举不到（手敲的 pts / 已拔掉的设备）：选中项退回一个真实端口，
+                    // 但**输入框里的文本要留住** —— 用户刚敲的东西不能被刷新吃掉
+                    SelectedPort = Ports.FirstOrDefault(p => p.IsCapsa) ?? Ports.FirstOrDefault();
+
+                    if (!string.IsNullOrWhiteSpace(previous))
+                    {
+                        PortText = previous;
+                    }
+                }
 
                 StatusText = found > 0
                     ? $"Found {found} Capsa device(s)"
@@ -175,15 +249,17 @@ namespace Capsa.ViewModels.Shell
                     return;
                 }
 
-                if (SelectedPort is null)
+                // 输入框里的文本优先：用户可能手敲了一个枚举不到的端口（Linux by-id / 虚拟口）
+                var port = ResolvePort(PortText) ?? SelectedPort;
+                if (port is null)
                 {
-                    StatusText = "Select a port first";
+                    StatusText = "Select or type a port first";
                     return;
                 }
 
-                var port = SelectedPort;
+                SelectedPort = port;
 
-                // 手动选择但尚未探测过：先做一次短测，失败弹窗提示
+                // 手动选择 / 手敲但尚未探测过：先做一次短测，失败弹窗提示
                 if (!port.IsCapsa)
                 {
                     StatusText = $"Verifying {port.PortName}…";
@@ -192,16 +268,9 @@ namespace Capsa.ViewModels.Shell
                     if (!verified)
                     {
                         StatusText = "Port verification failed";
-                        var reason = _serial.LastProbeError;
                         await AppServices.Messages.ShowErrorAsync(
                             "No answer from device",
-                            $"{port.PortName} 没有回应 TYPE-CAPASA。\r\n\r\n" +
-                            (string.IsNullOrWhiteSpace(reason) ? string.Empty : $"原因：{reason}\r\n\r\n") +
-                            "请依次检查：\r\n" +
-                            "  • 串口助手 / PuTTY 等是否还占着这个端口（必须先关闭）；\r\n" +
-                            "  • USB-TTL 的 TX/RX 是否与板子交叉、GND 是否共地；\r\n" +
-                            "  • 固件是否已烧录且正常运行（EA 打开后才有应答）；\r\n" +
-                            "  • STC-ISP 下载时 IRC 是否为 22.1184MHz。").ConfigureAwait(true);
+                            BuildNoAnswerReport(port.PortName, _serial.LastProbeError)).ConfigureAwait(true);
                         return;
                     }
 
@@ -226,6 +295,42 @@ namespace Capsa.ViewModels.Shell
             {
                 IsBusy = false;
             }
+        }
+
+        /// <summary>
+        /// 探测失败时的排查清单。**必须按平台给**：Windows 的串口是独占的，
+        /// 十有八九是串口助手开着；Linux 上最常见的是当前用户不在串口组
+        /// （Debian 叫 dialout、Arch 叫 uucp，运行时探测），
+        /// 以及 ModemManager 正在探测同一路 USB 串口（会把首帧吃掉）。
+        /// </summary>
+        private static string BuildNoAnswerReport(string portName, string? reason)
+        {
+            var text = new StringBuilder();
+            text.Append(portName).Append(" 没有回应 TYPE-CAPASA。").Append(Environment.NewLine).Append(Environment.NewLine);
+
+            if (!string.IsNullOrWhiteSpace(reason))
+            {
+                text.Append("原因：").Append(reason).Append(Environment.NewLine).Append(Environment.NewLine);
+            }
+
+            text.Append("请依次检查：").Append(Environment.NewLine);
+
+            if (OperatingSystem.IsWindows())
+            {
+                text.Append("  • 串口助手 / PuTTY 等是否还占着这个端口（必须先关闭）；").Append(Environment.NewLine);
+            }
+            else
+            {
+                text.Append(UnixSerialGroup.BuildCheckLine()).Append(Environment.NewLine);
+                text.Append("  • 是否有 minicom / screen / 另一个 Capsa 实例在收同一个端口；").Append(Environment.NewLine);
+                text.Append("  • ModemManager 是否在探测该设备（udev 规则加 ENV{ID_MM_DEVICE_IGNORE}=\"1\"）；").Append(Environment.NewLine);
+            }
+
+            text.Append("  • USB-TTL 的 TX/RX 是否与板子交叉、GND 是否共地；").Append(Environment.NewLine);
+            text.Append("  • 固件是否已烧录且正常运行（EA 打开后才有应答）；").Append(Environment.NewLine);
+            text.Append("  • STC-ISP 下载时 IRC 是否为 22.1184MHz。");
+
+            return text.ToString();
         }
     }
 }

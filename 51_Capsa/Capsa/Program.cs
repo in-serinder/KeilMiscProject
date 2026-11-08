@@ -19,6 +19,7 @@ namespace Capsa
             }
 
             // 串口协议自检：Capsa.exe --sim-test COM1 [log.txt]
+            // Linux：dotnet Capsa.dll --sim-test /dev/ttyUSB0 [log.txt]（只需 ttyUSB0 也行，会自动补 /dev/）
             if (args.Length >= 2 && string.Equals(args[0], "--sim-test", StringComparison.OrdinalIgnoreCase))
             {
                 var logPath = args.Length >= 3 ? args[2] : "sim-test.log";

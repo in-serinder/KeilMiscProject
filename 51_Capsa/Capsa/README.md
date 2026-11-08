@@ -5,10 +5,27 @@ Avalonia 11 (net8.0 / MVVM) 桌面工具，用于通过串口操作 8 片 24C �
 
 ## 构建与运行
 
+Windows：
+
 ```
 dotnet build Capsa/Capsa.csproj --no-restore   # 本机 restore 会失败，必须带 --no-restore
 dotnet run --project Capsa --no-build
 ```
+
+Linux（同一份代码，无需改工程）：
+
+```
+dotnet build Capsa/Capsa.csproj
+dotnet run --project Capsa
+dotnet publish Capsa/Capsa.csproj -c Release -r linux-x64 --self-contained true -o dist/linux-x64
+```
+
+> Linux 上串口名是 `/dev/ttyUSB0` 这种；当前用户必须在串口组里 ——
+> Debian/Ubuntu/Fedora 是 `dialout`，**Arch/openSUSE 是 `uucp`**
+> （`sudo usermod -aG uucp $USER` 后必须重新登录）。不确认就先 `ls -l /dev/ttyUSB0`
+> 看设备属组，Capsa 自己也会按 `/etc/group` 探测出本机真实的组名并写进报错。
+> 端口下拉框可直接手输，支持 `/dev/serial/by-id/…`。
+> 跨平台改动记录、平台差异与已知环境坑见 [`docs/CROSS_PLATFORM.md`](docs/CROSS_PLATFORM.md)。
 
 诊断开关（环境变量）：
 

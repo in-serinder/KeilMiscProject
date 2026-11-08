@@ -32,14 +32,17 @@
             <!-- 串口选择 -->
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                 <TextBlock Text="Port" Classes="label" />
-                <ComboBox Width="212"
-                          PlaceholderText="No port selected"
+                <ComboBox Width="300"
+                          IsEditable="True"
+                          PlaceholderText="Select or type a port"
                           ItemsSource="{Binding Ports}"
                           SelectedItem="{Binding SelectedPort}"
-                          IsEnabled="{Binding !IsConnected}">
+                          Text="{Binding PortText, Mode=TwoWay}"
+                          IsEnabled="{Binding !IsConnected}"
+                          ToolTip.Tip="Pick a detected port, or type one manually — Linux: /dev/ttyUSB0, /dev/serial/by-id/… · Windows: COM5">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="models:SerialPortDescriptor">
-                            <TextBlock Text="{Binding Display}" FontSize="12" />
+                            <TextBlock Text="{Binding Display}" FontSize="12" TextTrimming="CharacterEllipsis" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>

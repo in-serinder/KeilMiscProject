@@ -206,6 +206,9 @@ namespace Capsa.Diagnostics
             }
             catch (Exception ex)
             {
+                // 先给一句按平台分类过的人话（Windows "被占用" / Linux "权限或不存在"），
+                // 再留完整堆栈供深挖
+                Log("FAILED " + PortFailure.Classify(ex, portName).Message);
                 Log("EXCEPTION " + ex);
                 exit = 1;
             }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Capsa.Models;
+using Capsa.Services.Ports;
 using Capsa.Services.Protocol;
 
 namespace Capsa.Services
@@ -61,9 +62,12 @@ namespace Capsa.Services
 
                 try
                 {
-                    foreach (var name in SerialPort.GetPortNames().OrderBy(n => n, StringComparer.OrdinalIgnoreCase))
+                    // 按长度排：Linux 上 ttyUSB0 … ttyUSB10 按字典序会把 10 排到 2 前面
+                    foreach (var name in SerialPort.GetPortNames()
+                                 .OrderBy(n => n.Length)
+                                 .ThenBy(n => n, StringComparer.OrdinalIgnoreCase))
                     {
-                        list.Add(new SerialPortDescriptor(name, "Serial port"));
+                        list.Add(new SerialPortDescriptor(name, PortCatalogue.Describe(name)));
                     }
                 }
                 catch (Exception)
@@ -81,7 +85,9 @@ namespace Capsa.Services
             {
                 LastProbeError = null;
 
-                if (string.IsNullOrWhiteSpace(portName))
+                // Linux 上允许只敲 ttyUSB0 / serial/by-id/…，统一补成 /dev 全路径
+                var port = PortFailure.NormalizePortName(portName);
+                if (string.IsNullOrWhiteSpace(port))
                 {
                     LastProbeError = "未选择串口";
                     return false;
@@ -89,7 +95,7 @@ namespace Capsa.Services
 
                 try
                 {
-                    using var probe = new CapsaProtocol(portName) { ProbeTimeoutMs = 600 };
+                    using var probe = new CapsaProtocol(port) { ProbeTimeoutMs = 600 };
                     probe.Open();
 
                     // 单次握手不可靠：USB 串口桥开门瞬间、以及 MCU 正在上电初始化时
@@ -107,17 +113,18 @@ namespace Capsa.Services
                         Thread.Sleep(80);
                     }
 
-                    LastProbeError = $"{portName} 连续 3 次没有回 [YES]";
+                    LastProbeError = $"{port} 连续 3 次没有回 [YES]" + PortInspector.Suffix(port);
                     return false;
                 }
-                catch (UnauthorizedAccessException)
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
-                    LastProbeError = $"{portName} 被其它程序占用（串口助手 / PuTTY / 另一个 Capsa 实例？）";
-                    return false;
+                    throw;
                 }
                 catch (Exception ex)
                 {
-                    LastProbeError = $"{portName}：{ex.Message}";
+                    // 分类后文案才是平台正确的：Windows 的 UnauthorizedAccessException = 被占用，
+                    // Linux 上同一个异常 = 不在串口组（组名由 UnixSerialGroup 运行时探测）。
+                    LastProbeError = PortFailure.Classify(ex, port).Message + PortInspector.Suffix(port);
                     return false;
                 }
             }, cancellationToken);
@@ -132,6 +139,9 @@ namespace Capsa.Services
 
         public Task ConnectAsync(string portName, int baudRate = 115200, CancellationToken cancellationToken = default)
         {
+            // 归一化在进后台线程之前：Linux 上补 /dev 前缀，Windows 原样
+            var port = PortFailure.NormalizePortName(portName);
+
             return Task.Run(() =>
             {
                 lock (_gate)
@@ -142,8 +152,19 @@ namespace Capsa.Services
                         _protocol = null;
                     }
 
-                    var protocol = new CapsaProtocol(portName, baudRate);
-                    protocol.Open();
+                    var protocol = new CapsaProtocol(port, baudRate);
+                    try
+                    {
+                        protocol.Open();
+                    }
+                    catch (Exception ex)
+                    {
+                        protocol.Dispose();
+                        // 把原始异常放进 InnerException，ErrorLog 里仍能看到堆栈；
+                        // 对外文案按平台分类（Windows "被占用" / Linux "权限"）
+                        throw new InvalidOperationException(
+                            PortFailure.Classify(ex, port).Message + PortInspector.Suffix(port), ex);
+                    }
 
                     var handshaken = false;
                     for (var attempt = 0; attempt < 3 && !handshaken; attempt++)
@@ -162,8 +183,8 @@ namespace Capsa.Services
                     {
                         protocol.Dispose();
                         throw new InvalidOperationException(
-                            $"{portName} 连续 3 次没有回应 TYPE-CAPASA。\r\n" +
-                            "请确认端口没有被串口助手占用、且固件已烧录并运行。");
+                            $"{port} 连续 3 次没有回应 TYPE-CAPASA" + PortInspector.Suffix(port) + "。\r\n" +
+                            "请确认端口没有被其它程序占用、且固件已烧录并运行。");
                     }
 
                     _protocol = protocol;
@@ -293,21 +314,24 @@ namespace Capsa.Services
                 return;
             }
 
-            // ★ 端口被其它程序打开（Windows 串口独占）→ 写入立刻抛
-            //   UnauthorizedAccessException；设备被移除通常是 IOException。
-            //   读阶段的同类异常冒不出来，但协议层记进了 LastPortError。
-            //   这两种不是"没响应"，重试没有意义 —— 立即断开并说清原因。
-            if (failure is UnauthorizedAccessException || failure is IOException)
+            // ★ 确定性故障（被占用 / 权限 / 设备移除）重试没有意义 —— 立即断开并说清原因。
+            //   判定走 PortFailure 分类，两个平台的语义才一致：Windows 的
+            //   UnauthorizedAccessException 是"被占用"，Linux 的同一个异常是"不在串口组"。
+            if (failure is not null)
             {
-                _missedBeats = 0;
-                DropConnection(portName, $"port taken or removed · {failure.Message}");
-                return;
+                var classified = PortFailure.Classify(failure, portName);
+                if (classified.IsFatal)
+                {
+                    _missedBeats = 0;
+                    DropConnection(portName, $"{classified.Kind} · {classified.Message}");
+                    return;
+                }
             }
 
             if (!string.IsNullOrEmpty(protocol.LastPortError))
             {
                 _missedBeats = 0;
-                DropConnection(portName, $"port taken or removed · {protocol.LastPortError}");
+                DropConnection(portName, $"port lost · {protocol.LastPortError}");
                 return;
             }
 

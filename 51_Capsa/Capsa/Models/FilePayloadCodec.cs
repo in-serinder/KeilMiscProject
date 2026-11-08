@@ -61,20 +61,38 @@ namespace Capsa.Models
             return new string(chars).ToLowerInvariant();
         }
 
-        /// <summary>去掉路径与非法字符，得到可安全存进卡里的文件名。</summary>
+        /// <summary>
+        /// 路径分隔符：**两个平台都算**，不交给 <see cref="Path"/> 判断。
+        /// Unix 上 <c>'\'</c> 是合法文件名字符而不是分隔符，
+        /// <see cref="Path.GetFileName"/> 会把 <c>C:\tmp\a.bin</c> 原样返回。
+        /// </summary>
+        private static readonly char[] PathSeparators = { '/', '\\' };
+
+        /// <summary>
+        /// 非法字符集：固定取 Windows 那一套（Unix 只禁 <c>'\0'</c> 和 <c>'/'</c>）。
+        /// 固定表才能保证同一个文件名在 Windows / Linux 上得到**同一个结果**，
+        /// 否则同一张卡在两个平台读回的名字会不一样。
+        /// </summary>
+        private static readonly char[] InvalidNameChars = { '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
+
+        /// <summary>去掉路径与非法字符，得到可安全存进卡里的文件名（平台无关）。</summary>
         public static string SanitizeFileName(string? fileName)
         {
-            var name = Path.GetFileName((fileName ?? string.Empty).Trim());
+            var trimmed = (fileName ?? string.Empty).Trim();
+
+            // 自己剥路径：取最后一个分隔符之后的部分（同时支持 C:\tmp\a.bin 与 /tmp/a.bin）
+            var separator = trimmed.LastIndexOfAny(PathSeparators);
+            var name = separator >= 0 ? trimmed[(separator + 1)..] : trimmed;
+
             if (name.Length == 0)
             {
                 return string.Empty;
             }
 
-            var invalid = Path.GetInvalidFileNameChars();
             var builder = new StringBuilder(name.Length);
             foreach (var ch in name)
             {
-                builder.Append(char.IsControl(ch) || invalid.Contains(ch) ? '_' : ch);
+                builder.Append(char.IsControl(ch) || Array.IndexOf(InvalidNameChars, ch) >= 0 ? '_' : ch);
             }
 
             return builder.ToString().Trim('.', ' ');

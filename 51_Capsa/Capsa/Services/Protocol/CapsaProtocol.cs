@@ -184,7 +184,8 @@ namespace Capsa.Services.Protocol
 
         public CapsaProtocol(string portName, int baudRate = 115200)
         {
-            Port = new SerialPort(portName, baudRate, Parity.None, 8, StopBits.One)
+            // Linux 上补 /dev 前缀（允许只敲 ttyUSB0 / serial/by-id/…），Windows 原样
+            Port = new SerialPort(PortFailure.NormalizePortName(portName), baudRate, Parity.None, 8, StopBits.One)
             {
                 ReadTimeout = 50,
                 WriteTimeout = 1000,
@@ -385,9 +386,10 @@ namespace Capsa.Services.Protocol
                 }
                 catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
                 {
-                    // ★ 端口被别的程序占用 / 设备被移除：读阶段抛不出异常（这里吞掉
-                    //   返回 null），但不记录的话心跳只会看到"没响应"而不知道原因
-                    LastPortError = $"{ex.GetType().Name}: {ex.Message}";
+                    // ★ 端口被别的程序占用 / 设备被移除 / 权限不足：读阶段抛不出异常
+                    //   （这里吞掉返回 null），但不记录的话心跳只会看到"没响应"而不知道原因。
+                    //   文案交给 PortFailure 分类，保证 Windows / Linux 各自说对的话。
+                    LastPortError = PortFailure.Classify(ex, PortName).Message;
                     return null;
                 }
                 catch (Exception)

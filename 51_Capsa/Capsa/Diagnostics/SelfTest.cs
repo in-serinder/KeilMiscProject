@@ -197,6 +197,32 @@ namespace Capsa.Diagnostics
             Check("verify skipped when length differs",
                 DataIntegrity.Verify(payload, goodHash, payload.Length + 100, out _) == DataIntegrity.Verdict.Skipped);
 
+            // 16) 串口组探测：权限文案里的组名必须是**本机真实存在**的那个
+            //     （Debian 系 dialout / Arch 系 uucp）。写死组名会让用户敲出
+            //     "usermod: group 'dialout' does not exist"。
+            if (!OperatingSystem.IsWindows())
+            {
+                var group = UnixSerialGroup.Current;
+                var hint = UnixSerialGroup.BuildHint("/dev/ttyUSB0");
+
+                Check("serial group hint names the local group",
+                    hint.Contains(group.Group, StringComparison.Ordinal), hint);
+
+                Check("serial group hint is actionable",
+                    !group.GroupExists
+                    || hint.Contains("usermod", StringComparison.Ordinal)
+                    || hint.Contains("udev", StringComparison.Ordinal),
+                    hint);
+
+                if (group.GroupExists)
+                {
+                    var wrong = string.Equals(group.Group, "uucp", StringComparison.Ordinal) ? "dialout" : "uucp";
+                    Check("serial group hint avoids the absent group name",
+                        !hint.Contains(wrong, StringComparison.Ordinal),
+                        $"{group.Group} exists, hint must not mention {wrong}");
+                }
+            }
+
             lines.Add(failed == 0 ? "SELF-TEST OK" : $"SELF-TEST FAILED ({failed})");
 
             var text = string.Join(Environment.NewLine, lines);
