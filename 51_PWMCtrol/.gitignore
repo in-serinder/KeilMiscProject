@@ -1,0 +1,12 @@
+# .NET / Avalonia
+bin/
+obj/
+.vs/
+*.user
+
+# Python
+__pycache__/
+*.pyc
+
+# 模拟器运行时存档
+sim_store.json
