@@ -10,11 +10,10 @@
 - 作者身份：`Serinder <serinder@163.com>`；提交信息用英文（与既有历史一致）。
 
 ### ⚠ 推送网络限制（2026-11-13 实测）
-- `https://github.com` **443 端口连不上**（Connection reset / 超时），`api.github.com` 反而正常。
-  → `git push` 走 HTTPS 会失败，重试与 HTTP/1.1 均无效。
-- SSH **22 与 443 都能握手**（`ssh -T git@github.com` 回 `Permission denied (publickey)`），
-  但 `~/.ssh/` 里**没有密钥**，只有 known_hosts。
-- 结论：要推送必须先「挂代理」或「配 SSH 密钥」二选一，见 README 式的三条命令。
+- `https://github.com` **443 直连不通**（Connection reset / 超时），`api.github.com` 反而正常。
+- **代理开着时直接 `git push` 就能成功**：本机代理监听 `127.0.0.1:7897`（不是常见的 7890），
+  git 会走系统代理设置，不需要额外 `http.proxy` 配置。推送前先 `netstat -ano | grep LISTENING | grep 7897`。
+- SSH 22/443 能握手但 `~/.ssh/` 里**没有密钥**，所以 HTTPS+代理是当前唯一可行路径。
 
 ### ⚠ .NET 构建（2026-11-13 实测）
 - `dotnet restore` 在本机**必失败**：`NuGet.targets Value cannot be null (Parameter 'path1')`
@@ -24,6 +23,7 @@
   MSYS 会把 `/t:` 当路径），成功后 `dotnet build --no-restore` 一切正常。
 - Avalonia 工程**必须声明 DPI 感知**（`app.manifest` + `SetProcessDpiAwarenessContext`），否则窗口被位图拉伸、
   布局宽度算少 20%，右侧内容会被裁掉。
+- 反复编译前先 `taskkill //IM PWMCtrol.exe //F`，否则 `MSB3027 文件被锁定`。
 
 ## 项目约定
 
