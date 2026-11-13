@@ -1,0 +1,3 @@
+# 运行时无需第三方依赖（标准库 socket / struct / threading / tkinter）
+# 仅 tools 截图脚本需要 Pillow
+# Pillow>=10.0.0

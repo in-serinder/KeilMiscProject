@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PDL_upper.ViewModels"
+             x:Class="PDL_upper.Views.Panels.ChannelCard"
+             x:DataType="vm:ChannelCardViewModel">
+    <Border Background="#23272F" BorderBrush="#2E333D" BorderThickness="1"
+            CornerRadius="10" Padding="10,8">
+        <StackPanel>
+            <!-- 标题行 -->
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse Width="9" Height="9" Fill="{Binding ColorBrush}"/>
+                <TextBlock Text="{Binding Label}" Foreground="{Binding ColorBrush}"
+                           FontSize="14" FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding RangeText}" Foreground="#8B93A1" FontSize="11"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="饱和" Foreground="#E24B4A" FontSize="11"
+                           VerticalAlignment="Center" IsVisible="{Binding Saturated}"/>
+            </StackPanel>
+
+            <!-- 大读数 -->
+            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                <TextBlock Text="{Binding Voltage, StringFormat={}{0:F3} V}"
+                           FontSize="19" FontWeight="SemiBold" FontFamily="Consolas"/>
+                <TextBlock Text="{Binding Current, StringFormat={}{0:F3} A}"
+                           FontSize="13" FontFamily="Consolas" Foreground="#8B93A1"
+                           VerticalAlignment="Bottom" Margin="14,0,0,2"/>
+            </StackPanel>
+            <TextBlock Text="{Binding Power, StringFormat={}{0:F2} W}"
+                       FontFamily="Consolas" Foreground="#8B93A1"/>
+
+            <!-- 量程条 -->
+            <ProgressBar Minimum="0" Maximum="1" Value="{Binding Ratio}" Height="5"
+                         Foreground="{Binding ColorBrush}" Background="#2E333D"
+                         Margin="0,6,0,6"/>
+
+            <!-- 统计 -->
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="Vpp" Foreground="#5F6672" FontSize="11"/>
+                <TextBlock Text="{Binding VppText}" FontFamily="Consolas" FontSize="11"/>
+                <TextBlock Text="纹波%" Foreground="#5F6672" FontSize="11"/>
+                <TextBlock Text="{Binding RipplePct, StringFormat={}{0:F2}}" FontFamily="Consolas" FontSize="11"/>
+                <TextBlock Text="Pavg" Foreground="#5F6672" FontSize="11"/>
+                <TextBlock Text="{Binding Pavg, StringFormat={}{0:F2} W}" FontFamily="Consolas" FontSize="11"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="Vmax" Foreground="#5F6672" FontSize="11"/>
+                <TextBlock Text="{Binding Vmax, StringFormat={}{0:F3}}" FontFamily="Consolas" FontSize="11"/>
+                <TextBlock Text="Vmin" Foreground="#5F6672" FontSize="11"/>
+                <TextBlock Text="{Binding Vmin, StringFormat={}{0:F3}}" FontFamily="Consolas" FontSize="11"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

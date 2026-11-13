@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- PDL 功率数据记录仪 应用图标（设计母版，512×512）
+     扁平风：深色圆角底 + 蓝色功率波形 + 橙色触发点
+     配色取自 UI：底 #1E2127 / 描边 #2E333D / 波形 #4A9EFF / 触发 #FFB020 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- 圆角方块底 -->
+  <rect x="3" y="3" width="506" height="506" rx="112"
+        fill="#1E2127" stroke="#2E333D" stroke-width="6"/>
+
+  <!-- 功率波形：基线 → 触发尖峰 → 基线 -->
+  <polyline points="112,320 196,320 256,196 302,320 400,320"
+            fill="none" stroke="#4A9EFF" stroke-width="34"
+            stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- 触发点（峰值处） -->
+  <circle cx="256" cy="196" r="27" fill="#FFB020"/>
+</svg>

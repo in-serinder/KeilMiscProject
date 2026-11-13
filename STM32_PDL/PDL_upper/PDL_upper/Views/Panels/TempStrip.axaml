@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PDL_upper.ViewModels"
+             xmlns:controls="using:PDL_upper.Controls"
+             x:Class="PDL_upper.Views.Panels.TempStrip"
+             x:DataType="vm:MainWindowViewModel">
+    <Border Background="#1E2127" CornerRadius="10" Margin="0,4,0,4" Padding="12,7">
+        <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+            <TextBlock Grid.Column="0" Text="温度" Foreground="#8B93A1"
+                       VerticalAlignment="Center" Margin="0,0,14,0"/>
+            <!-- 读数 -->
+            <ItemsControl Grid.Column="1" ItemsSource="{Binding Temps}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="24"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TempCardViewModel">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Ellipse Width="8" Height="8" Fill="{Binding ColorBrush}"
+                                     VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Label}" Foreground="{Binding ColorBrush}"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Text}" FontSize="17" FontWeight="SemiBold"
+                                       FontFamily="Consolas" Foreground="{Binding ColorBrush}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <!-- 迷你折线：点击弹出温度窗口 -->
+            <Border Grid.Column="2" Background="#1B1E24" CornerRadius="6"
+                    Margin="16,0,10,0" Height="46" Cursor="Hand"
+                    Tapped="OnChartTapped">
+                <controls:TempChart Series="{Binding Temps}"/>
+            </Border>
+            <Button Grid.Column="3" Content="弹出" FontSize="11" Padding="8,3"
+                    VerticalAlignment="Center"
+                    Command="{Binding OpenTempWindowCommand}"/>
+        </Grid>
+    </Border>
+</UserControl>

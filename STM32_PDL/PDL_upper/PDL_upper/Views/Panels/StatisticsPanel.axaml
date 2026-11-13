@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PDL_upper.ViewModels"
+             x:Class="PDL_upper.Views.Panels.StatisticsPanel"
+             x:DataType="vm:MainWindowViewModel">
+    <Border Background="#1E2127" CornerRadius="10" Padding="12,6">
+        <StackPanel>
+            <!-- 表头 -->
+            <Grid ColumnDefinitions="52,*,*,*,*,*,*" Margin="0,0,0,3">
+                <TextBlock Grid.Column="0" Text="通道" Foreground="#5F6672" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="Vavg" Foreground="#5F6672" FontSize="11"/>
+                <TextBlock Grid.Column="2" Text="Vmax" Foreground="#5F6672" FontSize="11"/>
+                <TextBlock Grid.Column="3" Text="Vmin" Foreground="#5F6672" FontSize="11"/>
+                <TextBlock Grid.Column="4" Text="Vpp" Foreground="#5F6672" FontSize="11"/>
+                <TextBlock Grid.Column="5" Text="纹波%" Foreground="#5F6672" FontSize="11"/>
+                <TextBlock Grid.Column="6" Text="Pavg" Foreground="#5F6672" FontSize="11"/>
+            </Grid>
+            <ItemsControl ItemsSource="{Binding Channels}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ChannelCardViewModel">
+                        <Grid ColumnDefinitions="52,*,*,*,*,*,*" Margin="0,1">
+                            <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                       Foreground="{Binding ColorBrush}" FontSize="11"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Voltage, StringFormat={}{0:F3}}"
+                                       FontFamily="Consolas" FontSize="11"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Vmax, StringFormat={}{0:F3}}"
+                                       FontFamily="Consolas" FontSize="11"/>
+                            <TextBlock Grid.Column="3" Text="{Binding Vmin, StringFormat={}{0:F3}}"
+                                       FontFamily="Consolas" FontSize="11"/>
+                            <TextBlock Grid.Column="4" Text="{Binding VppText}"
+                                       FontFamily="Consolas" FontSize="11"/>
+                            <TextBlock Grid.Column="5"
+                                       Text="{Binding RipplePct, StringFormat={}{0:F2}}"
+                                       FontFamily="Consolas" FontSize="11"/>
+                            <TextBlock Grid.Column="6" Text="{Binding Pavg, StringFormat={}{0:F2} W}"
+                                       FontFamily="Consolas" FontSize="11"/>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PDL_upper.ViewModels"
+        x:Class="PDL_upper.Views.Dialogs.TimingDialog"
+        x:DataType="vm:MainWindowViewModel"
+        Title="定时 / 记录参数配置" Width="470" Height="420" CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#1E2127" TextElement.Foreground="#E6E8EC">
+    <Grid RowDefinitions="*,Auto" Margin="16,12,16,12">
+        <StackPanel Grid.Row="0" Spacing="10">
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="▸ 定时 / 记录参数" FontWeight="SemiBold" FontSize="15"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="记录模式" Foreground="#8B93A1"/>
+                <ComboBox SelectedIndex="{Binding Acquire.ModeIndex}"
+                          ItemsSource="{Binding Acquire.ModeNames}" MinWidth="180"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4" IsVisible="{Binding !Acquire.IsTriggerMode}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="记录时长 s" Foreground="#8B93A1" VerticalAlignment="Center"/>
+                    <TextBox Text="{Binding Acquire.DurationText}" Width="100"
+                             Background="#1B1E24" BorderBrush="#2E333D"/>
+                </StackPanel>
+                <TextBlock Text="· 0 = 不限时，一直开着，手动 ABORT 才停" Foreground="#5F6672"
+                           FontSize="11"/>
+                <TextBlock Text="· 定时模式：到点自动收尾排空缓冲并上报 AUTO_STOP" Foreground="#5F6672"
+                           FontSize="11"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="存储档（四档金字塔）" Foreground="#8B93A1"/>
+                <ComboBox SelectedIndex="{Binding Acquire.TierIndex}"
+                          ItemsSource="{Binding Acquire.TierNames}" MinWidth="180"/>
+                <TextBlock Text="· 档 0 逐点不丢；高档位大幅省带宽/空间，但只留统计值"
+                           Foreground="#5F6672" FontSize="11"/>
+            </StackPanel>
+
+            <TextBlock Text="所有参数在开始采集时一次性下发给设备；采集中被锁定，改参数必须先停止"
+                       Foreground="#8B93A1" FontSize="11" TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <Button Grid.Row="1" Content="完成" HorizontalAlignment="Right"
+                MinWidth="110" MinHeight="34" Background="#1D5C3A"
+                Click="OnClose"/>
+    </Grid>
+</Window>

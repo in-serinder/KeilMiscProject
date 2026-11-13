@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PDL_upper.ViewModels"
+             x:Class="PDL_upper.Views.Panels.AcquirePanel"
+             x:DataType="vm:MainWindowViewModel">
+
+    <!-- 注意：参数区与按钮区必须分离——若整个面板在采集中禁用，
+         会把"停止 ABORT"一起锁死（踩过：手动模式没停止按钮） -->
+    <StackPanel Spacing="10">
+
+        <!-- 采集参数：运行中锁定 -->
+        <StackPanel Spacing="10" IsEnabled="{Binding !IsAcquiring}">
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="▸ 连接" FontWeight="SemiBold"/>
+            </StackPanel>
+            <TextBlock Text="采样参数全部由上位机下发；运行中会被锁定，改参数必须先停止"
+                       Foreground="#8B93A1" FontSize="11" TextWrapping="Wrap"/>
+
+            <!-- 通道使能 -->
+            <StackPanel Orientation="Vertical" Spacing="4">
+                <TextBlock Text="使能采集通道" Foreground="#8B93A1"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <CheckBox Content="CH0" IsChecked="{Binding Acquire.PowerFlags[0]}"/>
+                    <CheckBox Content="CH1" IsChecked="{Binding Acquire.PowerFlags[1]}"/>
+                    <CheckBox Content="CH2" IsChecked="{Binding Acquire.PowerFlags[2]}"/>
+                    <CheckBox Content="CH3" IsChecked="{Binding Acquire.PowerFlags[3]}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <CheckBox Content="TH0 温度" IsChecked="{Binding Acquire.TempFlags[0]}"/>
+                    <CheckBox Content="TH1 温度" IsChecked="{Binding Acquire.TempFlags[1]}"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- 采样参数 -->
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" Margin="0,6,0,0">
+                <Grid.Styles>
+                    <Style Selector="TextBlock"><Setter Property="Foreground" Value="#8B93A1"/></Style>
+                    <Style Selector="TextBox"><Setter Property="Background" Value="#23272F"/><Setter Property="BorderBrush" Value="#2E333D"/></Style>
+                </Grid.Styles>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="采样率 Hz" VerticalAlignment="Center"/>
+                <TextBox  Grid.Row="0" Grid.Column="1" Text="{Binding Acquire.RateText}" Margin="8,2,0,2"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="上报间隔 ms" VerticalAlignment="Center"/>
+                <TextBox  Grid.Row="1" Grid.Column="1" Text="{Binding Acquire.IntervalText}" Margin="8,2,0,2"/>
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="存储档" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="2" Grid.Column="1" SelectedIndex="{Binding Acquire.TierIndex}"
+                          ItemsSource="{Binding Acquire.TierNames}" Margin="8,2,0,2"/>
+            </Grid>
+
+            <!-- 记录模式：详细配置走弹窗 -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="记录模式" Foreground="#8B93A1"/>
+                <ComboBox SelectedIndex="{Binding Acquire.ModeIndex}"
+                          ItemsSource="{Binding Acquire.ModeNames}"/>
+                <TextBlock Text="{Binding Acquire.TrigSummary}" Foreground="#5F6672"
+                           FontSize="11" TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- 配置弹窗入口 -->
+            <StackPanel Spacing="6">
+                <Button Content="⚙ 触发配置…" Command="{Binding OpenTriggerDialogCommand}"
+                        HorizontalContentAlignment="Left" Padding="10,7"/>
+                <Button Content="⚙ 定时 / 时长 / 存储档…" Command="{Binding OpenTimingDialogCommand}"
+                        HorizontalContentAlignment="Left" Padding="10,7"/>
+                <TextBlock Text="切换到「定时」或「触发」模式时，会自动弹出对应的配置窗口"
+                           Foreground="#5F6672" FontSize="11" TextWrapping="Wrap"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- 启停按钮：永远可用（采集中也必须能停） -->
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="开始采集" Command="{Binding AcquireCommand}"
+                    Background="#1D5C3A" Padding="14,8" FontWeight="SemiBold"/>
+            <Button Content="停止 ABORT" Command="{Binding AbortCommand}"
+                    Background="#6E2525" Padding="14,8" FontWeight="SemiBold"/>
+        </StackPanel>
+        <TextBlock Text="● 未连接设备 —— 先点顶栏「连接」，连接成功后才能开始采集"
+                   Foreground="#FFB020" FontSize="11" TextWrapping="Wrap"
+                   IsVisible="{Binding !IsConnected}"/>
+        <TextBlock Text="● 提示：先启动下位机模拟器（simulator/run_sim.bat），再连接"
+                   Foreground="#5F6672" FontSize="11" TextWrapping="Wrap"
+                   IsVisible="{Binding !IsConnected}"/>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,96 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PDL_upper.ViewModels"
+        x:Class="PDL_upper.Views.Dialogs.TriggerDialog"
+        x:DataType="vm:MainWindowViewModel"
+        Title="触发配置" Width="500" Height="600" CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#1E2127" TextElement.Foreground="#E6E8EC">
+    <Grid RowDefinitions="*,Auto" Margin="16,12,16,12">
+        <ScrollViewer Grid.Row="0">
+            <StackPanel Spacing="10">
+
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="▸ 触发配置" FontWeight="SemiBold" FontSize="15"/>
+                    <TextBlock Text="在设备端按采样节拍判定" Foreground="#8B93A1"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- 记录模式 -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="记录模式" Foreground="#8B93A1"/>
+                    <ComboBox SelectedIndex="{Binding Acquire.ModeIndex}"
+                              ItemsSource="{Binding Acquire.ModeNames}" MinWidth="180"/>
+                    <TextBlock Text="· 触发模式：达到“开阈值”并保持足够时间自动开始，降到“关阈值”后自动结束"
+                               Foreground="#5F6672" FontSize="11" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <!-- 触发源 -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="触发源（三选一）" Foreground="#8B93A1"/>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ComboBox SelectedIndex="{Binding Acquire.TrigSourceIndex}"
+                                  ItemsSource="{Binding Acquire.TrigSourceNames}" MinWidth="130"/>
+                        <ComboBox SelectedIndex="{Binding Acquire.TrigChIndex}"
+                                  ItemsSource="{Binding Acquire.TrigChNames}" MinWidth="90"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- 开阈值 -->
+                <Border Background="#23272F" CornerRadius="8" Padding="10,8">
+                    <StackPanel Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="开阈值（触发开始）" Foreground="#43D17A"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding Acquire.TrigUnit}" Foreground="#8B93A1"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBox Text="{Binding Acquire.StartValText}" MinWidth="140"
+                                 Background="#1B1E24" BorderBrush="#2E333D"/>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="消抖保持" Foreground="#8B93A1" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding Acquire.StartHoldText}" Width="80"
+                                     Background="#1B1E24" BorderBrush="#2E333D"/>
+                            <TextBlock Text="ms —— 电平必须持续保持这么久才算数，滤掉尖峰"
+                                       Foreground="#5F6672" FontSize="11" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- 关阈值 -->
+                <Border Background="#23272F" CornerRadius="8" Padding="10,8">
+                    <StackPanel Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="关阈值（触发结束）" Foreground="#FFB020"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding Acquire.TrigUnit}" Foreground="#8B93A1"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBox Text="{Binding Acquire.StopValText}" MinWidth="140"
+                                 Background="#1B1E24" BorderBrush="#2E333D"/>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="消抖保持" Foreground="#8B93A1" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding Acquire.StopHoldText}" Width="80"
+                                     Background="#1B1E24" BorderBrush="#2E333D"/>
+                            <TextBlock Text="ms —— 开/关阈值分离，天然形成回差，防抖动"
+                                       Foreground="#5F6672" FontSize="11" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <CheckBox Content="结束后自动重新武装（连续抓多次）"
+                                  IsChecked="{Binding Acquire.AutoRearm}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 消抖示意 -->
+                <Border Background="#1B1E24" CornerRadius="8" Padding="10,8">
+                    <TextBlock FontFamily="Consolas" FontSize="11" Foreground="#8B93A1"
+                               TextWrapping="NoWrap" LineHeight="16"
+                               Text="电压 ──────┐      ┌╴╴╴╴╴╴╴ 尖峰（小于保持时间，忽略）&#x0a;          └╴╴╴╴╴╴┘&#x0a;           ｜←消抖保持→｜  ↑ 开阈值持续保持后才触发开始"/>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Button Grid.Row="1" Content="完成" HorizontalAlignment="Right"
+                MinWidth="110" MinHeight="34" Background="#1D5C3A"
+                Click="OnClose"/>
+    </Grid>
+</Window>

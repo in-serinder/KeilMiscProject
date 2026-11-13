@@ -1,0 +1,95 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PDL_upper.ViewModels"
+        xmlns:controls="using:PDL_upper.Controls"
+        x:Class="PDL_upper.Views.PlaybackWindow"
+        x:DataType="vm:PlaybackViewModel"
+        Title="PDL 回放"
+        Width="1040" Height="800" MinWidth="760" MinHeight="560"
+        Background="#16181D" TextElement.Foreground="#E6E8EC">
+    <Grid RowDefinitions="Auto,*,Auto,*,Auto" Margin="10">
+
+        <!-- 工具行 -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,6">
+            <Button Content="打开 .pdl" Command="{Binding OpenFileCommand}"
+                    CommandParameter="{Binding $parent[Window]}"
+                    Background="#1D5C3A" Padding="12,7" FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding InfoText}" Foreground="#8B93A1"
+                       VerticalAlignment="Center" TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <!-- 功率概览（滚轮缩放 / 拖拽平移） -->
+        <Border Grid.Row="1" Background="#1E2127" CornerRadius="10" Padding="8" Margin="0,0,0,6">
+            <Border Background="#1B1E24" CornerRadius="8">
+                <controls:StaticChart Series="{Binding PowerSeries}"
+                                      ViewStartMs="{Binding ViewStartMs}"
+                                      ViewEndMs="{Binding ViewEndMs}"
+                                      TotalMs="{Binding TotalMs}"/>
+            </Border>
+        </Border>
+
+        <!-- 温度概览（同一视窗） -->
+        <Border Grid.Row="2" Background="#1E2127" CornerRadius="10" Padding="8" Height="150"
+                Margin="0,0,0,6">
+            <Border Background="#1B1E24" CornerRadius="8">
+                <controls:StaticChart Series="{Binding TempSeries}"
+                                      ViewStartMs="{Binding ViewStartMs}"
+                                      ViewEndMs="{Binding ViewEndMs}"
+                                      TotalMs="{Binding TotalMs}"/>
+            </Border>
+        </Border>
+
+        <!-- 时间视窗滑块 -->
+        <Border Grid.Row="3" Background="#1E2127" CornerRadius="10" Padding="12,8" Margin="0,0,0,6">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="{Binding RangeText}" Foreground="#8B93A1" FontSize="11"/>
+                    <Button Content="全览" FontSize="11" Padding="8,2"
+                            Command="{Binding ResetViewCommand}" Background="#23272F"/>
+                </StackPanel>
+                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" Margin="0,6,0,0">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="起点" Foreground="#5F6672"
+                               FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <Slider  Grid.Row="0" Grid.Column="1" Minimum="0"
+                             Maximum="{Binding TotalMs}"
+                             Value="{Binding ViewStartMs}" TickFrequency="0"/>
+                    <TextBlock Grid.Row="0" Grid.Column="2"
+                               Text="{Binding ViewStartMs, StringFormat={}{0:F0} ms}"
+                               FontFamily="Consolas" FontSize="11" Foreground="#8B93A1"
+                               VerticalAlignment="Center" Margin="8,0,0,0" Width="70"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="终点" Foreground="#5F6672"
+                               FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <Slider  Grid.Row="1" Grid.Column="1" Minimum="0" Margin="0,6,0,0"
+                             Maximum="{Binding TotalMs}"
+                             Value="{Binding ViewEndMs}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="2"
+                               Text="{Binding ViewEndMs, StringFormat={}{0:F0} ms}"
+                               FontFamily="Consolas" FontSize="11" Foreground="#8B93A1"
+                               VerticalAlignment="Center" Margin="8,0,0,0" Width="70"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- 统计表 -->
+        <Border Grid.Row="4" Background="#1E2127" CornerRadius="10" Padding="12,8">
+            <ItemsControl ItemsSource="{Binding Stats}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PlaybackRow">
+                        <Grid ColumnDefinitions="52,*,*,*,*,*,*,*" Margin="0,2">
+                            <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                       Foreground="{Binding Color}" FontWeight="SemiBold"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Vavg}" FontFamily="Consolas" Margin="6,0"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Vmax}" FontFamily="Consolas" Margin="6,0"/>
+                            <TextBlock Grid.Column="3" Text="{Binding Vmin}" FontFamily="Consolas" Margin="6,0"/>
+                            <TextBlock Grid.Column="4" Text="{Binding Vpp}" FontFamily="Consolas" Margin="6,0"/>
+                            <TextBlock Grid.Column="5" Text="{Binding Ripple}" FontFamily="Consolas" Margin="6,0"/>
+                            <TextBlock Grid.Column="6" Text="{Binding Imax}" FontFamily="Consolas" Margin="6,0"/>
+                            <TextBlock Grid.Column="7" Text="{Binding Pavg}" FontFamily="Consolas" Margin="6,0"/>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+    </Grid>
+</Window>

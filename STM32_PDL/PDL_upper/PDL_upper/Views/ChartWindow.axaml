@@ -1,0 +1,24 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PDL_upper.ViewModels"
+        xmlns:controls="using:PDL_upper.Controls"
+        x:Class="PDL_upper.Views.ChartWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="PDL 曲线（独立窗口）" Width="980" Height="560"
+        Background="#16181D" TextElement.Foreground="#E6E8EC">
+    <Grid RowDefinitions="Auto,*" Margin="10">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="14" Margin="0,0,0,6">
+            <TextBlock Text="四路按本路满量程归一化 · 独立窗口与主窗口共享同一份缓冲"
+                       Foreground="#8B93A1"/>
+            <TextBlock Text="■" Foreground="#4A9EFF"/><TextBlock Text="CH0" Foreground="#8B93A1"/>
+            <TextBlock Text="■" Foreground="#43D17A"/><TextBlock Text="CH1" Foreground="#8B93A1"/>
+            <TextBlock Text="■" Foreground="#FFB020"/><TextBlock Text="CH2" Foreground="#8B93A1"/>
+            <TextBlock Text="■" Foreground="#B07CFF"/><TextBlock Text="CH3" Foreground="#8B93A1"/>
+        </StackPanel>
+        <Border Grid.Row="1" Background="#1E2127" CornerRadius="10" Padding="10">
+            <Border Background="#23272F" CornerRadius="8">
+                <controls:PowerChart Vm="{Binding Chart}"/>
+            </Border>
+        </Border>
+    </Grid>
+</Window>

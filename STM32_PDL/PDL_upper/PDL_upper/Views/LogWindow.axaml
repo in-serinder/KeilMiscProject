@@ -1,0 +1,19 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PDL_upper.ViewModels"
+        xmlns:panels="using:PDL_upper.Views.Panels"
+        x:Class="PDL_upper.Views.LogWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="PDL 协议日志" Width="900" Height="560"
+        Background="#16181D" TextElement.Foreground="#E6E8EC">
+    <Grid RowDefinitions="Auto,*" Margin="10">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,6">
+            <TextBlock Text="协议 / 事件日志（最多保留 600 条）" Foreground="#8B93A1"/>
+            <Button Content="清空" Command="{Binding ClearLogCommand}"
+                    Background="#23272F" Padding="10,4"/>
+        </StackPanel>
+        <Border Grid.Row="1" Background="#1E2127" CornerRadius="10" Padding="8">
+            <panels:LogPanel DataContext="{Binding Log}"/>
+        </Border>
+    </Grid>
+</Window>

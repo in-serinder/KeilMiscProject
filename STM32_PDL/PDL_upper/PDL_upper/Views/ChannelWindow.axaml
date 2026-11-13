@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PDL_upper.ViewModels"
+        xmlns:controls="using:PDL_upper.Controls"
+        x:Class="PDL_upper.Views.ChannelWindow"
+        x:DataType="vm:ChannelChartViewModel"
+        Width="780" Height="440" MinWidth="480" MinHeight="300"
+        Background="#16181D" TextElement.Foreground="#E6E8EC">
+    <Grid RowDefinitions="Auto,*" Margin="10">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,6">
+            <Ellipse Width="10" Height="10" Fill="{Binding ColorBrush}"
+                     VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding Label}" Foreground="{Binding ColorBrush}"
+                       FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding RangeText}" Foreground="#8B93A1"
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding LastVolt, StringFormat={}{0:F3} V}"
+                       FontFamily="Consolas" FontSize="15" VerticalAlignment="Center"/>
+            <ToggleButton Content="全程" Padding="10,5" IsChecked="{Binding FullTimeMode}"/>
+            <Button Content="停靠回主窗口" Command="{Binding DockCommand}"
+                    Background="#23272F" Padding="10,5" HorizontalContentAlignment="Right"/>
+        </StackPanel>
+        <Border Grid.Row="1" Background="#1E2127" CornerRadius="10" Padding="8">
+            <Border Background="#1B1E24" CornerRadius="8">
+                <controls:ChannelChart Chart="{Binding}"/>
+            </Border>
+        </Border>
+    </Grid>
+</Window>

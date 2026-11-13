@@ -1,0 +1,38 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PDL_upper.ViewModels"
+        xmlns:controls="using:PDL_upper.Controls"
+        x:Class="PDL_upper.Views.TempWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="PDL 温度曲线（TH0 / TH1）"
+        Width="860" Height="480" MinWidth="520" MinHeight="320"
+        Background="#16181D" TextElement.Foreground="#E6E8EC">
+    <Grid RowDefinitions="Auto,*" Margin="10">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,6">
+            <TextBlock Text="温度曲线" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <ItemsControl ItemsSource="{Binding Temps}" VerticalAlignment="Center">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="16"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TempCardViewModel">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Ellipse Width="8" Height="8" Fill="{Binding ColorBrush}"/>
+                            <TextBlock Text="{Binding Label}" Foreground="{Binding ColorBrush}"/>
+                            <TextBlock Text="{Binding Text}" FontFamily="Consolas" Foreground="#8B93A1"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Text="· 温度约 1 s 一点，最近 12 分钟；探头掉线后新数据不再追加"
+                       Foreground="#5F6672" FontSize="11" VerticalAlignment="Center"/>
+        </StackPanel>
+        <Border Grid.Row="1" Background="#1E2127" CornerRadius="10" Padding="8">
+            <Border Background="#1B1E24" CornerRadius="8">
+                <controls:TempChart Series="{Binding Temps}"/>
+            </Border>
+        </Border>
+    </Grid>
+</Window>

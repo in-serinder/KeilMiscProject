@@ -1,0 +1,18 @@
+# 构建产物
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+
+# 运行期产物与验证截图
+ui_*.png
+*.pdl
+*.pdl.part
+pdl_crash.txt
+
+# 工具私有数据（工作记忆等）
+.workbuddy/
+
+# Python 缓存
+__pycache__/
+*.pyc

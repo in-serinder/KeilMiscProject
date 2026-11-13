@@ -1,0 +1,129 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PDL_upper.ViewModels"
+        xmlns:panels="using:PDL_upper.Views.Panels"
+        xmlns:controls="using:PDL_upper.Controls"
+        x:Class="PDL_upper.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="PDL 功率数据记录仪"
+        Width="1300" Height="880" MinWidth="1150" MinHeight="760"
+        Background="#16181D"
+        TextElement.Foreground="#E6E8EC">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- ═══ 顶栏 ═══ -->
+        <Border Grid.Row="0" Background="#1E2127" Margin="10,10,10,6" Padding="12,8" CornerRadius="10">
+            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <TextBlock Text="PDL" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Text="功率数据记录仪" VerticalAlignment="Center" Foreground="#8B93A1"/>
+                <Border Width="1" Height="24" Background="#2E333D" Margin="6,0"/>
+                <panels:ConnectionPanel/>
+                <Button Content="触发配置…" Command="{Binding OpenTriggerDialogCommand}"
+                        Background="#23272F" Padding="10,6"/>
+                <Button Content="定时/时长…" Command="{Binding OpenTimingDialogCommand}"
+                        Background="#23272F" Padding="10,6"/>
+                <Button Content="弹出曲线" Command="{Binding OpenChartWindowCommand}"
+                        Background="#23272F" Padding="10,6"/>
+                <Button Content="日志窗口" Command="{Binding OpenLogWindowCommand}"
+                        Background="#23272F" Padding="10,6"/>
+                <Button Content="查看器" Command="{Binding OpenViewerWindowCommand}"
+                        Background="#23272F" Padding="10,6"/>
+                <Button Content="打开 .pdl 回放" Command="{Binding OpenPlaybackWindowCommand}"
+                        Background="#23272F" Padding="10,6"/>
+                <TextBlock Text="{Binding DeviceInfo}" VerticalAlignment="Center"
+                           Foreground="#8B93A1" Margin="10,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ═══ 主体 ═══ -->
+        <Grid Grid.Row="1" ColumnDefinitions="312,*" Margin="10,0,10,0">
+
+            <!-- 左栏：参数 -->
+            <Border Grid.Column="0" Background="#1E2127" CornerRadius="10" Margin="0,0,8,0"
+                    Padding="12,10">
+                <StackPanel Spacing="12">
+                    <panels:AcquirePanel/>
+                </StackPanel>
+            </Border>
+
+            <!-- 右侧 -->
+            <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*,Auto">
+
+                <!-- 4 张功率卡 -->
+                <ItemsControl Grid.Row="0" ItemsSource="{Binding Channels}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="2" Columns="2"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ChannelCardViewModel">
+                            <panels:ChannelCard Margin="0,0,4,4"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- 温度条 -->
+                <panels:TempStrip Grid.Row="1"/>
+
+                <!-- 曲线：每通道一个停靠面板，可弹出/停靠，分割条可拖 -->
+                <Border Grid.Row="2" Background="#1E2127" CornerRadius="10" Margin="0,4,0,4"
+                        Padding="8,5">
+                    <Grid RowDefinitions="Auto,*">
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="2,0,0,5">
+                            <TextBlock Text="曲线）" Foreground="#8B93A1"
+                                       VerticalAlignment="Center"/>
+                            <Button Content="全部弹出" FontSize="11" Padding="8,2"
+                                    Command="{Binding PopAllChannelsCommand}" Background="#23272F"/>
+                            <Button Content="全部停靠" FontSize="11" Padding="8,2"
+                                    Command="{Binding DockAllChannelsCommand}" Background="#23272F"/>
+                        </StackPanel>
+
+                        <Grid Grid.Row="1" ColumnDefinitions="*,4,*" RowDefinitions="*,4,*">
+                            <panels:ChannelChartPanel Grid.Row="0" Grid.Column="0"
+                                                      DataContext="{Binding ChannelCharts[0]}"/>
+                            <GridSplitter Grid.Row="1" Grid.Column="0" Height="4"
+                                          HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                          Background="#2E333D"/>
+                            <panels:ChannelChartPanel Grid.Row="2" Grid.Column="0"
+                                                      DataContext="{Binding ChannelCharts[2]}"/>
+                            <GridSplitter Grid.Row="0" Grid.Column="1" Width="4"
+                                          VerticalAlignment="Stretch" HorizontalAlignment="Center"
+                                          Background="#2E333D"/>
+                            <GridSplitter Grid.Row="1" Grid.Column="1" Background="#1E2127"/>
+                            <GridSplitter Grid.Row="2" Grid.Column="1" Width="4"
+                                          VerticalAlignment="Stretch" HorizontalAlignment="Center"
+                                          Background="#2E333D"/>
+                            <panels:ChannelChartPanel Grid.Row="0" Grid.Column="2"
+                                                      DataContext="{Binding ChannelCharts[1]}"/>
+                            <GridSplitter Grid.Row="1" Grid.Column="2" Height="4"
+                                          HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                          Background="#2E333D"/>
+                            <panels:ChannelChartPanel Grid.Row="2" Grid.Column="2"
+                                                      DataContext="{Binding ChannelCharts[3]}"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- 统计 -->
+                <panels:StatisticsPanel Grid.Row="3"/>
+            </Grid>
+        </Grid>
+
+        <!-- ═══ 状态栏 ═══ -->
+        <Border Grid.Row="2" Background="#1E2127" Margin="10,6,10,10" Padding="12,5" CornerRadius="8">
+            <StackPanel Orientation="Horizontal" Spacing="16">
+                <TextBlock Text="{Binding StatusText}" Foreground="#43D17A"/>
+                <TextBlock Text="{Binding LinkText}" Foreground="#8B93A1"/>
+                <TextBlock Text="{Binding SpoolText}" Foreground="#FFB020"/>
+                <Button Content="保存（Save）" FontSize="11" Padding="8,2"
+                        Command="{Binding SaveSessionCommand}"
+                        IsVisible="{Binding UnsavedSpool}" Background="#1D5C3A"/>
+                <Button Content="丢弃" FontSize="11" Padding="8,2"
+                        Command="{Binding DiscardSessionCommand}"
+                        IsVisible="{Binding UnsavedSpool}" Background="#23272F"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

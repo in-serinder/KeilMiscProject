@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PDL_upper.ViewModels"
+             xmlns:controls="using:PDL_upper.Controls"
+             x:Class="PDL_upper.Views.Panels.ChannelChartPanel"
+             x:DataType="vm:ChannelChartViewModel">
+    <Border Background="#23272F" BorderBrush="#2E333D" BorderThickness="1" CornerRadius="8">
+        <Grid RowDefinitions="Auto,*">
+            <!-- 头部 -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="8,4,8,2">
+                <Ellipse Width="9" Height="9" Fill="{Binding ColorBrush}"
+                         VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding Label}" Foreground="{Binding ColorBrush}"
+                           FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding RangeText}" Foreground="#8B93A1" FontSize="11"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding LastVolt, StringFormat={}{0:F3} V}"
+                           FontFamily="Consolas" FontSize="11" Foreground="#E6E8EC"
+                           VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ToggleButton Content="全程" FontSize="11" Padding="8,2"
+                                  IsChecked="{Binding FullTimeMode}"/>
+                    <Panel>
+                        <Button Content="弹出" FontSize="11" Padding="8,2"
+                                Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).PopChannelCommand}"
+                                CommandParameter="{Binding}"
+                                IsVisible="{Binding !IsPopped}"/>
+                        <Button Content="停靠" FontSize="11" Padding="8,2"
+                                Command="{Binding DockCommand}"
+                                IsVisible="{Binding IsPopped}"/>
+                    </Panel>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- 图表 / 已弹出遮罩 -->
+            <Panel Grid.Row="1" Margin="4,0,4,4">
+                <Border Background="#1B1E24" CornerRadius="6"
+                        IsVisible="{Binding !IsPopped}">
+                    <controls:ChannelChart Chart="{Binding}"/>
+                </Border>
+                <Border Background="#1B1E24" CornerRadius="6"
+                        IsVisible="{Binding IsPopped}">
+                    <Button HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Content="已在独立窗口显示 · 点击停靠回主界面"
+                            Command="{Binding DockCommand}"
+                            Background="#23272F" Padding="16,10"/>
+                </Border>
+            </Panel>
+        </Grid>
+    </Border>
+</UserControl>

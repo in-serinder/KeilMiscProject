@@ -1,0 +1,65 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PDL_upper.ViewModels"
+        xmlns:controls="using:PDL_upper.Controls"
+        x:Class="PDL_upper.Views.ViewerWindow"
+        x:DataType="vm:ViewerViewModel"
+        Title="PDL 查看器"
+        Width="1200" Height="780" MinWidth="800" MinHeight="560"
+        Background="#16181D" TextElement.Foreground="#E6E8EC">
+    <Grid RowDefinitions="Auto,*,Auto,120" Margin="10">
+
+        <!-- 工具行 -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" Margin="0,0,0,6">
+            <TextBlock Text="通道" Foreground="#8B93A1" VerticalAlignment="Center"/>
+            <ComboBox SelectedIndex="{Binding SelectedChannel}"
+                      ItemsSource="{Binding ChannelNames}" MinWidth="90"/>
+            <CheckBox Content="跟随最新（实时）" IsChecked="{Binding FollowLatest}"
+                      VerticalAlignment="Center"/>
+            <CheckBox Content="自动Y轴" IsChecked="{Binding AutoY}" VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" Spacing="6" IsEnabled="{Binding !AutoY}">
+                <TextBlock Text="V/div" Foreground="#8B93A1" VerticalAlignment="Center"/>
+                <ComboBox SelectedIndex="{Binding VDivIndex}"
+                          ItemsSource="{Binding VDivOptions}" MinWidth="90"/>
+                <TextBlock Text="Y 中心" Foreground="#8B93A1" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding YCenter, StringFormat={}{0:F3}}" Width="80"/>
+            </StackPanel>
+            <Button Content="全览" Command="{Binding ResetViewCommand}"
+                    Background="#23272F" Padding="10,5"/>
+            <Button Content="打开 .pdl" Command="{Binding OpenFileCommand}"
+                    CommandParameter="{Binding $parent[Window]}"
+                    Background="#23272F" Padding="10,5"/>
+            <TextBlock Text="{Binding InfoText}" Foreground="#8B93A1"
+                       VerticalAlignment="Center" TextWrapping="Wrap"/>
+            <TextBlock Text="手动Y轴：Ctrl+滚轮调 V/div · 右键上下拖移中心" Foreground="#5F6672"
+                       FontSize="11" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- 上部：细节图（滚轮缩放 / 拖拽平移） -->
+        <Border Grid.Row="1" Background="#1E2127" CornerRadius="10" Padding="8" Margin="0,0,0,6">
+            <Border Background="#1B1E24" CornerRadius="8">
+                <controls:StaticChart Series="{Binding DetailSeries}"
+                                      ViewStartMs="{Binding ViewStartMs}"
+                                      ViewEndMs="{Binding ViewEndMs}"
+                                      TotalMs="{Binding TotalMs}"
+                                      PerSeriesScale="True"
+                                      ManualY="{Binding !AutoY}"
+                                      YCenter="{Binding YCenter}"
+                                      VPerDiv="{Binding VPerDiv}"/>
+            </Border>
+        </Border>
+
+        <!-- 视窗统计 -->
+        <Border Grid.Row="2" Background="#1E2127" CornerRadius="10" Padding="12,7" Margin="0,0,0,6">
+            <TextBlock Text="{Binding StatsText}" FontFamily="Consolas" FontSize="13"/>
+        </Border>
+
+        <!-- 下部：全局导航条 -->
+        <Border Grid.Row="3" Background="#1E2127" CornerRadius="10" Padding="8,4">
+            <controls:OverviewBar Series="{Binding OverviewSeries}"
+                                  ViewStartMs="{Binding ViewStartMs}"
+                                  ViewEndMs="{Binding ViewEndMs}"
+                                  TotalMs="{Binding TotalMs}"/>
+        </Border>
+    </Grid>
+</Window>
