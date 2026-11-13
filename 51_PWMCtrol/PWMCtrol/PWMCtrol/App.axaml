@@ -2,14 +2,94 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="PWMCtrol.App"
              xmlns:local="using:PWMCtrol"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Dark">
 
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
-  
+
+    <Application.Resources>
+        <SolidColorBrush x:Key="AppBg" Color="#12151A" />
+        <SolidColorBrush x:Key="PanelBg" Color="#1B2027" />
+        <SolidColorBrush x:Key="PanelBg2" Color="#222933" />
+        <SolidColorBrush x:Key="LineBrush" Color="#2E3743" />
+        <SolidColorBrush x:Key="TextPrimary" Color="#D6DDE6" />
+        <SolidColorBrush x:Key="TextDim" Color="#7B8798" />
+        <SolidColorBrush x:Key="AccentColor" Color="#3FA9F5" />
+        <SolidColorBrush x:Key="OkBrush" Color="#4EC97A" />
+        <SolidColorBrush x:Key="WarnBrush" Color="#E8B339" />
+        <SolidColorBrush x:Key="ErrBrush" Color="#E06A6A" />
+        <FontFamily x:Key="MonoFont">Consolas</FontFamily>
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
+
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{DynamicResource PanelBg}" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="12" />
+        </Style>
+
+        <Style Selector="TextBlock.h1">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style Selector="TextBlock.caption">
+            <Setter Property="Foreground" Value="{DynamicResource TextDim}" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+
+        <Style Selector="TextBlock.mono">
+            <Setter Property="FontFamily" Value="{DynamicResource MonoFont}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+
+        <Style Selector="Button.ghost">
+            <Setter Property="Background" Value="{DynamicResource PanelBg2}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10,5" />
+        </Style>
+
+        <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource LineBrush}" />
+        </Style>
+
+        <Style Selector="Button.danger">
+            <Setter Property="Background" Value="#3A2024" />
+            <Setter Property="Foreground" Value="{DynamicResource ErrBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12,6" />
+        </Style>
+
+        <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#52292E" />
+        </Style>
+
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="Foreground" Value="{DynamicResource TextDim}" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+
+        <Style Selector="Button.link:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource AccentColor}" />
+        </Style>
+
+        <Style Selector="TextBox">
+            <Setter Property="FontFamily" Value="{DynamicResource MonoFont}" />
+        </Style>
+
+        <Style Selector="ComboBox">
+            <Setter Property="MinWidth" Value="120" />
+        </Style>
     </Application.Styles>
 </Application>

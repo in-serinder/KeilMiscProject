@@ -1,20 +1,185 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:PWMCtrol.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:vm="using:PWMCtrol.ViewModels"
+        xmlns:views="using:PWMCtrol.Views"
+        xmlns:models="using:PWMCtrol.Models"
+        xmlns:controls="using:PWMCtrol.Controls"
+        mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="960"
         x:Class="PWMCtrol.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="PWMCtrol">
+        Title="PWMCTROL 上位机 — 三通道 PWM 控制器"
+        Width="1440" Height="960"
+        MinWidth="1180" MinHeight="820"
+        Background="{DynamicResource AppBg}"
+        WindowStartupLocation="CenterScreen">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
+        <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid RowDefinitions="Auto,*,Auto">
 
+        <!-- 顶栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource PanelBg}" Padding="16,10">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <TextBlock Text="PWMCTROL" FontSize="16" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}" />
+                    <TextBlock Text="三通道低端 PWM 控制器" Classes="caption" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="{Binding CounterText}" Classes="caption"
+                               FontFamily="{DynamicResource MonoFont}" VerticalAlignment="Center" />
+                    <Button Content="全部停止" Command="{Binding StopAllCommand}" Classes="danger" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 主体 -->
+        <Grid Grid.Row="1" ColumnDefinitions="272,*" Margin="12">
+
+            <!-- 左列 -->
+            <StackPanel Grid.Column="0" Spacing="10">
+
+                <Border Classes="card">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="连接" Classes="h1" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                            <TextBox Grid.Column="0" Text="{Binding SelectedPort}"
+                                     Watermark="COM5（可手输）" Height="30" />
+                            <Button Grid.Column="1" Content="刷新" Classes="ghost"
+                                    Command="{Binding RefreshPortsCommand}" />
+                        </Grid>
+                        <Button Content="{Binding ConnectButtonText}"
+                                Command="{Binding ConnectCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Ellipse Width="8" Height="8" Fill="{Binding LinkBrush}"
+                                     VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding LinkText}" Classes="caption" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="运行模式" Classes="h1" />
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+                            <Button Grid.Column="0" Content="1 本地" Classes="ghost"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Command="{Binding SetModeCommand}" CommandParameter="1" />
+                            <Button Grid.Column="1" Content="2 程序" Classes="ghost"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Command="{Binding SetModeCommand}" CommandParameter="2" />
+                            <Button Grid.Column="2" Content="3 上位机"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Command="{Binding SetModeCommand}" CommandParameter="3" />
+                        </Grid>
+                        <TextBlock Text="{Binding ModeHint}" Classes="caption" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="设备" Classes="h1" />
+                        <TextBlock Text="{Binding DeviceInfo}" Classes="caption" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <!-- 板载只有一路电压探头，单独成区 -->
+                <Border Classes="card">
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="电压探头" Classes="h1" />
+                            <Button Grid.Column="1" Content="读取" Classes="ghost"
+                                    Padding="8,2" FontSize="11"
+                                    Command="{Binding ReadProbeCommand}" />
+                        </Grid>
+
+                        <Border Background="#0D1014" CornerRadius="8" Padding="8,4">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <controls:SegmentDisplay Grid.Column="0" Height="38" MaxWidth="132"
+                                                         HorizontalAlignment="Left"
+                                                         Text="{Binding ProbeChars}"
+                                                         Dots="{Binding ProbeDots}" />
+                                <TextBlock Grid.Column="1" Text="V" VerticalAlignment="Center"
+                                           FontSize="13" Foreground="{DynamicResource TextDim}" />
+                            </Grid>
+                        </Border>
+
+                        <ProgressBar Minimum="0" Maximum="5000"
+                                     Value="{Binding ProbeMillivolts}" Height="6" />
+                        <TextBlock Text="{Binding ProbeText}" Classes="caption"
+                                   FontFamily="{DynamicResource MonoFont}" />
+                        <TextBlock Classes="caption" TextWrapping="Wrap"
+                                   Text="P3.6 / ADC14，单路探头，一次只能测一处。通道卡片勾『带电压』后，该通道的 ECHO 才会带上读数。" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="旋钮" Classes="h1" />
+                        <TextBlock Classes="caption" TextWrapping="Wrap"
+                                   Text="上下拖动或滚轮旋转：调当前焦点（频率 / 占空比）。单击旋钮切换焦点。转动 320ms 后自动下发。" />
+                        <TextBlock Classes="caption" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Text="注意：三路 PWM 同属 PWMA，硬件上只能同频；改频率会同时影响三路。" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- 右列：通道卡片 + 日志 -->
+            <Grid Grid.Column="1" RowDefinitions="Auto,*" Margin="12,0,0,0">
+
+                <Grid Grid.Row="0" ColumnDefinitions="*,*,*">
+                    <views:ChannelCard Grid.Column="0" DataContext="{Binding Channels[0]}"
+                                       Margin="0,0,10,0" />
+                    <views:ChannelCard Grid.Column="1" DataContext="{Binding Channels[1]}"
+                                       Margin="0,0,10,0" />
+                    <views:ChannelCard Grid.Column="2" DataContext="{Binding Channels[2]}" />
+                </Grid>
+
+                <Border Grid.Row="1" Classes="card" Margin="0,10,0,0" MinHeight="150">
+                    <Grid RowDefinitions="Auto,*">
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Text="串口 / 事件日志" Classes="h1" />
+                            <Button Grid.Column="1" Content="清空" Classes="link"
+                                    Command="{Binding ClearLogCommand}" />
+                        </Grid>
+                        <ScrollViewer Grid.Row="1" Margin="0,6,0,0"
+                                      VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding Logs}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:LogEntry">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="{Binding Time}"
+                                                       FontFamily="{DynamicResource MonoFont}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource TextDim}" />
+                                            <TextBlock Text="{Binding Text}"
+                                                       Foreground="{Binding Brush}"
+                                                       FontFamily="{DynamicResource MonoFont}"
+                                                       FontSize="12"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- 状态栏 -->
+        <Border Grid.Row="2" Background="{DynamicResource PanelBg}" Padding="16,6">
+            <TextBlock Classes="caption"
+                       Text="协议 v1.1 · 通道 0-2 · 115200 8N1 · ECHO 50ms · 三路同频（PWMA 共用时基）" />
+        </Border>
+    </Grid>
 </Window>

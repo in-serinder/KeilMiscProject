@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:PWMCtrol.ViewModels"
+             xmlns:controls="using:PWMCtrol.Controls"
+             mc:Ignorable="d" d:DesignWidth="360" d:DesignHeight="560"
+             x:Class="PWMCtrol.Views.ChannelCard"
+             x:DataType="vm:ChannelViewModel">
+
+    <Border Classes="card">
+        <StackPanel Spacing="8">
+
+            <!-- 标题 + 状态 -->
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Border Grid.Column="0" Width="4" Height="18" CornerRadius="2"
+                        Background="{Binding Accent}" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="8,0,0,0"
+                           FontSize="14" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                <Border Grid.Column="2" Background="{DynamicResource PanelBg2}"
+                        CornerRadius="9" Padding="8,2">
+                    <TextBlock Text="{Binding StateText}" FontSize="11"
+                               Foreground="{DynamicResource TextDim}" />
+                </Border>
+            </Grid>
+
+            <!-- 七段显示：频率 3 位 + 占空比 3 位，下方带分组丝印 -->
+            <Border Background="#0D1014" CornerRadius="8" Padding="10,8">
+                <StackPanel MaxWidth="268" HorizontalAlignment="Center" Spacing="1">
+                    <controls:SegmentDisplay Height="46"
+                                             Text="{Binding DisplayChars}"
+                                             Dots="{Binding DisplayDots}" />
+                    <Grid ColumnDefinitions="3*,1*,3*">
+                        <controls:BracketLabel Grid.Column="0" Text="频率" SubText="Hz/kHz" />
+                        <controls:BracketLabel Grid.Column="2" Text="占空比" SubText="%" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 旋钮 + 参数 -->
+            <Grid ColumnDefinitions="86,*">
+                <StackPanel Grid.Column="0" Spacing="2">
+                    <controls:RotaryKnob Width="80" Height="80" HorizontalAlignment="Center"
+                                         Accent="{Binding Accent}"
+                                         StepCommand="{Binding StepCommand}"
+                                         ClickCommand="{Binding ToggleEditCommand}" />
+                    <TextBlock Classes="caption" HorizontalAlignment="Center"
+                               Text="{Binding EditTargetText, StringFormat='调节 {0}'}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Spacing="4" Margin="10,0,0,0">
+                    <TextBlock Text="频率 Hz" Classes="caption" />
+                    <TextBox Text="{Binding Frequency}" Height="28" Width="88"
+                             HorizontalAlignment="Left" />
+
+                    <TextBlock Text="占空比 %" Classes="caption" Margin="0,4,0,0" />
+                    <Grid ColumnDefinitions="*,54" ColumnSpacing="6">
+                        <Slider Grid.Column="0" Minimum="0" Maximum="100" MinWidth="24"
+                                Value="{Binding Duty}" VerticalAlignment="Center" />
+                        <TextBox Grid.Column="1" Text="{Binding Duty}" Height="28" Width="54" />
+                    </Grid>
+                </StackPanel>
+            </Grid>
+
+            <!-- 持续时间 + ADC -->
+            <WrapPanel Orientation="Horizontal">
+                <TextBlock Text="时长" Classes="caption" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <TextBox Text="{Binding DurationMs}" Height="26" Width="72"
+                         IsEnabled="{Binding !Forever}" Margin="0,0,8,0" />
+                <CheckBox Content="永久" IsChecked="{Binding Forever}" FontSize="11" Margin="0,0,8,0" />
+                <CheckBox Content="带电压" IsChecked="{Binding AdcEnabled}" FontSize="11" />
+            </WrapPanel>
+
+            <!-- 波形预览：两个周期 + Ton / T 标注 -->
+            <controls:PwmPreview Height="112"
+                                 Frequency="{Binding PreviewFrequency}"
+                                 Duty="{Binding PreviewDuty}"
+                                 IsRunning="{Binding IsRunning}"
+                                 Accent="{Binding Accent}" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Button Grid.Column="0" Content="应用" Command="{Binding ApplyCommand}"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                <Button Grid.Column="1" Content="停止" Command="{Binding StopCommand}"
+                        Classes="ghost" HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center" />
+            </Grid>
+
+            <TextBlock Classes="caption" Text="{Binding ActualText}"
+                       FontFamily="{DynamicResource MonoFont}" />
+        </StackPanel>
+    </Border>
+</UserControl>

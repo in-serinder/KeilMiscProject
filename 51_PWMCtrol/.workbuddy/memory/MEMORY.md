@@ -16,6 +16,15 @@
   但 `~/.ssh/` 里**没有密钥**，只有 known_hosts。
 - 结论：要推送必须先「挂代理」或「配 SSH 密钥」二选一，见 README 式的三条命令。
 
+### ⚠ .NET 构建（2026-11-13 实测）
+- `dotnet restore` 在本机**必失败**：`NuGet.targets Value cannot be null (Parameter 'path1')`
+  （`XPlatMachineWideSetting` 解析 machine-wide 配置时返回 null）。设 ProgramData/TEMP、
+  换 PowerShell、关沙箱都无效；连已有的参考项目也失败。
+- **可用绕过**：`D:\VSTudio\MSBuild\Current\Bin\MSBuild.exe <proj> -t:Restore`（注意用 `-t:` 不要用 `/t:`，
+  MSYS 会把 `/t:` 当路径），成功后 `dotnet build --no-restore` 一切正常。
+- Avalonia 工程**必须声明 DPI 感知**（`app.manifest` + `SetProcessDpiAwarenessContext`），否则窗口被位图拉伸、
+  布局宽度算少 20%，右侧内容会被裁掉。
+
 ## 项目约定
 
 - 文档放 `docs/`，编号 `01-`/`02-`/`03-`，中文标题；模拟器放 `sim/`。
