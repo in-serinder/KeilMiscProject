@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              10/12/2026 13:53:00 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              11/14/2026 16:34:14 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -12,75 +12,112 @@ line level    source
    2          #include "Display\d12864.h"
    3          
    4          /*
-   5           *  JLX12864G-086-PC 汉字显示测试
-   6           *  LCD驱动: UC1701X (模拟SPI, 引脚见 d12864.h)
-   7           *  字库:   JLX-GB2312 独立ROM (引脚见 d12864.h)
-   8           *  字号:   16x16大汉字 / 8x16中字符 / 5x7小ASCII
-   9           *
-  10           *  硬件接线:
-  11           *    LCD:  CS=P3.7  RST=P3.6  AO=P3.5  LEDA=P3.4  SDA=P2.6  SCL=P2.5
-  12           *    ROM:  SI=P2.7  SO=P0.6   SCK=P0.5  CS=P1.5(固定低, 硬件接地)
-  13           */
-  14          
-  15          /* GB2312 编码的测试字符串(用十六进制避免编码依赖)
-  16           * "测试" GB2312: 测=0xB2,0xE2  试=0xCA,0xD4
-  17           * "我是傻鸟" GB2312:
-  18           *   我=0xCE,D2  是=0xCA,C0  傻=0xC9,B1  鸟=0xC4,FA
-  19           * 注意: 字符串必须以 0x00 结尾! */
-  20          uchar code test_gb[]    = {0xB2, 0xE2, 0xCA, 0xD4, 0x00};  /* "测试" */
-  21          uchar code woshan_gb[]  = {0xCE, 0xD2, 0xCA, 0xC0, 0xC9, 0xB1, 0xC4, 0xFA, 0x00};  /* "我是傻鸟" */
-  22          
-  23          void main(void)
-  24          {
-  25   1          uchar i;
-  26   1          uchar rom_diag[16];
-  27   1      
-  28   1          initial_lcd();
-  29   1          clear_screen();
-  30   1      
-  31   1          /* ===== 诊断: 读字库ROM地址0~15的原始数据 =====
-  32   1           * 正常字库这些地址有非0xFF非0x00的实际数据.
-  33   1           * 如果全0xFF -> ROM_OUT(P0.6)未接或字库无响应.
-  34   1           * 如果全0x00 -> ROM_OUT被拉低或CS未生效.
-  35   1           * 有变化 -> 通讯正常, 问题在地址计算. */
-  36   1          for (i = 0; i < 16; i++)
-  37   1              rom_diag[i] = rom_simple_read((ulong)i);
-  38   1          /* 以位图显示在屏幕第1页(128列), 全0xFF则全黑, 全0x00则全白 */
-  39   1          lcd_address(1, 1);
-  40   1          for (i = 0; i < 16; i++)
-  41   1              transfer_data_lcd(rom_diag[i]);
-  42   1          delay(3000);
-  43   1          clear_screen();
-  44   1      
-  45   1          while (1)
-  46   1          {
-  47   2              /* ===== 大号 16x16: "测试" ===== */
-  48   2              show_str_16x16(1, 1, (uchar *)test_gb);
+   5           *  JLX12864G-08602 Ver4.0  128x64 点阵显示
+   6           *  LCD 驱动: UC1701X (模拟 SPI, 引脚见 d12864.h)
+   7           *
+   8           *  两种出字方式, 开关在 Display/d12864.h, 8K Flash 只能二选一:
+   9           *    USE_ASCII_FONT = 1 : 内置 5x7 ASCII 点阵, 不依赖模块字库 IC  (当前配置)
+  10           *    USE_FONT_ROM   = 1 : 走模块上的 25Q80 字库 IC, 可显示 16x16 汉字
+  11           *
+  12           *  硬件接线:
+  13           *    LCD:  CS=P3.7  RST=P3.6  AO=P3.5  LEDA=P3.4  SDA=P2.6  SCL=P2.5   正常
+  14           *    ROM:  SI=P2.7  SO=P0.6   SCK=P0.5  (R2/R4 各 5.1k 上拉到 +5V)     正常
+  15           *    ROM:  CS#= 模块第4脚, 板上直接接地, MCU 无连线                     << 缺这一根
+  16           */
+  17          
+  18          #if USE_ASCII_FONT
+  19          
+  20          /* ---- 演示文本 (纯 ASCII) ---- */
+  21          uchar code line_title[] = "HELLO WORLD";
+  22          uchar code line1[]      = "8051 + 12864 LCD";
+  23          uchar code line2[]      = "NO FONT ROM NEEDED";
+  24          uchar code line3[]      = "BUILT-IN 5X7 ASCII";
+  25          uchar code line4[]      = "MAX 21 CHARS A LINE";
+  26          
+  27          uchar code line5[]      = "The quick brown fox";
+  28          uchar code line6[]      = "jumps over the lazy";
+  29          uchar code line7[]      = "dog. 0123456789";
+  30          uchar code line8[]      = "!@#$%^&*()_+-=[]{}";
+  31          
+  32          void main(void)
+  33          {
+  34   1          initial_lcd();
+  35   1          clear_screen();
+  36   1      
+  37   1          while (1)
+  38   1          {
+  39   2              clear_screen();
+  40   2      
+  41   2              /* 第 1~2 页: 2 倍放大标题 (10x14, 每行 11 个字) */
+  42   2              lcd_text_2x(1, 1, line_title);
+  43   2      
+  44   2              /* 第 4~7 页: 5x7 小字, 每行 21 个字 */
+  45   2              lcd_text(4, 1, line1);
+  46   2              lcd_text(5, 1, line2);
+  47   2              lcd_text(6, 1, line3);
+  48   2              lcd_text(7, 1, line4);
   49   2      
-  50   2              /* ===== 中号 8x16: "我是傻鸟" ===== */
-  51   2              show_str_8x16(4, 1, (uchar *)woshan_gb);
-  52   2      
-  53   2              /* ===== 小号 5x7: ASCII ===== */
-  54   2              show_str_5x7(7, 1, "TEST 2025");
-C51 COMPILER V9.59.0.0   MAIN                                                              10/12/2026 13:53:00 PAGE 2   
+  50   2              delay(5000);
+  51   2      
+  52   2              /* 第二屏: 大小写混排 */
+  53   2              clear_screen();
+  54   2              lcd_text_2x(1, 1, "ASCII 5X7");
+C51 COMPILER V9.59.0.0   MAIN                                                              11/14/2026 16:34:14 PAGE 2   
 
-  55   2      
-  56   2              delay(4000);
-  57   2      
-  58   2              /* ===== 混合中英文 ===== */
-  59   2              clear_screen();
-  60   2              show_str_16x16(1, 1, (uchar *)test_gb);
-  61   2              show_str_8x16(4,  1, (uchar *)woshan_gb);
-  62   2              show_str_5x7(7,  1, "ABC 123 abc");
-  63   2              delay(4000);
-  64   2          }
-  65   1      }
+  55   2              lcd_text(4, 1, line5);
+  56   2              lcd_text(5, 1, line6);
+  57   2              lcd_text(6, 1, line7);
+  58   2              lcd_text(7, 1, line8);
+  59   2      
+  60   2              delay(5000);
+  61   2          }
+  62   1      }
+  63          
+  64          #elif USE_FONT_ROM
+              
+              /* GB2312 编码的测试字符串(用十六进制避免源文件编码依赖)
+               * "测试": 测=0xB2,0xE2  试=0xCA,0xD4
+               * "我是傻鸟": CE D2 / CA C0 / C9 B1 / C4 FA */
+              uchar code test_gb[]   = {0xB2, 0xE2, 0xCA, 0xD4, 0x00};
+              uchar code woshan_gb[] = {0xCE, 0xD2, 0xCA, 0xC0, 0xC9, 0xB1, 0xC4, 0xFA, 0x00};
+              
+              void main(void)
+              {
+                  initial_lcd();
+                  clear_screen();
+              
+                  /* 上电后依次: 3s 静态电平窗口(全黑) -> 3s(全白) -> 1s 竖条纹 -> 状态方块
+                   * 全实心才会往下走, 否则停在诊断页 */
+                  if (font_selftest() != 0)
+                  {
+                      while (1) { }
+                  }
+              
+                  delay(2000);
+                  clear_screen();
+              
+                  while (1)
+                  {
+                      show_str_16x16(1, 1, (uchar *)test_gb);
+                      show_str_8x16 (4, 1, (uchar *)woshan_gb);
+                      show_str_5x7  (7, 1, "TEST 2026");
+                      delay(4000);
+              
+                      clear_screen();
+                      show_str_16x16(1, 1, (uchar *)test_gb);
+                      show_str_8x16 (4, 1, (uchar *)woshan_gb);
+                      show_str_5x7  (7, 1, "ABC 123 abc");
+                      delay(4000);
+                  }
+              }
+              
+              #endif
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    211    ----
-   CONSTANT SIZE    =     36    ----
-   XDATA SIZE       =   ----      17
+   CODE SIZE        =    159    ----
+   CONSTANT SIZE    =    172    ----
+   XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----

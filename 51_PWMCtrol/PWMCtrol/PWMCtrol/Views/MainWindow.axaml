@@ -9,7 +9,7 @@
         mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="960"
         x:Class="PWMCtrol.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/app.ico"
         Title="PWMCTROL 上位机 — 三通道 PWM 控制器"
         Width="1440" Height="960"
         MinWidth="1180" MinHeight="820"

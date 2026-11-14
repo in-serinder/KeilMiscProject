@@ -5,7 +5,6 @@
 
 - [Brief Introduction](#brief-introduction)
 - [Folder Naming Structure](#folder-naming-structure)
-- [Current Project List](#current-project-list)
 - [Driver List](#driver-list)
 - [Project List](#project-list)
 
@@ -25,18 +24,22 @@ In the project, the folder naming structure is:
 MCU_Platform_[Driver_specifies_hardware_driver_function]_Project_Name
 ```
 
-### Current Project List
-
 ### Driver List
 
 - [51 TM1637 Display Driver](./51_Driver_TM1637/)
-- [MAX7219 Display Driver](./51_Driver_max7219/)
+- [51 TM1638 8-digit Display + 8-key + 8-LED Module Driver](./51_Driver_TM1638/)
+- [51 MAX7219 Display Driver](./51_Driver_max7219/)
 - [51 24C64 EEPROM Driver](./51_Driver_24c64_EEPROM/)
 - [51 SSD13xx OLED Display Driver for Ssd1306/ssd1315 OLED displays, customizable screen aspect ratio](./51_Driver_SSD13xx/)
 - [51 PCF8574 I2C Expander Driver](./51_Driver_PCF8574/)
 - [51 TLCx543(TLC1543/TLC2543) 10-12 bit ADC Driver](./51_Driver_TLCx543_10-12bitADC/)
+- [51 EC11 Rotary Encoder Driver](./51__Driver_ec11_ENCODE/)
+- [51 JLX12864G-086-PC 128x64 LCD Driver (UC1701X, serial interface; built-in 5x7 ASCII font, optional on-module GB2312 font IC)](./51_Driver_12864G-086-PC/)
 
 - [STM32 DHT11 Temperature and Humidity Sensor Driver](./STM32_Driver_DHT11/)
+- [STM32 TM1637 Display Driver](./STM32_Driver_TM1637/)
+- [STM32 MAX7219 Display Driver](./STM32_Driver_max7219/)
+- [STM32 JLX12864G-086-PC 128x64 LCD Driver](./STM32_Driver_12864G-086-PC/)
 
 ### Project List
 
@@ -44,14 +47,23 @@ MCU_Platform_[Driver_specifies_hardware_driver_function]_Project_Name
 - [51 Four-channel High Voltage Switch Controller](./51_high_voltage_isolator/)
 - [51 Simple Zhouyi Divination Card](./51_zhouyi/)
 - [51 4V/6V Lead-acid Battery Charge/Discharge Controller](./51_STC15w408as_4V~6vBatterChangerSimple/)
-- [51 Relay LED Wifi Clock](./51_esp8266RelayOclock_LCD/)
+- [51 Relay LED Wifi Clock (LCD edition)](./51_esp8266RelayOclock_LCD/)
 - [51 LCD1602 Clock Project](./51_LCD1602OClock/)
 - [51 4-8 Digit LED Display Project](./51_digital_4-8tube/)
 - [51 Resistor Exhaustive Combination Fake Load](./51_Rexhaustive_fakeload/)
 - [51 Odometry](./51_Odometry/)
-- [STM32 Peak Value Assistant](./STM32_PeakValueAssistant/)
+- [51 AS62256 32K SRAM Read/Write](./51_AS62256/)
+- [51 24Cxx EEPROM Copier](./51_24Cxx_Copier/)
+- [51 Capsa Capacitance / ESR Meter](./51_Capsa/)
+- [51 NFG Self-destructing Secure Storage Card (AS6C62256 backed)](./51_NFG/)
+- [51 PWMCtrol Multi-channel PWM Controller](./51_PWMCtrol/)
+- [51 BLAKE2s Hash Algorithm](./51_Algo_BLAKE2s/)
+
+- [STM32 Peak Value Assistant](./STM32_Peak_Assistance/)
 - [STM32 Solar Weather Monitoring Node](./STM32_Weather_Monitoring_Node/)
 - [STM32 Project Template](./STM32_Project/)
+- [STM32 PDL Power Data Logger](./STM32_PDL/)
+- [STM32 ADC Sampling + UART Demo](./STM32_lol/)
 
 ### View
 
