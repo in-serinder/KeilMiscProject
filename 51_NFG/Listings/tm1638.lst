@@ -1,0 +1,348 @@
+C51 COMPILER V9.59.0.0   TM1638                                                            11/14/2026 20:14:56 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE TM1638
+OBJECT MODULE PLACED IN .\Objects\tm1638.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE ..\..\..\Misc.Keil\51_function\tm1638.c LARGE OPTIMIZE(8,SPEED) BROWSE I
+                    -NCDIR(.\Display;.\hardware;.\system) DEBUG OBJECTEXTEND PRINT(.\Listings\tm1638.lst) TABS(2) OBJECT(.\Objects\tm1638.obj
+                    -)
+
+line level    source
+
+   1          #include "tm1638.h"
+   2          
+   3          /* ==========================================================================
+   4           * TM1638 驱动实现（三线串行，纯 GPIO 位操作）
+   5           * --------------------------------------------------------------------------
+   6           * 时序：CLK 空闲为高；DIO 在 CLK 低电平期间改变，在 CLK 上升沿被模块采样。
+   7           *       STB 下降沿开始一帧，STB 上升沿结束并生效。
+   8           * 速度：11.0592MHz 下两个 _nop_() 约 2.2us，时钟约 450kHz，
+   9           *       TM1638 手册上限 1MHz、最窄脉宽 100ns，这个速度既安全又好排查。
+  10           *========================================================================== */
+  11          
+  12          /* 显示 RAM 影子：16 字节，所有设置先改这里，再整块下发，
+  13             这样单独改一位数码管不会把 LED 和其他位冲掉。 */
+  14          static unsigned char s_ram[TM_REG_BYTES];
+  15          
+  16          /* 0~9 A~F 段码，bit0=a … bit6=g，bit7=dp */
+  17          static unsigned char code s_font[16] = {
+  18              0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07,
+  19              0x7F, 0x6F, 0x77, 0x7C, 0x39, 0x5E, 0x79, 0x71};
+  20          
+  21          static void TM_Delay(void)
+  22          {
+  23   1          _nop_();
+  24   1          _nop_();
+  25   1      }
+  26          
+  27          /* ---------- 位操作原语 ---------- */
+  28          
+  29          static void TM_Start(void)
+  30          {
+  31   1          TM_CLK = 1;
+  32   1          TM_DIO = 1;
+  33   1          TM_Delay();
+  34   1          TM_STB = 0; /* 下降沿：一帧开始 */
+  35   1          TM_Delay();
+  36   1      }
+  37          
+  38          static void TM_Stop(void)
+  39          {
+  40   1          TM_CLK = 0;
+  41   1          TM_Delay();
+  42   1          TM_STB = 1; /* 上升沿：本帧生效 */
+  43   1          TM_Delay();
+  44   1          TM_CLK = 1;
+  45   1          TM_DIO = 1;
+  46   1      }
+  47          
+  48          /* LSB 在前发送一个字节 */
+  49          static void TM_SendByte(unsigned char dat)
+  50          {
+  51   1          unsigned char i;
+  52   1      
+  53   1          for (i = 0; i < 8; i++)
+C51 COMPILER V9.59.0.0   TM1638                                                            11/14/2026 20:14:56 PAGE 2   
+
+  54   1          {
+  55   2              TM_CLK = 0;
+  56   2              if (dat & 0x01)
+  57   2                  TM_DIO = 1;
+  58   2              else
+  59   2                  TM_DIO = 0;
+  60   2              TM_Delay();
+  61   2              TM_CLK = 1; /* 上升沿锁存 */
+  62   2              TM_Delay();
+  63   2              dat >>= 1;
+  64   2          }
+  65   1          TM_CLK = 0;
+  66   1      }
+  67          
+  68          /* LSB 在前接收一个字节 */
+  69          static unsigned char TM_ReadByte(void)
+  70          {
+  71   1          unsigned char i, dat = 0;
+  72   1      
+  73   1          TM_DIO = 1; /* 释放总线，交给模块驱动 */
+  74   1          for (i = 0; i < 8; i++)
+  75   1          {
+  76   2              dat >>= 1;
+  77   2              TM_CLK = 1;
+  78   2              TM_Delay();
+  79   2              if (TM_DIO)
+  80   2                  dat |= 0x80;
+  81   2              TM_CLK = 0;
+  82   2              TM_Delay();
+  83   2          }
+  84   1          return dat;
+  85   1      }
+  86          
+  87          static void TM_WriteCmd(unsigned char cmd)
+  88          {
+  89   1          TM_Start();
+  90   1          TM_SendByte(cmd);
+  91   1          TM_Stop();
+  92   1      }
+  93          
+  94          /* ---------- 对外 API ---------- */
+  95          
+  96          void TM_Init(void)
+  97          {
+  98   1          unsigned char i;
+  99   1      
+ 100   1          TM_STB = 1;
+ 101   1          TM_CLK = 1;
+ 102   1          TM_DIO = 1;
+ 103   1      
+ 104   1          for (i = 0; i < TM_REG_BYTES; i++)
+ 105   1              s_ram[i] = 0x00;
+ 106   1      
+ 107   1          TM_Flush();
+ 108   1          TM_WriteCmd(TM_CMD_DISP_ON | 0x07);
+ 109   1      }
+ 110          
+ 111          void TM_Flush(void)
+ 112          {
+ 113   1          unsigned char i;
+ 114   1      
+ 115   1          TM_WriteCmd(TM_CMD_DATA_AUTO); /* 自动地址递增 */
+C51 COMPILER V9.59.0.0   TM1638                                                            11/14/2026 20:14:56 PAGE 3   
+
+ 116   1      
+ 117   1          TM_Start();
+ 118   1          TM_SendByte(TM_CMD_ADDR_START);
+ 119   1          for (i = 0; i < TM_REG_BYTES; i++)
+ 120   1              TM_SendByte(s_ram[i]);
+ 121   1          TM_Stop();
+ 122   1      }
+ 123          
+ 124          void TM_Clear(void)
+ 125          {
+ 126   1          unsigned char i;
+ 127   1          for (i = 0; i < TM_REG_BYTES; i++)
+ 128   1              s_ram[i] = 0x00;
+ 129   1          TM_Flush();
+ 130   1      }
+ 131          
+ 132          void TM_ClearDigits(void)
+ 133          {
+ 134   1          unsigned char i;
+ 135   1          for (i = 0; i < TM_DIGITS; i++)
+ 136   1              s_ram[2 * i] = SEG_BLANK;
+ 137   1          TM_Flush();
+ 138   1      }
+ 139          
+ 140          void TM_SetBrightness(unsigned char level)
+ 141          {
+ 142   1          if (level > 7)
+ 143   1              level = 7;
+ 144   1          TM_WriteCmd(TM_CMD_DISP_ON | level);
+ 145   1      }
+ 146          
+ 147          void TM_DisplayOn(void)
+ 148          {
+ 149   1          TM_WriteCmd(TM_CMD_DISP_ON | 0x07);
+ 150   1      }
+ 151          
+ 152          void TM_DisplayOff(void)
+ 153          {
+ 154   1          TM_WriteCmd(TM_CMD_DISP_OFF);
+ 155   1      }
+ 156          
+ 157          void TM_SetDigit(unsigned char pos, unsigned char seg)
+ 158          {
+ 159   1          if (pos >= TM_DIGITS)
+ 160   1              return;
+ 161   1          s_ram[2 * pos] = seg;
+ 162   1          TM_Flush();
+ 163   1      }
+ 164          
+ 165          void TM_SetDigits(unsigned char *segs)
+ 166          {
+ 167   1          unsigned char i;
+ 168   1          for (i = 0; i < TM_DIGITS; i++)
+ 169   1              s_ram[2 * i] = segs[i];
+ 170   1          TM_Flush();
+ 171   1      }
+ 172          
+ 173          void TM_SetHexDigit(unsigned char pos, unsigned char val)
+ 174          {
+ 175   1          if (pos >= TM_DIGITS)
+ 176   1              return;
+ 177   1          s_ram[2 * pos] = s_font[val & 0x0F];
+C51 COMPILER V9.59.0.0   TM1638                                                            11/14/2026 20:14:56 PAGE 4   
+
+ 178   1          TM_Flush();
+ 179   1      }
+ 180          
+ 181          void TM_ShowHex(unsigned int value)
+ 182          {
+ 183   1          s_ram[0] = s_font[(unsigned char)(value >> 12) & 0x0F];
+ 184   1          s_ram[2] = s_font[(unsigned char)(value >> 8) & 0x0F];
+ 185   1          s_ram[4] = s_font[(unsigned char)(value >> 4) & 0x0F];
+ 186   1          s_ram[6] = s_font[(unsigned char)value & 0x0F];
+ 187   1          TM_Flush();
+ 188   1      }
+ 189          
+ 190          void TM_ShowNumber(unsigned int value)
+ 191          {
+ 192   1          unsigned char i;
+ 193   1      
+ 194   1          for (i = 0; i < TM_DIGITS; i++)
+ 195   1              s_ram[2 * i] = SEG_BLANK;
+ 196   1      
+ 197   1          i = TM_DIGITS - 1;
+ 198   1          while (1)
+ 199   1          {
+ 200   2              s_ram[2 * i] = s_font[value % 10];
+ 201   2              value /= 10;
+ 202   2              if (i == 0 || value == 0)
+ 203   2                  break;
+ 204   2              i--;
+ 205   2          }
+ 206   1          TM_Flush();
+ 207   1      }
+ 208          
+ 209          /* 只认 0-9 A-F 和 '-' '_' ' '，其余按空白处理 */
+ 210          void TM_ShowString(unsigned char *s)
+ 211          {
+ 212   1          unsigned char i, c;
+ 213   1      
+ 214   1          for (i = 0; i < TM_DIGITS; i++)
+ 215   1              s_ram[2 * i] = SEG_BLANK;
+ 216   1      
+ 217   1          i = 0;
+ 218   1          while (i < TM_DIGITS && *s)
+ 219   1          {
+ 220   2              c = *s++;
+ 221   2              if (c >= '0' && c <= '9')
+ 222   2                  s_ram[2 * i] = s_font[c - '0'];
+ 223   2              else if (c >= 'A' && c <= 'F')
+ 224   2                  s_ram[2 * i] = s_font[c - 'A' + 10];
+ 225   2              else if (c >= 'a' && c <= 'f')
+ 226   2                  s_ram[2 * i] = s_font[c - 'a' + 10];
+ 227   2              else if (c == '-')
+ 228   2                  s_ram[2 * i] = SEG_MINUS;
+ 229   2              else if (c == '_')
+ 230   2                  s_ram[2 * i] = SEG_UNDERLINE;
+ 231   2              else
+ 232   2                  s_ram[2 * i] = SEG_BLANK;
+ 233   2              i++;
+ 234   2          }
+ 235   1          TM_Flush();
+ 236   1      }
+ 237          
+ 238          void TM_SetLEDs(unsigned char mask)
+ 239          {
+C51 COMPILER V9.59.0.0   TM1638                                                            11/14/2026 20:14:56 PAGE 5   
+
+ 240   1          unsigned char i;
+ 241   1          for (i = 0; i < TM_DIGITS; i++)
+ 242   1          {
+ 243   2              if (mask & (unsigned char)(1 << i))
+ 244   2                  s_ram[2 * i + 1] |= TM_LED_BIT;
+ 245   2              else
+ 246   2                  s_ram[2 * i + 1] &= (unsigned char)~TM_LED_BIT;
+ 247   2          }
+ 248   1          TM_Flush();
+ 249   1      }
+ 250          
+ 251          /* 把 8 个奇数寄存器（0xC1/0xC3/…/0xCF）整字节写成同一个值。
+ 252             用于探测模块的 LED 到底挂在 SEG9(bit0) 还是 SEG10(bit1)：
+ 253             依次写 0x01 / 0x02 / 0x03，看哪一次 LED 亮。 */
+ 254          void TM_SetLedBytes(unsigned char dat)
+ 255          {
+ 256   1          unsigned char i;
+ 257   1          for (i = 0; i < TM_DIGITS; i++)
+ 258   1              s_ram[2 * i + 1] = dat;
+ 259   1          TM_Flush();
+ 260   1      }
+ 261          
+ 262          void TM_SetLED(unsigned char pos, bit on)
+ 263          {
+ 264   1          if (pos >= TM_DIGITS)
+ 265   1              return;
+ 266   1          if (on)
+ 267   1              s_ram[2 * pos + 1] |= TM_LED_BIT;
+ 268   1          else
+ 269   1              s_ram[2 * pos + 1] &= (unsigned char)~TM_LED_BIT;
+ 270   1          TM_Flush();
+ 271   1      }
+ 272          
+ 273          /* 读回 4 个原始字节（不做任何位映射），调试按键矩阵时用它 */
+ 274          void TM_ReadKeyBytes(unsigned char *buf)
+ 275          {
+ 276   1          unsigned char i;
+ 277   1      
+ 278   1          TM_Start();
+ 279   1          TM_SendByte(TM_CMD_READ_KEY);
+ 280   1          TM_DIO = 1; /* 交还总线 */
+ 281   1      
+ 282   1          for (i = 0; i < 4; i++)
+ 283   1              buf[i] = TM_ReadByte();
+ 284   1      
+ 285   1          TM_Stop();
+ 286   1      }
+ 287          
+ 288          /* 4 字节原始数据 -> 8 位键值。
+ 289             字节 i = 第 i+1 列；两行分别取 TM_KEY_ROW1 / TM_KEY_ROW2（本模块是 bit0 与 bit4）。
+ 290             注意两个坑：
+ 291               - 不能按"顺序映射"，否则按 S1/S2/S3/S4 会错报成 S1/S3/S5/S7；
+ 292               - 第二行不是 bit1，按 bit1 解会让 S5~S8 完全读不到。 */
+ 293          unsigned char TM_KeysFromBytes(unsigned char *buf)
+ 294          {
+ 295   1          unsigned char i, key = 0;
+ 296   1      
+ 297   1          for (i = 0; i < 4; i++)
+ 298   1          {
+ 299   2              if (buf[i] & TM_KEY_ROW1)
+ 300   2                  key |= (unsigned char)(1 << i);
+ 301   2              if (buf[i] & TM_KEY_ROW2)
+C51 COMPILER V9.59.0.0   TM1638                                                            11/14/2026 20:14:56 PAGE 6   
+
+ 302   2                  key |= (unsigned char)(1 << (i + 4));
+ 303   2          }
+ 304   1          return key;
+ 305   1      }
+ 306          
+ 307          unsigned char TM_ReadKeys(void)
+ 308          {
+ 309   1          unsigned char buf[4];
+ 310   1      
+ 311   1          TM_ReadKeyBytes(buf);
+ 312   1          return TM_KeysFromBytes(buf);
+ 313   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1174    ----
+   CONSTANT SIZE    =     16    ----
+   XDATA SIZE       =     16      18
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

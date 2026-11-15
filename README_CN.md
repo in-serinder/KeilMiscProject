@@ -34,6 +34,9 @@ git clone  https://github.com/in-serinder/KeilMiscProject.git
 - [51 PCF8574 I2C 接口扩展器 驱动](./51_Driver_PCF8574/)
 - [51 TLCx543(TLC1543/TLC2543) 10-12位ADC 驱动](./51_Driver_TLCx543_10-12bitADC/)
 - [51 EC11 旋转编码器 驱动](./51__Driver_ec11_ENCODE/)
+- [51 软件 I2C 主机 / 从机 驱动](./51_Driver_SoftIIC/)
+- [51 HC-SR04 超声波测距驱动（GPIO / I2C / UART 三种接口）](./51_Driver_HCSR04/)
+- [51 ULN2003A 步进电机驱动](./51_Driver_ULN2003A/)
 - [51 JLX12864G-086-PC 128x64 液晶屏驱动（UC1701X，串行接口；内置 5x7 ASCII 字模，可选模块字库 IC 显示汉字）](./51_Driver_12864G-086-PC/)
 
 - [STM32 DHT11 温湿度传感器 驱动](./STM32_Driver_DHT11/)

@@ -1,0 +1,1 @@
+"..\..\..\Misc.Keil\51_function\tm1638.c" LARGE OPTIMIZE (8,SPEED) BROWSE INCDIR(.\Display;.\hardware;.\system) DEBUG OBJECTEXTEND PRINT(.\Listings\tm1638.lst) TABS (2) OBJECT(.\Objects\tm1638.obj)

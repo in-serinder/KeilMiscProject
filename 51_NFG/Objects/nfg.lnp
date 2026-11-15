@@ -4,6 +4,7 @@
 ".\Objects\AS6C622_Serial.obj",
 ".\Objects\SN74HC165N.obj",
 ".\Objects\SN74HC595N.obj",
+".\Objects\tm1638.obj",
 ".\Objects\delay.obj",
 ".\Objects\uart.obj" 
 TO ".\Objects\nfg" 

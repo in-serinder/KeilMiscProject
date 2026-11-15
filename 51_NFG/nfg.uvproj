@@ -416,6 +416,11 @@
               <FileType>1</FileType>
               <FilePath>.\hardware\SN74HC595N.c</FilePath>
             </File>
+            <File>
+              <FileName>tm1638.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Misc.Keil\51_function\tm1638.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

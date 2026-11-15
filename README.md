@@ -34,6 +34,9 @@ MCU_Platform_[Driver_specifies_hardware_driver_function]_Project_Name
 - [51 PCF8574 I2C Expander Driver](./51_Driver_PCF8574/)
 - [51 TLCx543(TLC1543/TLC2543) 10-12 bit ADC Driver](./51_Driver_TLCx543_10-12bitADC/)
 - [51 EC11 Rotary Encoder Driver](./51__Driver_ec11_ENCODE/)
+- [51 Software I2C Master/Slave Driver](./51_Driver_SoftIIC/)
+- [51 HC-SR04 Ultrasonic Ranging Driver (GPIO / I2C / UART variants)](./51_Driver_HCSR04/)
+- [51 ULN2003A Stepper Motor Driver](./51_Driver_ULN2003A/)
 - [51 JLX12864G-086-PC 128x64 LCD Driver (UC1701X, serial interface; built-in 5x7 ASCII font, optional on-module GB2312 font IC)](./51_Driver_12864G-086-PC/)
 
 - [STM32 DHT11 Temperature and Humidity Sensor Driver](./STM32_Driver_DHT11/)
