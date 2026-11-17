@@ -57,7 +57,7 @@ MCU_Platform_[Driver_specifies_hardware_driver_function]_Project_Name
 - [51 Odometry](./51_Odometry/)
 - [51 AS62256 32K SRAM Read/Write](./51_AS62256/)
 - [51 24Cxx EEPROM Copier](./51_24Cxx_Copier/)
-- [51 Capsa Capacitance / ESR Meter](./51_Capsa/)
+- [51 Capsa small-capacity non-volatile memory](./51_Capsa/)
 - [51 NFG Self-destructing Secure Storage Card (AS6C62256 backed)](./51_NFG/)
 - [51 PWMCtrol Multi-channel PWM Controller](./51_PWMCtrol/)
 - [51 BLAKE2s Hash Algorithm](./51_Algo_BLAKE2s/)

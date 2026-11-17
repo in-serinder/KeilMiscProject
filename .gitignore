@@ -1,0 +1,22 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.vsidx
+
+# .NET / Avalonia build output
+[Dd]ebug/
+[Rr]elease/
+bin/
+obj/
+*.pdb
+*.dll
+*.exe
+*.deps.json
+
+# SQLite wal/shm
+*.db-shm
+*.db-wal
+
+# Logs
+*.log
