@@ -1,0 +1,214 @@
+C51 COMPILER V9.59.0.0   EEPROM                                                            11/24/2026 00:26:38 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE EEPROM
+OBJECT MODULE PLACED IN .\Objects\eeprom.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE system\eeprom.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\;.\system;.\hardware;.
+                    -\user) DEBUG OBJECTEXTEND PRINT(.\Listings\eeprom.lst) TABS(2) OBJECT(.\Objects\eeprom.obj)
+
+line level    source
+
+   1          /* =====================================================================
+   2           * eeprom.c  —  用 STC8 片内 IAP(Flash) 存参数
+   3           *
+   4           * 寄存器（STC8 系列，和 STC15 不同，这里没有 WT[3:0] 等待周期字段，
+   5           * 改由 IAP_TPS = SYSclk / 1MHz 告诉硬件主频）：
+   6           *   IAP_DATA  读写数据
+   7           *   IAP_ADDRH/L  目标地址（16 位）
+   8           *   IAP_CMD   0=空 1=读 2=写(字节) 3=擦除(扇区)
+   9           *   IAP_TRIG  依次写 0x5A、0xA5 才真正执行（防误操作）
+  10           *   IAP_CONTR bit7 = IAPEN
+  11           *   IAP_TPS   22.1184MHz -> 22
+  12           *
+  13           * 关键点：
+  14           * 1) STC8G1K08A 扇区 512B，擦除只能整扇区擦，所以先擦后写。
+  15           * 2) 擦/写期间 CPU 会被硬件停住，节拍会丢几十个 ms —— 关中断再把 EA 恢复，
+  16           *    避免中断向量在 Flash 忙于编程时取指出问题。
+  17           * 3) 操作完必须把 IAP_CONTR 关掉、IAP_CMD 清零、地址指到 0x8000（非用户区），
+  18           *    否则程序跑飞时可能误触发一次擦写。
+  19           * 4) STC-ISP 下载时"EEPROM 大小"要与 CFG_EEPROM_BASE 对齐（8K 器件选 1K，
+  20           *    即 0x1C00~0x1FFF），否则下载代码可能覆盖参数区。
+  21           * ===================================================================== */
+  22          #include "eeprom.h"
+  23          #include "delay.h"
+  24          
+  25          #define IAP_CMD_IDLE            0x00
+  26          #define IAP_CMD_READ            0x01
+  27          #define IAP_CMD_WRITE           0x02
+  28          #define IAP_CMD_ERASE           0x03
+  29          
+  30          #define EE_REC_LEN              8
+  31          
+  32          static uint8_t s_fail;      /* 最近一次 IAP 操作的 CMD_FAIL 位（1 = 硬件报告失败） */
+  33          
+  34          static void iap_begin(uint8_t cmd, uint16_t addr)
+  35          {
+  36   1          IAP_TPS = (uint8_t)(FOSC_HZ / 1000000UL);   /* 22.1184MHz -> 22 */
+  37   1          IAP_CONTR = 0x80;                           /* IAPEN = 1，程序区可写 */
+  38   1          IAP_CMD = cmd;
+  39   1          IAP_ADDRH = (uint8_t)(addr >> 8);
+  40   1          IAP_ADDRL = (uint8_t)(addr & 0x00FF);
+  41   1      }
+  42          
+  43          static void iap_trigger(void)
+  44          {
+  45   1          IAP_TRIG = 0x5A;
+  46   1          IAP_TRIG = 0xA5;
+  47   1          _nop_();
+  48   1          _nop_();
+  49   1          _nop_();
+  50   1          _nop_();
+  51   1      }
+  52          
+  53          static void iap_end(void)
+  54          {
+C51 COMPILER V9.59.0.0   EEPROM                                                            11/24/2026 00:26:38 PAGE 2   
+
+  55   1          s_fail = (uint8_t)((IAP_CONTR & 0x10) ? 1 : 0);   /* bit4 = CMD_FAIL */
+  56   1          IAP_CONTR = 0x00;
+  57   1          IAP_CMD = IAP_CMD_IDLE;
+  58   1          IAP_ADDRH = 0x80;                           /* 指向非用户区，防误触发 */
+  59   1          IAP_ADDRL = 0x00;
+  60   1          IAP_TRIG = 0x00;
+  61   1      }
+  62          
+  63          static uint8_t ee_read_byte(uint16_t addr)
+  64          {
+  65   1          uint8_t d;
+  66   1      
+  67   1          iap_begin(IAP_CMD_READ, addr);
+  68   1          iap_trigger();
+  69   1          d = IAP_DATA;
+  70   1          iap_end();
+  71   1          return d;
+  72   1      }
+  73          
+  74          static void ee_write_byte(uint16_t addr, uint8_t dat)
+  75          {
+  76   1          iap_begin(IAP_CMD_WRITE, addr);
+  77   1          IAP_DATA = dat;
+  78   1          iap_trigger();
+  79   1          delay_ms(2);                                /* 单字节编程，留足余量 */
+  80   1          iap_end();
+  81   1      }
+  82          
+  83          static void ee_erase_sector(uint16_t addr)
+  84          {
+  85   1          iap_begin(IAP_CMD_ERASE, addr);
+  86   1          iap_trigger();
+  87   1          delay_ms(6);                                /* 扇区擦除典型 4~5ms */
+  88   1          iap_end();
+  89   1      }
+  90          
+  91          #if CFG_DEBUG_UART
+  92          uint8_t EE_LastFail(void)
+  93          {
+  94   1          return s_fail;
+  95   1      }
+  96          #endif
+  97          
+  98          uint8_t EE_LoadThreshold(uint16_t *th)
+  99          {
+ 100   1          uint8_t rec[EE_REC_LEN];
+ 101   1          uint8_t i;
+ 102   1          uint8_t sum = 0;
+ 103   1          uint16_t v, nv;
+ 104   1      
+ 105   1          for (i = 0; i < EE_REC_LEN; i++)
+ 106   1          {
+ 107   2              rec[i] = ee_read_byte((uint16_t)(CFG_EEPROM_BASE + i));
+ 108   2          }
+ 109   1      
+ 110   1          if ((rec[0] != 0x5A) || (rec[1] != 0xA5))
+ 111   1          {
+ 112   2              return 0;
+ 113   2          }
+ 114   1      
+ 115   1          for (i = 0; i < 6; i++)
+ 116   1          {
+C51 COMPILER V9.59.0.0   EEPROM                                                            11/24/2026 00:26:38 PAGE 3   
+
+ 117   2              sum = (uint8_t)(sum + rec[i]);
+ 118   2          }
+ 119   1          if (sum != rec[6])
+ 120   1          {
+ 121   2              return 0;
+ 122   2          }
+ 123   1      
+ 124   1          v  = (uint16_t)((uint16_t)rec[2] | ((uint16_t)rec[3] << 8));
+ 125   1          nv = (uint16_t)((uint16_t)rec[4] | ((uint16_t)rec[5] << 8));
+ 126   1      
+ 127   1          if ((uint16_t)(~v) != nv)
+ 128   1          {
+ 129   2              return 0;
+ 130   2          }
+ 131   1          if (v > CFG_TH_MAX)
+ 132   1          {
+ 133   2              return 0;
+ 134   2          }
+ 135   1      
+ 136   1          *th = v;
+ 137   1          return 1;
+ 138   1      }
+ 139          
+ 140          uint8_t EE_SaveThreshold(uint16_t th)
+ 141          {
+ 142   1          uint8_t rec[EE_REC_LEN];
+ 143   1          uint8_t i;
+ 144   1          uint8_t ok = 1;
+ 145   1          uint16_t nv;
+ 146   1          bit ea;
+ 147   1      
+ 148   1          nv = (uint16_t)(~th);
+ 149   1      
+ 150   1          rec[0] = 0x5A;
+ 151   1          rec[1] = 0xA5;
+ 152   1          rec[2] = (uint8_t)(th & 0x00FF);
+ 153   1          rec[3] = (uint8_t)(th >> 8);
+ 154   1          rec[4] = (uint8_t)(nv & 0x00FF);
+ 155   1          rec[5] = (uint8_t)(nv >> 8);
+ 156   1          rec[6] = 0x00;
+ 157   1          for (i = 0; i < 6; i++)
+ 158   1          {
+ 159   2              rec[6] = (uint8_t)(rec[6] + rec[i]);
+ 160   2          }
+ 161   1          rec[7] = 0xFF;
+ 162   1      
+ 163   1          ea = EA;
+ 164   1          EA = 0;                                     /* IAP 期间不让中断插进来 */
+ 165   1      
+ 166   1          ee_erase_sector(CFG_EEPROM_BASE);
+ 167   1          for (i = 0; i < EE_REC_LEN; i++)
+ 168   1          {
+ 169   2              ee_write_byte((uint16_t)(CFG_EEPROM_BASE + i), rec[i]);
+ 170   2          }
+ 171   1      
+ 172   1          EA = ea;
+ 173   1      
+ 174   1          for (i = 0; i < EE_REC_LEN; i++)
+ 175   1          {
+ 176   2              if (ee_read_byte((uint16_t)(CFG_EEPROM_BASE + i)) != rec[i])
+ 177   2              {
+ 178   3                  ok = 0;
+C51 COMPILER V9.59.0.0   EEPROM                                                            11/24/2026 00:26:38 PAGE 4   
+
+ 179   3                  break;
+ 180   3              }
+ 181   2          }
+ 182   1      
+ 183   1          return ok;
+ 184   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    427    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1      23
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

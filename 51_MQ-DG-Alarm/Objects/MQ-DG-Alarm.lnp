@@ -1,0 +1,10 @@
+".\Objects\main.obj",
+".\Objects\delay.obj",
+".\Objects\eeprom.obj",
+".\Objects\uart.obj",
+".\Objects\board.obj",
+".\Objects\TM1637.obj",
+".\Objects\adc.obj",
+".\Objects\key.obj" 
+TO ".\Objects\MQ-DG-Alarm" 
+PRINT(".\Listings\MQ-DG-Alarm.m51") RAMSIZE(256) 

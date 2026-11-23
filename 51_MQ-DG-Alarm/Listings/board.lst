@@ -1,0 +1,65 @@
+C51 COMPILER V9.59.0.0   BOARD                                                             11/24/2026 00:26:38 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE BOARD
+OBJECT MODULE PLACED IN .\Objects\board.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE hardware\board.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\;.\system;.\hardware;
+                    -.\user) DEBUG OBJECTEXTEND PRINT(.\Listings\board.lst) TABS(2) OBJECT(.\Objects\board.obj)
+
+line level    source
+
+   1          /* =====================================================================
+   2           * board.c  —  上电初始化：端口模式、扩展寄存器访问、外设初值
+   3           *
+   4           * STC8 的端口四个模式（PxM1/PxM0）：
+   5           *   00 准双向口  01 推挽输出  10 高阻输入  11 开漏输出
+   6           * 复位值全是 00（准双向），所以只用显式改需要变的脚。
+   7           * ===================================================================== */
+   8          #include "board.h"
+   9          
+  10          void Board_Init(void)
+  11          {
+  12   1          /* 允许访问 xdata 区的扩展 SFR（ADCTIM / 各端口 PxPU 等）。
+  13   1           * 这一位置 1 只是"开窗"，不影响原有存储器，可以一直开着。 */
+  14   1          P_SW2 |= 0x80;
+  15   1      
+  16   1          /* 蜂鸣器：推挽输出，先给低（不响）。
+  17   1           * 有源蜂鸣器电流一般 20~30mA，8 脚 STC8G 单脚可直推，但建议串 100R 限流。 */
+  18   1          P3M1 &= (uint8_t)~0x08;
+  19   1          P3M0 |= 0x08;
+  20   1          BEEP = 0;
+  21   1      
+  22   1          /* 数码管 CLK/DIO：准双向口。
+  23   1           * 必须保持准双向（写 1 = 释放），键扫时才能把 DIO 读回来。 */
+  24   1          P5M1 &= (uint8_t)~0x30;
+  25   1          P5M0 &= (uint8_t)~0x30;
+  26   1          TM1637_CLK = 1;
+  27   1          TM1637_DIO = 1;
+  28   1      
+  29   1          /* MQ 模拟输入：高阻输入（ADC 采样必须是高阻，否则内部上拉会拉偏结果）�
+             -� */
+  30   1          P3M1 |= 0x04;
+  31   1          P3M0 &= (uint8_t)~0x04;
+  32   1      
+  33   1      #if CFG_KEY_GPIO_MODE
+                  /* 按键直读：P3.0/P3.1 准双向 + 写 1，靠内部弱上拉，按下被 A(GND) 拉低 */
+                  P3M1 &= (uint8_t)~0x03;
+                  P3M0 &= (uint8_t)~0x03;
+                  KEY_ADD_PIN = 1;
+                  KEY_SUB_PIN = 1;
+              #endif
+  40   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     28    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

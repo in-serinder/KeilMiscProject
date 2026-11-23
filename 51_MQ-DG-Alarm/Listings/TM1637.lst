@@ -1,0 +1,253 @@
+C51 COMPILER V9.59.0.0   TM1637                                                            11/24/2026 00:26:38 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE TM1637
+OBJECT MODULE PLACED IN .\Objects\TM1637.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE hardware\TM1637.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\;.\system;.\hardware
+                    -;.\user) DEBUG OBJECTEXTEND PRINT(.\Listings\TM1637.lst) TABS(2) OBJECT(.\Objects\TM1637.obj)
+
+line level    source
+
+   1          /* =====================================================================
+   2           * TM1637.c — 四位数码管驱动（起始/停止/写字节逻辑沿用原工程已验证版本）
+   3           *
+   4           * 命令字：
+   5           *   0x40  数据命令：地址自动加一，写显存
+   6           *   0xC0  地址命令：从第 1 位开始写
+   7           *   0x88|亮度  显示控制：开显示 + 亮度(0~7)
+   8           *
+   9           * 说明：原来 TM1637_StringDisplay 里调用的 charToint() 从来没有定义过，
+  10           *       这里改成 TM1637_CharToSeg() 统一做字符到段码的映射。
+  11           * ===================================================================== */
+  12          #include "TM1637.h"
+  13          #include "delay.h"
+  14          
+  15          #define TM_DLY()    Delay_us(CFG_TM1637_DLY_US)
+  16          
+  17          /* ---------------- 底层时序 ---------------- */
+  18          static void tm_start(void)
+  19          {
+  20   1          TM1637_CLK = 1;
+  21   1          TM1637_DIO = 1;
+  22   1          TM_DLY();
+  23   1          TM1637_DIO = 0;         /* CLK 高时 DIO 下降沿 = 起始 */
+  24   1          TM_DLY();
+  25   1      }
+  26          
+  27          static void tm_stop(void)
+  28          {
+  29   1          TM1637_CLK = 0;
+  30   1          TM_DLY();
+  31   1          TM1637_DIO = 0;
+  32   1          TM_DLY();
+  33   1          TM1637_CLK = 1;
+  34   1          TM_DLY();
+  35   1          TM1637_DIO = 1;         /* CLK 高时 DIO 上升沿 = 停止 */
+  36   1          TM_DLY();
+  37   1      }
+  38          
+  39          /* 低位在前，第 9 个时钟只给脉冲，不读 ACK */
+  40          static void tm_write(uint8_t byte)
+  41          {
+  42   1          uint8_t i;
+  43   1      
+  44   1          for (i = 0; i < 8; i++)
+  45   1          {
+  46   2              TM1637_CLK = 0;
+  47   2              TM_DLY();
+  48   2              TM1637_DIO = (byte & 0x01) ? 1 : 0;
+  49   2              TM_DLY();
+  50   2              byte >>= 1;
+  51   2              TM1637_CLK = 1;
+  52   2              TM_DLY();
+  53   2          }
+  54   1      
+C51 COMPILER V9.59.0.0   TM1637                                                            11/24/2026 00:26:38 PAGE 2   
+
+  55   1          TM1637_CLK = 0;
+  56   1          TM1637_DIO = 1;
+  57   1          TM_DLY();
+  58   1          TM1637_CLK = 1;
+  59   1          TM_DLY();
+  60   1          TM1637_CLK = 0;
+  61   1      }
+  62          
+  63          /* 低位在前读 1 字节。
+  64           * 读之前必须把 DIO 写成 1（准双向口写 1 = 释放，引脚才变成输入）；
+  65           * 漏了这一句，引脚被自己的下拉钉在 0，读回来永远是 0x00。
+  66           * 之后第 9 个时钟是主机应答位，TM1637 不检查内容，给个脉冲即可。 */
+  67          #if CFG_TM1637_KEYSCAN
+  68          static uint8_t tm_read(uint8_t ack)
+  69          {
+  70   1          uint8_t i, dat = 0;
+  71   1      
+  72   1          TM1637_DIO = 1;
+  73   1          for (i = 0; i < 8; i++)
+  74   1          {
+  75   2              TM1637_CLK = 0;
+  76   2              TM_DLY();
+  77   2              TM1637_CLK = 1;             /* 上升沿采样 */
+  78   2              dat >>= 1;
+  79   2              if (TM1637_DIO)
+  80   2              {
+  81   3                  dat |= 0x80;
+  82   3              }
+  83   2              TM_DLY();
+  84   2          }
+  85   1      
+  86   1          TM1637_CLK = 0;
+  87   1          TM1637_DIO = ack ? 0 : 1;       /* 应答：拉低表示"继续读" */
+  88   1          TM_DLY();
+  89   1          TM1637_CLK = 1;
+  90   1          TM_DLY();
+  91   1          TM1637_CLK = 0;
+  92   1          TM1637_DIO = 1;
+  93   1      
+  94   1          return dat;
+  95   1      }
+  96          #endif /* CFG_TM1637_KEYSCAN */
+  97          
+  98          /* ---------------- 对外 ---------------- */
+  99          void TM1637_SetBright(uint8_t level)
+ 100          {
+ 101   1          if (level > 7)
+ 102   1          {
+ 103   2              level = 7;
+ 104   2          }
+ 105   1          tm_start();
+ 106   1          tm_write((uint8_t)(0x88 | level));      /* 开显示 + 亮度 */
+ 107   1          tm_stop();
+ 108   1      }
+ 109          
+ 110          void TM1637_WriteSegs(const uint8_t *seg, uint8_t n)
+ 111          {
+ 112   1          uint8_t i;
+ 113   1      
+ 114   1          tm_start();
+ 115   1          tm_write(0x40);                         /* 自动地址递增 */
+ 116   1          tm_stop();
+C51 COMPILER V9.59.0.0   TM1637                                                            11/24/2026 00:26:38 PAGE 3   
+
+ 117   1      
+ 118   1          tm_start();
+ 119   1          tm_write(0xC0);                         /* 起始地址 0 */
+ 120   1          for (i = 0; i < n; i++)
+ 121   1          {
+ 122   2              tm_write(seg[i]);
+ 123   2          }
+ 124   1          tm_stop();
+ 125   1      }
+ 126          
+ 127          void TM1637_Clear(void)
+ 128          {
+ 129   1          const uint8_t seg[4] = { 0x00, 0x00, 0x00, 0x00 };
+ 130   1      
+ 131   1          TM1637_WriteSegs(seg, 4);
+ 132   1      }
+ 133          
+ 134          void TM1637_Init(void)
+ 135          {
+ 136   1          TM1637_CLK = 1;
+ 137   1          TM1637_DIO = 1;
+ 138   1          Delay_ms(2);
+ 139   1      
+ 140   1          TM1637_SetBright(CFG_TM1637_BRIGHT);
+ 141   1          TM1637_Clear();
+ 142   1      }
+ 143          
+ 144          uint8_t TM1637_CharToSeg(char c)
+ 145          {
+ 146   1          switch (c)
+ 147   1          {
+ 148   2          case '0': return 0x3F;
+ 149   2          case '1': return 0x06;
+ 150   2          case '2': return 0x5B;
+ 151   2          case '3': return 0x4F;
+ 152   2          case '4': return 0x66;
+ 153   2          case '5': return 0x6D;
+ 154   2          case '6': return 0x7D;
+ 155   2          case '7': return 0x07;
+ 156   2          case '8': return 0x7F;
+ 157   2          case '9': return 0x6F;
+ 158   2      
+ 159   2          case 'A': case 'a': return 0x77;
+ 160   2          case 'B': case 'b': return 0x7C;
+ 161   2          case 'C': case 'c': return 0x39;
+ 162   2          case 'D': case 'd': return 0x5E;
+ 163   2          case 'E': case 'e': return 0x79;
+ 164   2          case 'F': case 'f': return 0x71;
+ 165   2      
+ 166   2          case 'I': case 'i': return 0x06;    /* 一根竖线 */
+ 167   2          case 'L': case 'l': return 0x38;
+ 168   2          case 'O': case 'o': return 0x5C;
+ 169   2          case 'R': case 'r': return 0x50;    /* 只亮 e+g 两段，像杂点，状态码里已不再使用 */
+ 170   2          case 'W': case 'w': return 0x3E;    /* 七段画不出 W，只能用 U 形代替 */
+ 171   2          case 'U': case 'u': return 0x3E;    /* 0x3E = b,c,d,e,f，就是 "U" */
+ 172   2          case 'n':           return 0x54;
+ 173   2          case 'P': case 'p': return 0x73;
+ 174   2          case 'S': case 's': return 0x6D;    /* 与 '5' 同形 */
+ 175   2          case 't':           return 0x78;
+ 176   2          case 'H': case 'h': return 0x76;
+ 177   2          case 'y':           return 0x6E;
+ 178   2      
+C51 COMPILER V9.59.0.0   TM1637                                                            11/24/2026 00:26:38 PAGE 4   
+
+ 179   2          case '-':           return 0x40;
+ 180   2          case ' ':           return 0x00;
+ 181   2          default:            return 0x00;
+ 182   2          }
+ 183   1      }
+ 184          
+ 185          void TM1637_Show4(const char *s, bit colon)
+ 186          {
+ 187   1          uint8_t seg[4];
+ 188   1          uint8_t i;
+ 189   1      
+ 190   1          for (i = 0; i < 4; i++)
+ 191   1          {
+ 192   2              seg[i] = TM1637_CharToSeg(s[i]);
+ 193   2          }
+ 194   1          if (colon)
+ 195   1          {
+ 196   2              seg[2] |= 0x80;         /* 模块第 2 位带小数点 */
+ 197   2          }
+ 198   1          TM1637_WriteSegs(seg, 4);
+ 199   1      }
+ 200          
+ 201          #if CFG_TM1637_KEYSCAN
+ 202          uint8_t TM1637_ReadKeys(uint8_t *buf, uint8_t n)
+ 203          {
+ 204   1          uint8_t i;
+ 205   1      
+ 206   1          if ((buf == 0) || (n == 0))
+ 207   1          {
+ 208   2              return 0;
+ 209   2          }
+ 210   1      
+ 211   1          tm_start();
+ 212   1          tm_write(0x42);                 /* 读键扫数据命令 */
+ 213   1      
+ 214   1          for (i = 0; i < n; i++)
+ 215   1          {
+ 216   2              /* 最后一个字节给 NACK，提前释放总线 */
+ 217   2              buf[i] = tm_read((uint8_t)((i + 1) < n));
+ 218   2          }
+ 219   1      
+ 220   1          tm_stop();
+ 221   1          return 1;
+ 222   1      }
+ 223          #endif /* CFG_TM1637_KEYSCAN */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    761    ----
+   CONSTANT SIZE    =      4    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      27
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

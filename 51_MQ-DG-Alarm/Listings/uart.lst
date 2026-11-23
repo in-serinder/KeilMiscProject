@@ -1,0 +1,108 @@
+C51 COMPILER V9.59.0.0   UART                                                              11/24/2026 00:26:38 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN .\Objects\uart.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE system\uart.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\;.\system;.\hardware;.\u
+                    -ser) DEBUG OBJECTEXTEND PRINT(.\Listings\uart.lst) TABS(2) OBJECT(.\Objects\uart.obj)
+
+line level    source
+
+   1          /* uart.c — 串口1 调试输出（9600 8N1 @22.1184MHz）
+   2           *
+   3           * 定时器1 作波特率发生器，12T + 16 位自动重装，重装值 0xFFD0：
+   4           *   baud = 22118400 / 12 / 4 / (65536 - 0xFFD0) = 9600，误差 0%。
+   5           *
+   6           * 只发不收：本工程不需要接收，不开 ES，避免和 main 抢中断。
+   7           */
+   8          #include "uart.h"
+   9          
+  10          #if CFG_DEBUG_UART
+  11          
+  12          void Uart1_Init(void)
+  13          {
+  14   1          SCON = 0x50;        /* 8 位数据，可变波特率，REN=1（不收也无妨） */
+  15   1          AUXR &= 0xBF;       /* 定时器1 时钟 12T 模式（bit7 = T0x12 必须保留） */
+  16   1          AUXR &= 0xFE;       /* 串口1 选择定时器1 为波特率发生器 */
+  17   1          TMOD &= 0x0F;       /* 定时器1 -> 模式0（STC8：16 位自动重装载） */
+  18   1          TL1 = 0xD0;
+  19   1          TH1 = 0xFF;
+  20   1          ET1 = 0;            /* 禁止定时器1中断 */
+  21   1          TR1 = 1;            /* 启动定时器1 */
+  22   1          TI = 0;
+  23   1          RI = 0;
+  24   1      }
+  25          
+  26          void Uart1_SendByte(uint8_t dat)
+  27          {
+  28   1          TI = 0;
+  29   1          SBUF = dat;
+  30   1          while (!TI);
+  31   1          TI = 0;
+  32   1      }
+  33          
+  34          void Uart1_SendStr(const char code *s)
+  35          {
+  36   1          while (*s != '\0')
+  37   1          {
+  38   2              Uart1_SendByte((uint8_t)(*s));
+  39   2              s++;
+  40   2          }
+  41   1      }
+  42          
+  43          void Uart1_SendHex8(uint8_t b)
+  44          {
+  45   1          const char code HEX[17] = "0123456789ABCDEF";
+  46   1      
+  47   1          Uart1_SendByte((uint8_t)HEX[(b >> 4) & 0x0F]);
+  48   1          Uart1_SendByte((uint8_t)HEX[b & 0x0F]);
+  49   1      }
+  50          
+  51          void Uart1_SendDec(uint16_t v)
+  52          {
+  53   1          uint8_t buf[5];
+  54   1          uint8_t n = 0;
+C51 COMPILER V9.59.0.0   UART                                                              11/24/2026 00:26:38 PAGE 2   
+
+  55   1      
+  56   1          if (v == 0)
+  57   1          {
+  58   2              Uart1_SendByte((uint8_t)'0');
+  59   2              return;
+  60   2          }
+  61   1      
+  62   1          while (v != 0)
+  63   1          {
+  64   2              buf[n] = (uint8_t)('0' + (uint8_t)(v % 10));
+  65   2              v = (uint16_t)(v / 10);
+  66   2              n++;
+  67   2          }
+  68   1      
+  69   1          while (n != 0)
+  70   1          {
+  71   2              n--;
+  72   2              Uart1_SendByte(buf[n]);
+  73   2          }
+  74   1      }
+  75          
+  76          void Uart1_SendCRLF(void)
+  77          {
+  78   1          Uart1_SendByte(0x0D);
+  79   1          Uart1_SendByte(0x0A);
+  80   1      }
+  81          
+  82          #endif /* CFG_DEBUG_UART */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    185    ----
+   CONSTANT SIZE    =     17    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       7
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

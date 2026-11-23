@@ -1,0 +1,305 @@
+C51 COMPILER V9.59.0.0   ADC                                                               11/24/2026 00:48:04 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE ADC
+OBJECT MODULE PLACED IN .\Objects\adc.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE hardware\adc.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\;.\system;.\hardware;.\
+                    -user) DEBUG OBJECTEXTEND PRINT(.\Listings\adc.lst) TABS(2) OBJECT(.\Objects\adc.obj)
+
+line level    source
+
+   1          /* =====================================================================
+   2           * adc.c  —  STC8G 内置 10 位 ADC（MQ 传感器）
+   3           *
+   4           * 寄存器要点（手册 16.1，STC8G1K08A 系列）：
+   5           *   ADC_CONTR  B7 ADC_POWER  B6 ADC_START  B5 ADC_FLAG  B4 ADC_EPWMT  B3~B0 ADC_CHS
+   6           *   ADCCFG     B5 RESFMT（0=左对齐 1=右对齐） B3~B0 SPEED，FADC = SYSclk/2/(SPEED+1)
+   7           *   ADCTIM     B7 CSSETUP  B6~B5 CSHOLD  B4~B0 SMPDUTY
+   8           *              官方推荐 0x3F（SMPDUTY=31，手册要求"不能小于 10"）
+   9           *
+  10           * ★ 分辨率为 10 位 -> 结果 0~1023（不是 4095）。
+  11           *   右对齐时 ADC_RES 的低 2 位是高 2 位、ADC_RESL 是低 8 位，
+  12           *   所以拼法 ((ADC_RES & 0x0F) << 8) | ADC_RESL 对 10/12 位都正确。
+  13           *
+  14           * ★ ADCTIM 在 xdata 扩展 SFR 区（0xFEA8），访问前必须 P_SW2 |= 0x80（EAXFR），
+  15           *   否则 0x3F 会落到普通 xdata 上，ADC 一直用复位默认时序。
+  16           *
+  17           * ★ ADC_POWER 打开后要等约 1ms 电源稳定才能启动转换（手册明确要求）。
+  18           * ===================================================================== */
+  19          #include "adc.h"
+  20          #include "delay.h"
+  21          
+  22          static uint8_t  s_ch = MQ_ADC_CH;       /* 实际使用的通道 */
+  23          static uint8_t  s_present;              /* 1 = 片上确实有 ADC 模块 */
+  24          static uint8_t  s_cfg = 0x2F;           /* 实际生效的 ADCCFG（自检时可能会换一套） */
+  25          static uint8_t  s_digital;              /* 1 = 走数字 DO（ADC 不可用时的降级） */
+  26          static uint8_t  s_last_to;              /* 上一次 MQ_Read 的超时次数 */
+  27          static uint16_t s_last_guard;           /* 上一次成功转换的空转次数 */
+  28          
+  29          #if CFG_DEBUG_UART
+  30          /* 开机自检时抓下来的寄存器回读值，供 main 打串口 */
+  31          static uint8_t s_pr[9];                 /* 0=ADC_CONTR(写 0A) 1=ADC_CONTR(写 82 后 1ms) */
+  32                                                  /* 2=ADCCFG 3=ADCTIM 4=P3M1 5=IE2 6=WDT_CONTR
+  33                                                     7=CLKDIV 8=ADC_CONTR(EAXFR=0 时写 0A) */
+  34          #endif
+  35          
+  36          void ADC_Init(void)
+  37          {
+  38   1      #if CFG_MQ_DIGITAL
+                  /* 强制数字 DO 模式：P3.2 当普通输入（准双向 + 写 1，外部比较器输出可拉低�
+             -�� */
+                  P3M1 &= (uint8_t)~0x04;
+                  P3M0 &= (uint8_t)~0x04;
+                  MQ_ADC_PIN = 1;
+                  s_present = 0;
+                  s_digital = 1;
+                  return;
+              #else
+  47   1          /* 1) 寄存器存在性自检
+  48   1           *    先写一个"不像配置值"的图案 0x5A，再读回来：
+  49   1           *    真 A 片子（有 ADC）会保留实现的位，读回非 0；
+  50   1           *    没有 ADC 模块的片子（STC8G1K08-8Pin 无 A）该地址不存在，读回 0x00。
+  51   1           *    P3M1 作为对照组（一定存在），证明"这一路 SFR 写读是通的"。 */
+  52   1          P_SW2 |= 0x80;                  /* 打开扩展 SFR 访问（ADCTIM 用） */
+  53   1          P3M1 |= 0x04;                   /* 顺便把 P3.2 设成高阻输入 */
+C51 COMPILER V9.59.0.0   ADC                                                               11/24/2026 00:48:04 PAGE 2   
+
+  54   1      #if CFG_DEBUG_UART
+  55   1          s_pr[4] = P3M1;
+  56   1      #endif
+  57   1      
+  58   1          /* 图案用 0x0A（通道 10，不带 POWER/START/EPWMT），
+  59   1           * 真寄存器会读回 0x0A，不存在的地址读回 0x00。 */
+  60   1          ADC_CONTR = 0x0A;
+  61   1      #if CFG_DEBUG_UART
+  62   1          s_pr[0] = ADC_CONTR;
+  63   1      
+  64   1          /* 周边 SFR 对照：IE2(0xAF) / WDT_CONTR(0xC1) 是普通 SFR，
+  65   1           * CLKDIV(0xFE01) 在 xdata SFR 区（验证 EAXFR 是否真的开了）。
+  66   1           * 这几个能读回写进去的值、而 ADC 那组读回 0，就说明只是 ADC 块缺失。 */
+  67   1          IE2 = 0x00;
+  68   1          s_pr[5] = IE2;
+  69   1          WDT_CONTR = 0x00;
+  70   1          s_pr[6] = WDT_CONTR;
+  71   1          CLKDIV = 0x00;                      /* 分频 1，等于复位值，安全 */
+  72   1          s_pr[7] = CLKDIV;
+  73   1      
+  74   1          /* 最后排除一种可能：EAXFR(bit7)=1 会不会让普通 SFR 读不回来。
+  75   1           * 关掉 EAXFR 再写一次 ADC_CONTR，如果这时能读回 0x5A，那就是 EAXFR 的锅。 */
+  76   1          P_SW2 &= 0x7F;
+  77   1          ADC_CONTR = 0x0A;
+  78   1          s_pr[8] = ADC_CONTR;
+  79   1          P_SW2 |= 0x80;
+  80   1      #endif
+  81   1      
+  82   1          /* 2) 正经配置：官方推荐值 */
+  83   1          ADCTIM = 0x3F;                  /* CSSETUP=0, CSHOLD=01, SMPDUTY=31 */
+  84   1          ADCCFG = 0x20 | 0x0F;           /* 右对齐 + FADC = SYSclk/2/16 */
+  85   1      #if CFG_DEBUG_UART
+  86   1          s_pr[2] = ADCCFG;
+  87   1          s_pr[3] = ADCTIM;
+  88   1      #endif
+  89   1      
+  90   1          ADC_CONTR = 0x80 | (s_ch & 0x0F);   /* 打开 ADC 电源 + 选通道 */
+  91   1          delay_ms(2);                        /* 等 ADC 电源稳定（手册要求 >=1ms） */
+  92   1      #if CFG_DEBUG_UART
+  93   1          s_pr[1] = ADC_CONTR;
+  94   1      #endif
+  95   1      
+  96   1          /* 3) 用内部 1.19V 基准（通道 15）判定 ADC 到底有没有在转换：
+  97   1           *    这一路与外部引脚无关，能转换就说明 ADC 模块是活的。 */
+  98   1          if ((ADC_RawRead(15) != 0xFFFF) || (ADC_RawRead(s_ch) != 0xFFFF))
+  99   1          {
+ 100   2              s_cfg = 0x2F;
+ 101   2              s_present = 1;
+ 102   2              return;
+ 103   2          }
+ 104   1      
+ 105   1          /* 4) 退一步：换成官方例程那套（左对齐 + 复位默认 ADCTIM）再试一次，
+ 106   1           *    排除某些批次对时序寄存器敏感的可能。 */
+ 107   1          P_SW2 |= 0x80;
+ 108   1          ADCTIM = 0x2A;
+ 109   1          ADCCFG = 0x0F;
+ 110   1          ADC_CONTR = 0x80 | (s_ch & 0x0F);
+ 111   1          delay_ms(2);
+ 112   1      
+ 113   1          if ((ADC_RawRead(15) != 0xFFFF) || (ADC_RawRead(s_ch) != 0xFFFF))
+ 114   1          {
+ 115   2              s_cfg = 0x0F;
+C51 COMPILER V9.59.0.0   ADC                                                               11/24/2026 00:48:04 PAGE 3   
+
+ 116   2              s_present = 1;
+ 117   2              return;
+ 118   2          }
+ 119   1      
+ 120   1          s_cfg = 0x2F;
+ 121   1          s_present = 0;
+ 122   1      
+ 123   1      #if CFG_MQ_AUTO_DO
+ 124   1          /* 两次配置都转不动：ADC 这块在这颗片子上不可用，自动降级到数字 DO，
+ 125   1           * 至少让报警功能能跑（阈值由 MQ 模块的电位器决定）。 */
+ 126   1          s_digital = 1;
+ 127   1          P3M1 &= (uint8_t)~0x04;
+ 128   1          P3M0 &= (uint8_t)~0x04;
+ 129   1          MQ_ADC_PIN = 1;
+ 130   1      #endif
+ 131   1      #endif
+ 132   1      }
+ 133          
+ 134          #if CFG_MQ_AUTO_DO || CFG_MQ_DIGITAL
+ 135          uint8_t ADC_IsDigital(void)
+ 136          {
+ 137   1          return s_digital;
+ 138   1      }
+ 139          #endif
+ 140          
+ 141          #if !CFG_MQ_DIGITAL
+ 142          uint8_t ADC_IsPresent(void)
+ 143          {
+ 144   1          return s_present;
+ 145   1      }
+ 146          #endif
+ 147          
+ 148          #if CFG_DEBUG_UART && !CFG_MQ_DIGITAL
+ 149          uint8_t ADC_GetCfg(void)
+ 150          {
+ 151   1          return s_cfg;
+ 152   1      }
+ 153          
+ 154          uint8_t ADC_ProbeReg(uint8_t idx)
+ 155          {
+ 156   1          if (idx > 8)
+ 157   1          {
+ 158   2              return 0;
+ 159   2          }
+ 160   1          return s_pr[idx];
+ 161   1      }
+ 162          #endif
+ 163          
+ 164          void ADC_SetCh(uint8_t ch)
+ 165          {
+ 166   1          s_ch = (uint8_t)(ch & 0x0F);
+ 167   1      #if !CFG_MQ_DIGITAL
+ 168   1          ADC_CONTR = 0x80 | s_ch;            /* 立即切到新通道并保持上电 */
+ 169   1      #endif
+ 170   1      }
+ 171          
+ 172          #if CFG_DEBUG_UART
+ 173          uint8_t ADC_GetCh(void)
+ 174          {
+ 175   1          return s_ch;
+ 176   1      }
+ 177          
+C51 COMPILER V9.59.0.0   ADC                                                               11/24/2026 00:48:04 PAGE 4   
+
+ 178          uint8_t ADC_LastTo(void)
+ 179          {
+ 180   1          return s_last_to;
+ 181   1      }
+ 182          
+ 183          uint16_t ADC_LastGuard(void)
+ 184          {
+ 185   1          return s_last_guard;
+ 186   1      }
+ 187          #endif
+ 188          
+ 189          uint16_t ADC_RawRead(uint8_t ch)
+ 190          {
+ 191   1          uint16_t v;
+ 192   1          uint16_t guard = 0;
+ 193   1      
+ 194   1          ADC_CONTR = 0x80 | (ch & 0x0F) | 0x40;  /* 保持上电，启动转换 */
+ 195   1          _nop_();
+ 196   1          _nop_();
+ 197   1          _nop_();
+ 198   1          _nop_();
+ 199   1      
+ 200   1          while ((ADC_CONTR & 0x20) == 0)
+ 201   1          {
+ 202   2              /* 正常 30~60us 就置位。给到约 4ms 还没置位 = ADC 根本没在转换
+ 203   2               * （片子没有 ADC / 通道未引出 / 外设没使能），返回 0xFFFF 让上层显示 Err�
+             -��
+ 204   2               * 不要静默当成 0 —— 否则"输入 0V"和"ADC 没跑"看起来一模一样。 */
+ 205   2              if (++guard > CFG_ADC_GUARD)
+ 206   2              {
+ 207   3                  ADC_CONTR &= (uint8_t)~0x40;    /* 撤掉 START，别把外设卡在半途 */
+ 208   3                  return 0xFFFF;
+ 209   3              }
+ 210   2          }
+ 211   1          s_last_guard = guard;
+ 212   1          ADC_CONTR &= (uint8_t)~0x20;    /* 写 0 清 ADC_FLAG */
+ 213   1      
+ 214   1          v = (uint16_t)(((uint16_t)(ADC_RES & 0x0F) << 8) | ADC_RESL);
+ 215   1          return v;
+ 216   1      }
+ 217          
+ 218          uint16_t MQ_Read(void)
+ 219          {
+ 220   1      #if CFG_MQ_DIGITAL || CFG_MQ_AUTO_DO
+ 221   1          if (s_digital != 0)
+ 222   1          {
+ 223   2              /* 数字 DO 模式：把比较器输出映射成 0 / 满量程，
+ 224   2               * 后面的阈值比较、蜂鸣器、显示逻辑一行都不用改。 */
+ 225   2              uint8_t lv = (MQ_ADC_PIN != 0) ? 1 : 0;
+ 226   2      
+ 227   2      #if CFG_MQ_DO_ACTIVE_LOW
+ 228   2              lv = (uint8_t)(lv ^ 1);
+ 229   2      #endif
+ 230   2              s_last_to = 0;
+ 231   2              return (lv != 0) ? CFG_TH_MAX : 0;
+ 232   2          }
+ 233   1      #endif
+ 234   1      
+ 235   1          {
+ 236   2              uint16_t sum = 0;
+ 237   2              uint16_t v;
+ 238   2              uint8_t i;
+C51 COMPILER V9.59.0.0   ADC                                                               11/24/2026 00:48:04 PAGE 5   
+
+ 239   2              uint8_t n = 0;
+ 240   2              uint8_t to = 0;
+ 241   2      
+ 242   2              if (s_present == 0)
+ 243   2              {
+ 244   3                  s_last_to = 8;
+ 245   3                  return 0xFFFF;          /* ADC 不可用（且没开自动降级），不必每次空转 8×4m
+             -s */
+ 246   3              }
+ 247   2      
+ 248   2              (void)ADC_RawRead(s_ch);    /* 换通道后第一次转换不准，丢掉 */
+ 249   2      
+ 250   2              for (i = 0; i < 8; i++)
+ 251   2              {
+ 252   3                  v = ADC_RawRead(s_ch);
+ 253   3                  if (v == 0xFFFF)
+ 254   3                  {
+ 255   4                      to++;
+ 256   4                      continue;
+ 257   4                  }
+ 258   3                  sum += v;
+ 259   3                  n++;
+ 260   3              }
+ 261   2      
+ 262   2              s_last_to = to;
+ 263   2      
+ 264   2              if (n == 0)
+ 265   2              {
+ 266   3                  return 0xFFFF;          /* 一次都没成功 = ADC 没工作 */
+ 267   3              }
+ 268   2              return (uint16_t)(sum / n);
+ 269   2          }
+ 270   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    429    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     16       7
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

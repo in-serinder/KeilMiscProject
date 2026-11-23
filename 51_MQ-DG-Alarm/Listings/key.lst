@@ -1,0 +1,174 @@
+C51 COMPILER V9.59.0.0   KEY                                                               11/24/2026 00:26:38 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE KEY
+OBJECT MODULE PLACED IN .\Objects\key.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE hardware\key.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\;.\system;.\hardware;.\
+                    -user) DEBUG OBJECTEXTEND PRINT(.\Listings\key.lst) TABS(2) OBJECT(.\Objects\key.obj)
+
+line level    source
+
+   1          /* =====================================================================
+   2           * key.c  —  TM1637 片内键扫读键 + 消抖
+   3           *
+   4           * 为什么不用 GPIO 读键：STC8G1K08A 8 脚封装只剩 P3.0/P3.1（UART），
+   5           * 而 A/K1/K2 是三根线；数码管模块的 A 实际接在 TM1637 的某条 SEG 上，
+   6           * 所以只能走芯片自带的键扫。
+   7           *
+   8           * ------------------ 42H 读回的键值格式（数据手册，低电平有效）------------------
+   9           *   没按键    : 0xFF
+  10           *   b4 = 0    : K1 行的某个键按下，b7~b5 用"低有效 3 位"编码是第几条 SEG
+  11           *   b3 = 0    : K2 行的某个键按下，b7~b5 同上
+  12           *   b2 ~ b0   : 恒为 1
+  13           *   例：A 接 SEG1 时 add(A-K1)=0xEF、sub(A-K2)=0xF7；
+  14           *       A 接 SEG8 时 add=0x0F、sub=0x17。
+  15           *
+  16           * ★ 判"哪一行"只看 b4/b3，与 A 接在哪条 SEG 上无关，所以 add/sub 的区分天然稳�
+             -�。
+  17           * ★ 陷阱：add(0xEF) 和 sub(0xF7) 的 bit0 都是 1。若按"某一位为 1"的位掩码去判键，
+  18           *   两个键会一起命中同一个掩码 —— 表现就是"按 sub 也在加 10"。必须按上面�
+             -�行位判。
+  19           * ★ TM1637 不支持多键同时按下（手册明确说明），所以一次只会有一个有效码�
+             -�
+  20           *
+  21           * 若模块的 A 其实是 GND、K1/K2 引到单片机，则把 board.h 的
+  22           * CFG_KEY_GPIO_MODE 置 1，改走 P3.0/P3.1 直读。
+  23           * ===================================================================== */
+  24          #include "key.h"
+  25          #include "TM1637.h"
+  26          
+  27          #define CFG_KEY_DEBOUNCE        1           /* 连续 2 次(20ms)一致才认 */
+  28          #define CFG_TM_KEY_RD_BYTES     2           /* 多读一个字节，兼容按 GRID 分字节的模块 */
+  29          
+  30          /* 行选择位（在取反后的字节里为 1 表示该位是 0） */
+  31          #define TM_KEY_ROW_K1           0x10        /* b4 = 0 -> K1 行 -> add */
+  32          #define TM_KEY_ROW_K2           0x08        /* b3 = 0 -> K2 行 -> sub */
+  33          
+  34          static uint16_t s_raw;                      /* 最近一次读回的两个原始字节（自检用） */
+  35          static uint8_t  s_state;                    /* 上一次解码后的键状态 */
+  36          static uint8_t  s_stable;                   /* 消抖后的键状态 */
+  37          static uint8_t  s_cnt;
+  38          
+  39          /* 把一个键扫字节解成 KEY_ADD / KEY_SUB / 0。
+  40           * 用"b2~b0 必须全 1"做合法性筛选：0xFF(无键)、0x00(总线悬空)、
+  41           * 多键或按 GRID 分字节的其它码型都会被这条挡掉，不会误判成 add。 */
+  42          #if !CFG_KEY_GPIO_MODE
+  43          static uint8_t tm_key_decode(uint8_t b)
+  44          {
+  45   1          uint8_t z;
+  46   1      
+  47   1          z = (uint8_t)~b;
+  48   1      
+  49   1          if ((z & 0x07) != 0)
+  50   1          {
+  51   2              return 0;
+C51 COMPILER V9.59.0.0   KEY                                                               11/24/2026 00:26:38 PAGE 2   
+
+  52   2          }
+  53   1          if ((z & TM_KEY_ROW_K1) != 0)
+  54   1          {
+  55   2      #if CFG_KEY_SWAP
+  56   2              return KEY_SUB;             /* 模块上 K1/K2 与丝印反了：交换 */
+  57   2      #else
+                      return KEY_ADD;
+              #endif
+  60   2          }
+  61   1          if ((z & TM_KEY_ROW_K2) != 0)
+  62   1          {
+  63   2      #if CFG_KEY_SWAP
+  64   2              return KEY_ADD;
+  65   2      #else
+                      return KEY_SUB;
+              #endif
+  68   2          }
+  69   1          return 0;
+  70   1      }
+  71          #endif /* !CFG_KEY_GPIO_MODE */
+  72          
+  73          static uint8_t key_scan(void)
+  74          {
+  75   1      #if CFG_KEY_GPIO_MODE
+                  /* 直读模式：A 接 GND，按下时 K 线被拉低。
+                   * P3.0/P3.1 复位后是准双向口，写 1 即有内部弱上拉，可直接读。 */
+                  uint8_t k = 0;
+              
+                  s_raw = 0;
+                  if (KEY_ADD_PIN == 0)
+                  {
+                      k |= KEY_ADD;
+                      s_raw |= KEY_ADD;
+                  }
+                  if (KEY_SUB_PIN == 0)
+                  {
+                      k |= KEY_SUB;
+                      s_raw |= KEY_SUB;
+                  }
+                  return k;
+              #else
+  93   1          uint8_t buf[2];
+  94   1          uint8_t k;
+  95   1      
+  96   1          buf[0] = 0xFF;
+  97   1          buf[1] = 0xFF;
+  98   1          TM1637_ReadKeys(buf, CFG_TM_KEY_RD_BYTES);
+  99   1      
+ 100   1          s_raw = (uint16_t)(((uint16_t)buf[1] << 8) | buf[0]);
+ 101   1      
+ 102   1          k = tm_key_decode(buf[0]);
+ 103   1          if (k == 0)
+ 104   1          {
+ 105   2              k = tm_key_decode(buf[1]);      /* 有的模块按键码落在后面的字节里 */
+ 106   2          }
+ 107   1          return k;
+ 108   1      #endif
+ 109   1      }
+ 110          
+ 111          #if CFG_KEY_RAW_SHOW || CFG_DEBUG_UART
+ 112          uint16_t Key_LastRaw(void)
+ 113          {
+C51 COMPILER V9.59.0.0   KEY                                                               11/24/2026 00:26:38 PAGE 3   
+
+ 114   1          return s_raw;
+ 115   1      }
+ 116          #endif
+ 117          
+ 118          uint8_t Key_Update(void)
+ 119          {
+ 120   1          uint8_t now;
+ 121   1      
+ 122   1          now = key_scan();
+ 123   1      
+ 124   1          if (now == s_state)
+ 125   1          {
+ 126   2              if (s_cnt < 250)
+ 127   2              {
+ 128   3                  s_cnt++;
+ 129   3              }
+ 130   2          }
+ 131   1          else
+ 132   1          {
+ 133   2              s_state = now;
+ 134   2              s_cnt = 0;
+ 135   2          }
+ 136   1      
+ 137   1          if (s_cnt >= CFG_KEY_DEBOUNCE)
+ 138   1          {
+ 139   2              s_stable = s_state;
+ 140   2          }
+ 141   1      
+ 142   1          return s_stable;
+ 143   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    116    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      5       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
