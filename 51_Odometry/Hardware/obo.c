@@ -8,7 +8,9 @@ uint32_t idata last_raw_mm  = 0;    // 上次速度计算时的 raw_mm
 uint16_t idata write_count  = 0;
 uint16_t idata slow_count   = 0;
 float    idata speed_kmh    = 0.0f;
-uint16_t xdata last_pulse_tick = 0;
+/* data 而非 xdata：这是 INT0 中断里要读的，xdata 会生成 MOVX，
+ * 而 MOVX 期间 P2 输出 DPH，正好打烂接在 P2.2/2.3/2.4 的 MAX7219 帧 */
+uint16_t data  last_pulse_tick = 0;
 
 
 #define WIN_TICK  100    // 1秒窗口
@@ -23,11 +25,14 @@ static float    cyc_sum   = 0.0f;          // 缓冲的总和
 static uint8_t  cyc_idx   = 0;             // 下一个要覆盖的槽位
 static uint8_t  cyc_valid = 0;             // 已填充槽位数(1~10)
 
+/* EEPROM 里程是否可信：读失败后置 0，禁止自动回写，避免把坏值当真值写回去 */
+static bit      mm_ok     = 1;
+
 #if OBO_ACTIVE_HIGH
 bit obo_prev_state = 0;            
 #endif
 
-extern uint16_t xdata sys_tick_10ms;
+extern uint16_t data  sys_tick_10ms;
 
 
 /*  脉冲记数 */
@@ -58,18 +63,21 @@ void OBO_Init(void)
 
     /*  开机次数 */
     boot_cnt = EEPROM_ReadU8(EEPROM_TEXT_ADDR);
-    UART_SendString("[Debug] [RW] BootCount: read=");
-    UART_SendU16(boot_cnt);
     if (boot_cnt == 0xFF) boot_cnt = 0;
     boot_cnt++;
     EEPROM_WriteU8(EEPROM_TEXT_ADDR, boot_cnt);
-    UART_SendString(" -> written=");
-    UART_SendU16(boot_cnt);
-    UART_SendString("\r\n");
 
     /*  恢复里程 */
     Delay_ms(10);
     raw_mm = EEPROM_ReadU32(MILES_ADDR);
+    /* 读失败/空片会读成 0xFFFFFFFF。绝不能拿它当里程再回写，
+     * 否则一次读错就把真里程冲掉了（这是"里程被清零"的第二条路）。 */
+    if (raw_mm == 0xFFFFFFFFUL) {
+        raw_mm = 0;
+        mm_ok  = 0;                      /* 禁止自动回写，直到用户用 M 命令写入 */
+    } else {
+        mm_ok  = 1;
+    }
     valid_mm    = raw_mm;               // 启动时两者一致
     last_raw_mm = raw_mm;
     last_pulse_tick = 0;
@@ -129,6 +137,7 @@ void OBO_SET_Millis(uint32_t ms)
     cyc_idx   = 0;
     cyc_valid = 0;
     for (i = 0; i < CYC_LEN; i++) cyc_buf[i] = 0.0f;
+    mm_ok = 1;                  /* 显式设定＝可信，恢复自动回写 */
     EEPROM_WriteU32(MILES_ADDR, ms);
     DEBUG_RW("OBO", "Mileage saved to EEPROM");
 }
@@ -138,6 +147,12 @@ void OBO_SET_Millis(uint32_t ms)
 float OBO_GET_Miles(void)
 {
     return (float)valid_mm / 100000.0f;
+}
+
+/*  读取原始里程 (cm)，串口 R / M 命令用 */
+uint32_t OBO_GET_Millis(void)
+{
+    return valid_mm;
 }
 
 
@@ -162,16 +177,9 @@ float OBO_GET_SPEED(void)
         wnd_raw  = raw_mm;
         wnd_tick = now;
 
-
-        UART_SendString("[W] elp="); UART_SendU16(elp);
-        UART_SendString(" pls="); UART_SendU16(wnd_pulse);
-        UART_SendString(" dlt="); UART_SendU32(delta_mm);
-        UART_SendString(" spd="); UART_SendFloat2(spd);
-
         /*  尖峰剔除：1秒内脉冲数超过上限 → 整帧强制归零 */
         if (wnd_pulse > MAX_PULSES_PER_WINDOW) {
             spd = 0.0f;
-            UART_SendString(" SPIKE!");
         }
         wnd_pulse = 0;
 
@@ -192,12 +200,6 @@ float OBO_GET_SPEED(void)
         if (cyc_valid < CYC_LEN) cyc_valid++;
 
         speed_kmh = cyc_sum / (float)cyc_valid;
-
-        /* 调试：缓冲状态 */
-        UART_SendString(" vld="); UART_SendU16(cyc_valid);
-        UART_SendString(" sum="); UART_SendFloat2(cyc_sum);
-        UART_SendString(" out="); UART_SendFloat2(speed_kmh);
-        UART_SendString("\r\n");
     }
 
     /*  零速限幅 */
@@ -218,7 +220,7 @@ float OBO_GET_SPEED(void)
     write_count++;
     if (write_count >= EEPROM_SAVE_CYCLES) {
         write_count = 0;
-        if (speed_kmh > 0.5f || (COUNT_SLOW && slow_count >= COUNT_SLOW_PATIENCE)) {
+        if (mm_ok && (speed_kmh > 0.5f || (COUNT_SLOW && slow_count >= COUNT_SLOW_PATIENCE))) {
             EEPROM_WriteU32(MILES_ADDR, valid_mm);
             slow_count = 0;
         }

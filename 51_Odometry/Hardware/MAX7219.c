@@ -163,23 +163,6 @@ void Max7219_DisplayFloat(float value, uint8_t format)
     WriteRange(1, 8, scaled, format, neg);
 }
 
-void Max7219_DisplayFloatSplit(float value1, float value2, uint8_t format)
-{
-    uint32_t s1, s2;
-    bit n1 = 0, n2 = 0;
-    uint8_t i;
-    uint32_t mul = 1;
-    if (format > 3) format = 3;
-    if (value1 < 0) { n1 = 1; value1 = -value1; }
-    if (value2 < 0) { n2 = 1; value2 = -value2; }
-    for (i = 0; i < format; i++) mul *= 10;
-    s1 = (uint32_t)(value1 * (float)mul + 0.5f);
-    s2 = (uint32_t)(value2 * (float)mul + 0.5f);
-        WriteRange(1, 4, s1, format, n1);
-    WriteRange(5, 8, s2, format, n2);
-}
-
-
 /* 左右双值显示，左右可用不同小数位数 */
 void Max7219_DisplayDualFmt(float left_val, uint8_t left_fmt,
                            float right_val, uint8_t right_fmt)
@@ -263,23 +246,6 @@ void Max7219DateDisplay(char *datestr)
 }
 #endif
 
-
-
-void Max7219_DisplayCustomSegments(const uint8_t *segs, uint8_t len)
-{
-    uint8_t i;
-    Max7219_Clear();
-    /* 切换到非译码模式 */
-    Max7219_Write(0x09, 0x00);
-    for (i = 0; i < 8; i++) {
-        if (i < len)
-            Max7219_Write(i + 1, segs[i]);
-        else
-            Max7219_Write(i + 1, SEG_BLANK);
-    }
-        /* 恢复BCD译码模式 */
-    Max7219_Write(0x09, 0xFF);
-}
 
 
 #if 0

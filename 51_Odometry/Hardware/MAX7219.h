@@ -23,9 +23,7 @@ void Max7219_NumDisplay(double num);
 void Max7219DateDisplay(char *datestr);
 // void Max7219TemperatureAndHumitidyDisplay(uint8_t *temp, uint8_t *hum);
 void Max7219_DisplayFloat(float value, uint8_t format);
-void Max7219_DisplayFloatSplit(float value1, float value2, uint8_t format);
 void Max7219_DisplayDualFmt(float left_val, uint8_t left_fmt,
                            float right_val, uint8_t right_fmt);
-void Max7219_DisplayCustomSegments(const uint8_t *segs, uint8_t len);
 
 #endif

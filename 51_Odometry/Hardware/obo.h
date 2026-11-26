@@ -32,6 +32,7 @@
 void OBO_Init(void);
 void OBO_Poll(void);
 void OBO_SET_Millis(uint32_t ms);
+uint32_t OBO_GET_Millis(void);
 
 float OBO_GET_Miles(void);
 float OBO_GET_SPEED(void);

@@ -1,0 +1,15 @@
+# Keil 编译中间产物（keilkill.bat 会删这些东西）
+Objects/*.obj
+Objects/*.__i
+Objects/*.lnp
+Objects/*.build_log.htm
+Listings/*.lst
+*.log
+*.bak
+
+# 调试用的临时工程副本
+!Objects/odo
+!Objects/odo.hex
+
+# 工作区数据（本地日志，不入库）
+.workbuddy/
